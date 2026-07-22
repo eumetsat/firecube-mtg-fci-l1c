@@ -1,0 +1,11 @@
+# Component information
+name: MTG FCI L1C golden test snapshots
+description: Golden reference JSON snapshots used by the plugin's test suite (test_golden_output.py / test_golden_schema.py) to detect unintended changes to the ingested output and the Zarr schema. Bespoke, EUMETSAT-owned test fixtures; JSON files cannot carry an in-file license header.
+copyright: Copyright 2025-2026 EUMETSAT
+license_spdx: Apache-2.0
+home_url: https://github.com/eumetsat/firecube-mtg-fci-l1c
+# Package IPR documentation
+license_text_file: ./LICENSE
+# File(s) associated to this component
+about_resource: ./tests/golden/output_snapshots.json
+about_resource: ./tests/golden/schema_snapshots.json

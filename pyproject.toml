@@ -1,0 +1,69 @@
+[project]
+name = "firecube-mtg-fci-l1c"
+version = "0.1.4"
+description = "Firecube ingestor plugin for MTG FCI L1C FDHSI and HRFI products"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Carlos Horn", email = "carlos.horn@eumetsat.int" },
+    { name = "Armagan Karatosun", email = "armagan.karatosun@eumetsat.int" },
+    { name = "Anna-Lena Erdmann", email = "anna-lena.erdmann@eumetsat.int" }
+]
+dependencies = [
+    # 0.1.4 is the current Firecube core baseline for the slot-index API
+    # (SlotAxis, SlotIndexModel, normalize_epoch_iso) this plugin imports.
+    "firecube>=0.1.4",
+    "xarray>=2026.4.0",
+    "numpy>=2.4",
+    "h5netcdf>=1.8",
+]
+
+[project.urls]
+Homepage = "https://github.com/eumetsat/firecube-mtg-fci-l1c"
+Repository = "https://github.com/eumetsat/firecube-mtg-fci-l1c"
+Issues = "https://github.com/eumetsat/firecube-mtg-fci-l1c/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy",
+]
+
+[project.entry-points."firecube.plugins"]
+mtg_fci_l1c = "firecube_mtg_fci_l1c"
+
+[project.entry-points."firecube.plugin_cli"]
+mtg_fci_l1c = "firecube_mtg_fci_l1c.plugin_cli:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/firecube_mtg_fci_l1c"]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy",
+    "matplotlib>=3.11.0",
+]
+
+[tool.mypy]
+python_version = "3.12"
+
+# h5netcdf and the firecube core API ship no py.typed marker / stubs, so mypy
+# cannot analyse them. Treat them as untyped rather than erroring per import.
+[[tool.mypy.overrides]]
+module = ["h5netcdf.*", "firecube.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+markers = [
+    "unit: Unit-level tests",
+    "integration: Integration-style tests",
+    "plugin: Plugin-focused tests",
+]

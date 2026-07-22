@@ -1,0 +1,13 @@
+# Component information
+name: amdahl.png
+description: Firecube MTG FCI L1C benchmark plot generated from repository benchmark data; bespoke, EUMETSAT-owned; header comments are not supported for this file type.
+copyright: Copyright 2025-2026 EUMETSAT
+license_spdx: Apache-2.0
+home_url: https://github.com/eumetsat/firecube-mtg-fci-l1c
+date: 2026-07-21
+
+# Package IPR documentation
+license_text_file: /LICENSE
+
+# File(s) associated to this component
+about_resource: amdahl.png

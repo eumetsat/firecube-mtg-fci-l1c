@@ -1,0 +1,1240 @@
+{
+  "fdhsi_defaults": {
+    "hash": "4e1c4f26cb25ecaaac6e607f84a0380997edde26e9eb81233cd1670c7e430096",
+    "options": {},
+    "product_type": "FDHSI",
+    "structure": {
+      "attrs": {
+        "firecube_slot_index_model": "{\"epoch\":\"2024-01-01T00:00:00Z\",\"groups\":{\"data_1km\":{\"cadence_s\":600,\"mode\":\"floor\"},\"data_2km\":{\"cadence_s\":600,\"mode\":\"floor\"}},\"name\":\"eumetsat_repeat_cycle_v1\",\"schema_version\":\"v1\",\"time_unit\":null}",
+        "firecube_slot_index_model_identity_hash": "1cf8e3d88061e82c608eacf048d5c8c1df96918d4f50826d1f63fd407b1db2d1"
+      },
+      "groups": {
+        "data_1km": {
+          "arrays": {
+            "channel_name": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "FCI logical channel name",
+                "units": "1"
+              },
+              "chunks": [
+                2
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "|S16",
+              "fill_value": "",
+              "has_static_marker": true,
+              "shape": [
+                2
+              ]
+            },
+            "counts": {
+              "attrs": {
+                "ancillary_variables": "pixel_quality pixel_time",
+                "coordinates": "latitude longitude",
+                "grid_mapping": "spatial_ref",
+                "long_name": "FCI raw detector counts",
+                "units": "1"
+              },
+              "chunks": [
+                1,
+                278,
+                11136,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "y",
+                "x",
+                "channel"
+              ],
+              "dtype": "uint16",
+              "fill_value": 65535,
+              "has_static_marker": false,
+              "shape": [
+                1,
+                4,
+                4,
+                2
+              ]
+            },
+            "latitude": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "latitude",
+                "standard_name": "latitude",
+                "units": "degrees_north"
+              },
+              "chunks": [
+                4,
+                4
+              ],
+              "dimension_names": [
+                "y",
+                "x"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "has_static_marker": true,
+              "shape": [
+                4,
+                4
+              ]
+            },
+            "longitude": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "longitude",
+                "standard_name": "longitude",
+                "units": "degrees_east"
+              },
+              "chunks": [
+                4,
+                4
+              ],
+              "dimension_names": [
+                "y",
+                "x"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "has_static_marker": true,
+              "shape": [
+                4,
+                4
+              ]
+            },
+            "offset": {
+              "attrs": {
+                "long_name": "FCI calibration offset",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                2
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                2
+              ]
+            },
+            "pixel_quality": {
+              "attrs": {
+                "coordinates": "latitude longitude",
+                "flag_masks": [
+                  1,
+                  2,
+                  4,
+                  8,
+                  16,
+                  32,
+                  64,
+                  128
+                ],
+                "flag_meanings": "missing_warning radiometric_warning noise_warning geolocation_warning saturation_warning straylight_correction_warning extended_dynamic_range_warning encoding_saturation_warning",
+                "grid_mapping": "spatial_ref",
+                "long_name": "FCI pixel quality flags",
+                "units": "1"
+              },
+              "chunks": [
+                1,
+                278,
+                11136,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "y",
+                "x",
+                "channel"
+              ],
+              "dtype": "uint8",
+              "fill_value": 0,
+              "has_static_marker": false,
+              "shape": [
+                1,
+                4,
+                4,
+                2
+              ]
+            },
+            "pixel_time": {
+              "attrs": {
+                "calendar": "standard",
+                "coordinates": "latitude longitude",
+                "grid_mapping": "spatial_ref",
+                "long_name": "FCI per-pixel observation time",
+                "standard_name": "time",
+                "units": "seconds since 2000-01-01"
+              },
+              "chunks": [
+                1,
+                278,
+                11136,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "y",
+                "x",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                4,
+                4,
+                2
+              ]
+            },
+            "slope": {
+              "attrs": {
+                "long_name": "FCI calibration slope",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                2
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                2
+              ]
+            },
+            "spatial_ref": {
+              "attrs": {
+                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "grid_mapping_name": "geostationary",
+                "inverse_flattening": 298.25722356301,
+                "latitude_of_projection_origin": 0.0,
+                "long_name": "MTG geostationary projection",
+                "longitude_of_projection_origin": 0.0,
+                "perspective_point_height": 35786400.0,
+                "semi_major_axis": 6378137.0,
+                "semi_minor_axis": 6356752.31424518,
+                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "sweep_angle_axis": "y"
+              },
+              "chunks": [],
+              "dimension_names": [],
+              "dtype": "int8",
+              "fill_value": 0,
+              "has_static_marker": false,
+              "shape": []
+            },
+            "time": {
+              "attrs": {
+                "axis": "T",
+                "calendar": "standard",
+                "long_name": "observation time",
+                "standard_name": "time",
+                "units": "seconds since 2000-01-01 00:00:00"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "datetime64[s]",
+              "fill_value": null,
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
+            "x": {
+              "attrs": {
+                "axis": "X",
+                "firecube_static_written": true,
+                "long_name": "MTG geostationary projection x angle",
+                "standard_name": "projection_x_angular_coordinate",
+                "units": "radian"
+              },
+              "chunks": [
+                4
+              ],
+              "dimension_names": [
+                "x"
+              ],
+              "dtype": "float64",
+              "fill_value": 0.0,
+              "has_static_marker": true,
+              "shape": [
+                4
+              ]
+            },
+            "y": {
+              "attrs": {
+                "axis": "Y",
+                "firecube_static_written": true,
+                "long_name": "MTG geostationary projection y angle",
+                "standard_name": "projection_y_angular_coordinate",
+                "units": "radian"
+              },
+              "chunks": [
+                4
+              ],
+              "dimension_names": [
+                "y"
+              ],
+              "dtype": "float64",
+              "fill_value": 0.0,
+              "has_static_marker": true,
+              "shape": [
+                4
+              ]
+            }
+          },
+          "attrs": {
+            "Conventions": "CF-1.8",
+            "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
+            "institution": "EUMETSAT",
+            "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
+            "title": "MTG FCI Level 1C effective radiances (1km)"
+          }
+        },
+        "data_2km": {
+          "arrays": {
+            "channel_name": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "FCI logical channel name",
+                "units": "1"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "|S16",
+              "fill_value": "",
+              "has_static_marker": true,
+              "shape": [
+                1
+              ]
+            },
+            "counts": {
+              "attrs": {
+                "ancillary_variables": "pixel_quality pixel_time",
+                "coordinates": "latitude longitude",
+                "grid_mapping": "spatial_ref",
+                "long_name": "FCI raw detector counts",
+                "units": "1"
+              },
+              "chunks": [
+                1,
+                139,
+                5568,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "y",
+                "x",
+                "channel"
+              ],
+              "dtype": "uint16",
+              "fill_value": 65535,
+              "has_static_marker": false,
+              "shape": [
+                1,
+                4,
+                4,
+                1
+              ]
+            },
+            "latitude": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "latitude",
+                "standard_name": "latitude",
+                "units": "degrees_north"
+              },
+              "chunks": [
+                4,
+                4
+              ],
+              "dimension_names": [
+                "y",
+                "x"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "has_static_marker": true,
+              "shape": [
+                4,
+                4
+              ]
+            },
+            "longitude": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "longitude",
+                "standard_name": "longitude",
+                "units": "degrees_east"
+              },
+              "chunks": [
+                4,
+                4
+              ],
+              "dimension_names": [
+                "y",
+                "x"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "has_static_marker": true,
+              "shape": [
+                4,
+                4
+              ]
+            },
+            "offset": {
+              "attrs": {
+                "long_name": "FCI calibration offset",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                1
+              ]
+            },
+            "pixel_quality": {
+              "attrs": {
+                "coordinates": "latitude longitude",
+                "flag_masks": [
+                  1,
+                  2,
+                  4,
+                  8,
+                  16,
+                  32,
+                  64,
+                  128
+                ],
+                "flag_meanings": "missing_warning radiometric_warning noise_warning geolocation_warning saturation_warning straylight_correction_warning extended_dynamic_range_warning encoding_saturation_warning",
+                "grid_mapping": "spatial_ref",
+                "long_name": "FCI pixel quality flags",
+                "units": "1"
+              },
+              "chunks": [
+                1,
+                139,
+                5568,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "y",
+                "x",
+                "channel"
+              ],
+              "dtype": "uint8",
+              "fill_value": 0,
+              "has_static_marker": false,
+              "shape": [
+                1,
+                4,
+                4,
+                1
+              ]
+            },
+            "pixel_time": {
+              "attrs": {
+                "calendar": "standard",
+                "coordinates": "latitude longitude",
+                "grid_mapping": "spatial_ref",
+                "long_name": "FCI per-pixel observation time",
+                "standard_name": "time",
+                "units": "seconds since 2000-01-01"
+              },
+              "chunks": [
+                1,
+                139,
+                5568,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "y",
+                "x",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                4,
+                4,
+                1
+              ]
+            },
+            "slope": {
+              "attrs": {
+                "long_name": "FCI calibration slope",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                1
+              ]
+            },
+            "spatial_ref": {
+              "attrs": {
+                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "grid_mapping_name": "geostationary",
+                "inverse_flattening": 298.25722356301,
+                "latitude_of_projection_origin": 0.0,
+                "long_name": "MTG geostationary projection",
+                "longitude_of_projection_origin": 0.0,
+                "perspective_point_height": 35786400.0,
+                "semi_major_axis": 6378137.0,
+                "semi_minor_axis": 6356752.31424518,
+                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "sweep_angle_axis": "y"
+              },
+              "chunks": [],
+              "dimension_names": [],
+              "dtype": "int8",
+              "fill_value": 0,
+              "has_static_marker": false,
+              "shape": []
+            },
+            "time": {
+              "attrs": {
+                "axis": "T",
+                "calendar": "standard",
+                "long_name": "observation time",
+                "standard_name": "time",
+                "units": "seconds since 2000-01-01 00:00:00"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "datetime64[s]",
+              "fill_value": null,
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
+            "x": {
+              "attrs": {
+                "axis": "X",
+                "firecube_static_written": true,
+                "long_name": "MTG geostationary projection x angle",
+                "standard_name": "projection_x_angular_coordinate",
+                "units": "radian"
+              },
+              "chunks": [
+                4
+              ],
+              "dimension_names": [
+                "x"
+              ],
+              "dtype": "float64",
+              "fill_value": 0.0,
+              "has_static_marker": true,
+              "shape": [
+                4
+              ]
+            },
+            "y": {
+              "attrs": {
+                "axis": "Y",
+                "firecube_static_written": true,
+                "long_name": "MTG geostationary projection y angle",
+                "standard_name": "projection_y_angular_coordinate",
+                "units": "radian"
+              },
+              "chunks": [
+                4
+              ],
+              "dimension_names": [
+                "y"
+              ],
+              "dtype": "float64",
+              "fill_value": 0.0,
+              "has_static_marker": true,
+              "shape": [
+                4
+              ]
+            }
+          },
+          "attrs": {
+            "Conventions": "CF-1.8",
+            "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
+            "institution": "EUMETSAT",
+            "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
+            "title": "MTG FCI Level 1C effective radiances (2km)"
+          }
+        }
+      }
+    }
+  },
+  "hrfi_defaults": {
+    "hash": "009ece4324b0835e9b55e4d2bb7b87fa95151c1bef446931c81e8d4c570b364d",
+    "options": {},
+    "product_type": "HRFI",
+    "structure": {
+      "attrs": {
+        "firecube_slot_index_model": "{\"epoch\":\"2024-01-01T00:00:00Z\",\"groups\":{\"data_1km\":{\"cadence_s\":600,\"mode\":\"floor\"},\"data_500m\":{\"cadence_s\":600,\"mode\":\"floor\"}},\"name\":\"eumetsat_repeat_cycle_v1\",\"schema_version\":\"v1\",\"time_unit\":null}",
+        "firecube_slot_index_model_identity_hash": "5ad02cbcb18ec1e1bfd1334974a4161445af1db43c83999dc616348974050eef"
+      },
+      "groups": {
+        "data_1km": {
+          "arrays": {
+            "channel_name": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "FCI logical channel name",
+                "units": "1"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "|S16",
+              "fill_value": "",
+              "has_static_marker": true,
+              "shape": [
+                1
+              ]
+            },
+            "counts": {
+              "attrs": {
+                "ancillary_variables": "pixel_quality pixel_time",
+                "coordinates": "latitude longitude",
+                "grid_mapping": "spatial_ref",
+                "long_name": "FCI raw detector counts",
+                "units": "1"
+              },
+              "chunks": [
+                1,
+                278,
+                11136,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "y",
+                "x",
+                "channel"
+              ],
+              "dtype": "uint16",
+              "fill_value": 65535,
+              "has_static_marker": false,
+              "shape": [
+                1,
+                4,
+                4,
+                1
+              ]
+            },
+            "latitude": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "latitude",
+                "standard_name": "latitude",
+                "units": "degrees_north"
+              },
+              "chunks": [
+                4,
+                4
+              ],
+              "dimension_names": [
+                "y",
+                "x"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "has_static_marker": true,
+              "shape": [
+                4,
+                4
+              ]
+            },
+            "longitude": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "longitude",
+                "standard_name": "longitude",
+                "units": "degrees_east"
+              },
+              "chunks": [
+                4,
+                4
+              ],
+              "dimension_names": [
+                "y",
+                "x"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "has_static_marker": true,
+              "shape": [
+                4,
+                4
+              ]
+            },
+            "offset": {
+              "attrs": {
+                "long_name": "FCI calibration offset",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                1
+              ]
+            },
+            "pixel_quality": {
+              "attrs": {
+                "coordinates": "latitude longitude",
+                "flag_masks": [
+                  1,
+                  2,
+                  4,
+                  8,
+                  16,
+                  32,
+                  64,
+                  128
+                ],
+                "flag_meanings": "missing_warning radiometric_warning noise_warning geolocation_warning saturation_warning straylight_correction_warning extended_dynamic_range_warning encoding_saturation_warning",
+                "grid_mapping": "spatial_ref",
+                "long_name": "FCI pixel quality flags",
+                "units": "1"
+              },
+              "chunks": [
+                1,
+                278,
+                11136,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "y",
+                "x",
+                "channel"
+              ],
+              "dtype": "uint8",
+              "fill_value": 0,
+              "has_static_marker": false,
+              "shape": [
+                1,
+                4,
+                4,
+                1
+              ]
+            },
+            "pixel_time": {
+              "attrs": {
+                "calendar": "standard",
+                "coordinates": "latitude longitude",
+                "grid_mapping": "spatial_ref",
+                "long_name": "FCI per-pixel observation time",
+                "standard_name": "time",
+                "units": "seconds since 2000-01-01"
+              },
+              "chunks": [
+                1,
+                278,
+                11136,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "y",
+                "x",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                4,
+                4,
+                1
+              ]
+            },
+            "slope": {
+              "attrs": {
+                "long_name": "FCI calibration slope",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                1
+              ]
+            },
+            "spatial_ref": {
+              "attrs": {
+                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "grid_mapping_name": "geostationary",
+                "inverse_flattening": 298.25722356301,
+                "latitude_of_projection_origin": 0.0,
+                "long_name": "MTG geostationary projection",
+                "longitude_of_projection_origin": 0.0,
+                "perspective_point_height": 35786400.0,
+                "semi_major_axis": 6378137.0,
+                "semi_minor_axis": 6356752.31424518,
+                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "sweep_angle_axis": "y"
+              },
+              "chunks": [],
+              "dimension_names": [],
+              "dtype": "int8",
+              "fill_value": 0,
+              "has_static_marker": false,
+              "shape": []
+            },
+            "time": {
+              "attrs": {
+                "axis": "T",
+                "calendar": "standard",
+                "long_name": "observation time",
+                "standard_name": "time",
+                "units": "seconds since 2000-01-01 00:00:00"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "datetime64[s]",
+              "fill_value": null,
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
+            "x": {
+              "attrs": {
+                "axis": "X",
+                "firecube_static_written": true,
+                "long_name": "MTG geostationary projection x angle",
+                "standard_name": "projection_x_angular_coordinate",
+                "units": "radian"
+              },
+              "chunks": [
+                4
+              ],
+              "dimension_names": [
+                "x"
+              ],
+              "dtype": "float64",
+              "fill_value": 0.0,
+              "has_static_marker": true,
+              "shape": [
+                4
+              ]
+            },
+            "y": {
+              "attrs": {
+                "axis": "Y",
+                "firecube_static_written": true,
+                "long_name": "MTG geostationary projection y angle",
+                "standard_name": "projection_y_angular_coordinate",
+                "units": "radian"
+              },
+              "chunks": [
+                4
+              ],
+              "dimension_names": [
+                "y"
+              ],
+              "dtype": "float64",
+              "fill_value": 0.0,
+              "has_static_marker": true,
+              "shape": [
+                4
+              ]
+            }
+          },
+          "attrs": {
+            "Conventions": "CF-1.8",
+            "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
+            "institution": "EUMETSAT",
+            "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
+            "title": "MTG FCI Level 1C effective radiances (1km)"
+          }
+        },
+        "data_500m": {
+          "arrays": {
+            "channel_name": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "FCI logical channel name",
+                "units": "1"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "|S16",
+              "fill_value": "",
+              "has_static_marker": true,
+              "shape": [
+                1
+              ]
+            },
+            "counts": {
+              "attrs": {
+                "ancillary_variables": "pixel_quality pixel_time",
+                "coordinates": "latitude longitude",
+                "grid_mapping": "spatial_ref",
+                "long_name": "FCI raw detector counts",
+                "units": "1"
+              },
+              "chunks": [
+                1,
+                556,
+                22272,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "y",
+                "x",
+                "channel"
+              ],
+              "dtype": "uint16",
+              "fill_value": 65535,
+              "has_static_marker": false,
+              "shape": [
+                1,
+                4,
+                4,
+                1
+              ]
+            },
+            "latitude": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "latitude",
+                "standard_name": "latitude",
+                "units": "degrees_north"
+              },
+              "chunks": [
+                4,
+                4
+              ],
+              "dimension_names": [
+                "y",
+                "x"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "has_static_marker": true,
+              "shape": [
+                4,
+                4
+              ]
+            },
+            "longitude": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "longitude",
+                "standard_name": "longitude",
+                "units": "degrees_east"
+              },
+              "chunks": [
+                4,
+                4
+              ],
+              "dimension_names": [
+                "y",
+                "x"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "has_static_marker": true,
+              "shape": [
+                4,
+                4
+              ]
+            },
+            "offset": {
+              "attrs": {
+                "long_name": "FCI calibration offset",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                1
+              ]
+            },
+            "pixel_quality": {
+              "attrs": {
+                "coordinates": "latitude longitude",
+                "flag_masks": [
+                  1,
+                  2,
+                  4,
+                  8,
+                  16,
+                  32,
+                  64,
+                  128
+                ],
+                "flag_meanings": "missing_warning radiometric_warning noise_warning geolocation_warning saturation_warning straylight_correction_warning extended_dynamic_range_warning encoding_saturation_warning",
+                "grid_mapping": "spatial_ref",
+                "long_name": "FCI pixel quality flags",
+                "units": "1"
+              },
+              "chunks": [
+                1,
+                556,
+                22272,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "y",
+                "x",
+                "channel"
+              ],
+              "dtype": "uint8",
+              "fill_value": 0,
+              "has_static_marker": false,
+              "shape": [
+                1,
+                4,
+                4,
+                1
+              ]
+            },
+            "pixel_time": {
+              "attrs": {
+                "calendar": "standard",
+                "coordinates": "latitude longitude",
+                "grid_mapping": "spatial_ref",
+                "long_name": "FCI per-pixel observation time",
+                "standard_name": "time",
+                "units": "seconds since 2000-01-01"
+              },
+              "chunks": [
+                1,
+                556,
+                22272,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "y",
+                "x",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                4,
+                4,
+                1
+              ]
+            },
+            "slope": {
+              "attrs": {
+                "long_name": "FCI calibration slope",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                1
+              ]
+            },
+            "spatial_ref": {
+              "attrs": {
+                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "grid_mapping_name": "geostationary",
+                "inverse_flattening": 298.25722356301,
+                "latitude_of_projection_origin": 0.0,
+                "long_name": "MTG geostationary projection",
+                "longitude_of_projection_origin": 0.0,
+                "perspective_point_height": 35786400.0,
+                "semi_major_axis": 6378137.0,
+                "semi_minor_axis": 6356752.31424518,
+                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "sweep_angle_axis": "y"
+              },
+              "chunks": [],
+              "dimension_names": [],
+              "dtype": "int8",
+              "fill_value": 0,
+              "has_static_marker": false,
+              "shape": []
+            },
+            "time": {
+              "attrs": {
+                "axis": "T",
+                "calendar": "standard",
+                "long_name": "observation time",
+                "standard_name": "time",
+                "units": "seconds since 2000-01-01 00:00:00"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "datetime64[s]",
+              "fill_value": null,
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
+            "x": {
+              "attrs": {
+                "axis": "X",
+                "firecube_static_written": true,
+                "long_name": "MTG geostationary projection x angle",
+                "standard_name": "projection_x_angular_coordinate",
+                "units": "radian"
+              },
+              "chunks": [
+                4
+              ],
+              "dimension_names": [
+                "x"
+              ],
+              "dtype": "float64",
+              "fill_value": 0.0,
+              "has_static_marker": true,
+              "shape": [
+                4
+              ]
+            },
+            "y": {
+              "attrs": {
+                "axis": "Y",
+                "firecube_static_written": true,
+                "long_name": "MTG geostationary projection y angle",
+                "standard_name": "projection_y_angular_coordinate",
+                "units": "radian"
+              },
+              "chunks": [
+                4
+              ],
+              "dimension_names": [
+                "y"
+              ],
+              "dtype": "float64",
+              "fill_value": 0.0,
+              "has_static_marker": true,
+              "shape": [
+                4
+              ]
+            }
+          },
+          "attrs": {
+            "Conventions": "CF-1.8",
+            "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
+            "institution": "EUMETSAT",
+            "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
+            "title": "MTG FCI Level 1C effective radiances (500m)"
+          }
+        }
+      }
+    }
+  }
+}
