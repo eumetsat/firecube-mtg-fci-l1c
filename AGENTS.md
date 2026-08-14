@@ -48,7 +48,7 @@ Keep the root README user/operator focused.
 
 ## Firecube And Zarr Invariants
 
-- Current plugin version and Firecube baseline are `0.1.4`.
+- Current plugin version is `0.1.5`. Firecube baseline is `0.1.4`.
 - The plugin uses Firecube direct-region Zarr behavior. Link core mechanics to
   Firecube public docs instead of duplicating them:
   - Direct Region Zarr: `https://eumetsat.github.io/firecube/concepts/output-formats/zarr/direct-region/`
@@ -83,5 +83,7 @@ Keep the root README user/operator focused.
   `VariableContext`; I/O belongs in streaming/ingestor code.
 - Do not use lambdas or nested functions in schema variable sources. They must
   remain picklable for process workers.
-- Add tests with behavior changes. For docs-only edits, run link/path checks and
-  the standard project checks when practical.
+- Add tests with behavior changes. Follow [`plans/TESTING_STANDARDS.md`](plans/TESTING_STANDARDS.md):
+  behavior-first, no mirror tests, no static archaeology for state that never
+  shipped, no assertion-light happy-path guards. For docs-only edits, run
+  link/path checks and the standard project checks when practical.
