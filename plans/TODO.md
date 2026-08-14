@@ -62,7 +62,47 @@ New decisions are recorded in [DONE.md](DONE.md) with a date.
 
 ---
 
-### §3 Sharding drift detection for FCI cubes — v0.1.6+
+### §3 Diagnose the four pre-existing CF advisor test failures
+
+**Goal:** Root-cause and resolve the four parametrisations of
+`tests/test_integration.py::test_cf_advisor_zero_errors_per_group` that fail
+with `AttributeError: 'CFFinding' object has no attribute 'path'`. Currently
+marked `@pytest.mark.xfail(strict=False)` referencing this item so CI stays
+green; xfail must be removed once the root cause is fixed.
+
+**Trigger:** none — accepted work, schedule when maintainer capacity allows.
+
+**Decision (2026-08-14):** Accepted. Promoted from IDEAS.md §3 to unblock CI
+adoption (the xfail markers require an accepted TODO item per
+`plans/TESTING_STANDARDS.md`).
+
+**Design constraints:**
+1. **Diagnose before fixing.** Identify whether the failure is (a) a bug in
+   the upstream CF advisor, (b) the plugin passing the wrong shape to the
+   advisor, or (c) an advisor API change. Only after root-cause is known can
+   we pick the right fix path.
+2. **No silent fix.** Do not delete the tests or convert to skip; either fix
+   the invocation, patch upstream, or delete the tests with a documented
+   rationale in DONE.md.
+3. **Remove the xfail marker.** Once resolved, the `@pytest.mark.xfail` on
+   `test_cf_advisor_zero_errors_per_group` must be removed so a future
+   regression fails loudly.
+
+**Acceptance criteria:**
+- Root cause identified and documented in DONE.md
+- All four parametrisations either pass, or the tests are removed with a
+  documented reason
+- `@pytest.mark.xfail` marker removed from
+  `tests/test_integration.py::test_cf_advisor_zero_errors_per_group`
+
+**References:**
+- `plans/TESTING_STANDARDS.md` § Forbidden Test Patterns (Permanent xfail
+  drift): xfail requires an accepted TODO item, owner, and removal condition —
+  this §4 satisfies that requirement.
+
+---
+
+### §4 Sharding drift detection for FCI cubes — v0.1.6+
 
 **Goal:** When firecube adds sharding drift detection (analogous to codec drift in PR #42), verify FCI cubes trigger the correct behavior: cubes preallocated with `zarr_sharding=true` cannot be resumed with `zarr_sharding=false` (and vice versa) without triggering `SchemaDriftError`.
 
