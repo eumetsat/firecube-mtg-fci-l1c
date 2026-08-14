@@ -136,19 +136,24 @@ CHUNK_DEFAULTS_BY_RESOLUTION: dict[str, int] = {
 
 # FCI geostationary projection angular sampling geometry.
 #
-# These values are derived from the source NetCDF `data/<channel>/measured/x`
-# and `y` coordinate attributes (`scale_factor`, `add_offset`) in the FCI L1C
-# `nc_part` files. The constants intentionally store POSITIVE magnitudes only:
-# the x scale is applied as NEGATIVE (column 0 east-of-nadir), the y scale is
-# POSITIVE, and the offsets are mirrored (x offset positive, y offset
-# negative). Sign application happens in schema.py when the projection inputs
-# are assembled.
+# Derived from source NetCDF data/<channel>/measured/x and y coordinate
+# attributes (scale_factor, add_offset). Constants store POSITIVE magnitudes;
+# both axes use arange * scale + (-offset) in schema.py, producing
+# east-positive x and north-positive y. Multiply by
+# MTG_PERSPECTIVE_POINT_HEIGHT_M to convert to projection metres (default
+# projection_units="meter" mode).
 FCI_PROJ_SCALE_RAD_PER_INDEX: dict[str, float] = {
     "500m": 1.39717881617e-05,
     "1km": 2.79435763233999e-05,
     "2km": 5.58871526468e-05,
 }
 FCI_PROJ_OFFSET_RAD: float = 0.1556038047568524
+# MTG geostationary perspective point height in metres.
+# Matches the source NetCDF perspective_point_height attribute on MTG L1C.
+# Static (not read per-scene) to avoid I/O; the value is fixed for MTG-I1.
+# Used to convert projection angles (radians) to metres for CF-compliant
+# projection_x_coordinate / projection_y_coordinate (default projection_units mode).
+MTG_PERSPECTIVE_POINT_HEIGHT_M: float = 35786400.0
 FCI_PROJ_SWEEP_AXIS: str = "y"
 
 

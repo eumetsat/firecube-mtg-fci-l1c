@@ -32,7 +32,11 @@ from __future__ import annotations
 import numpy as np  # pyright: ignore[reportMissingImports]
 
 from . import _variable
-from ._constants import FCI_PROJ_OFFSET_RAD, FCI_PROJ_SCALE_RAD_PER_INDEX
+from ._constants import (
+    FCI_PROJ_OFFSET_RAD,
+    FCI_PROJ_SCALE_RAD_PER_INDEX,
+    MTG_PERSPECTIVE_POINT_HEIGHT_M,
+)
 from .config import MtgFciL1cConfig
 from ._variable import Variable, VariableContext, variable_enabled
 
@@ -68,6 +72,10 @@ _MTG_GEOS_WKT: str = (
     'CS[Cartesian,2],'
     'AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],'
     'AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]]]'
+)
+
+assert f'Satellite Height",{int(MTG_PERSPECTIVE_POINT_HEIGHT_M)},' in _MTG_GEOS_WKT, (
+    "WKT satellite height does not match MTG_PERSPECTIVE_POINT_HEIGHT_M"
 )
 
 
@@ -150,16 +158,22 @@ def _projection_x_source(ctx: VariableContext) -> np.ndarray | None:
     res = ctx.group.removeprefix("data_")
     if res not in FCI_PROJ_SCALE_RAD_PER_INDEX:
         return None
-    # x: negative scale (column 0 is east-of-nadir), positive offset
-    return np.arange(ctx.dimsize, dtype=np.float64) * (-FCI_PROJ_SCALE_RAD_PER_INDEX[res]) + FCI_PROJ_OFFSET_RAD
+    scale = FCI_PROJ_SCALE_RAD_PER_INDEX[res]
+    rad = np.arange(ctx.dimsize, dtype=np.float64) * scale + (-FCI_PROJ_OFFSET_RAD)
+    if ctx.config.projection_units in ("meter", "metre"):
+        return rad * MTG_PERSPECTIVE_POINT_HEIGHT_M
+    return rad
 
 
 def _projection_y_source(ctx: VariableContext) -> np.ndarray | None:
     res = ctx.group.removeprefix("data_")
     if res not in FCI_PROJ_SCALE_RAD_PER_INDEX:
         return None
-    # y: positive scale, negative offset
-    return np.arange(ctx.dimsize, dtype=np.float64) * FCI_PROJ_SCALE_RAD_PER_INDEX[res] + (-FCI_PROJ_OFFSET_RAD)
+    scale = FCI_PROJ_SCALE_RAD_PER_INDEX[res]
+    rad = np.arange(ctx.dimsize, dtype=np.float64) * scale + (-FCI_PROJ_OFFSET_RAD)
+    if ctx.config.projection_units in ("meter", "metre"):
+        return rad * MTG_PERSPECTIVE_POINT_HEIGHT_M
+    return rad
 
 
 def _time_source(ctx: VariableContext) -> None:
@@ -175,6 +189,34 @@ def _spatial_ref_source(ctx: VariableContext) -> None:
 def _channel_name_source(ctx: VariableContext) -> np.ndarray:
     """Return channel names as a fixed-width byte string array."""
     return np.asarray(ctx.logical_channels, dtype="S16")
+
+
+def _projection_x_attrs(config: MtgFciL1cConfig) -> dict[str, str]:
+    if config.projection_units in ("meter", "metre"):
+        return {
+            "standard_name": "projection_x_coordinate",
+            "long_name": "x coordinate of projection",
+            "units": "m",
+        }
+    return {
+        "standard_name": "projection_x_angular_coordinate",
+        "long_name": "MTG geostationary projection x angle",
+        "units": "radian",
+    }
+
+
+def _projection_y_attrs(config: MtgFciL1cConfig) -> dict[str, str]:
+    if config.projection_units in ("meter", "metre"):
+        return {
+            "standard_name": "projection_y_coordinate",
+            "long_name": "y coordinate of projection",
+            "units": "m",
+        }
+    return {
+        "standard_name": "projection_y_angular_coordinate",
+        "long_name": "MTG geostationary projection y angle",
+        "units": "radian",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -314,26 +356,18 @@ VARIABLES: list[Variable] = [
         dims=("x",),
         dtype=np.float64,
         fill_value=None,
-        attrs={
-            "standard_name": "projection_x_angular_coordinate",
-            "long_name": "MTG geostationary projection x angle",
-            "units": "radian",
-            "axis": "X",
-        },
+        attrs={"axis": "X"},
         source=_projection_x_source,
+        attrs_resolver=_projection_x_attrs,
     ),
     Variable(
         name="y",
         dims=("y",),
         dtype=np.float64,
         fill_value=None,
-        attrs={
-            "standard_name": "projection_y_angular_coordinate",
-            "long_name": "MTG geostationary projection y angle",
-            "units": "radian",
-            "axis": "Y",
-        },
+        attrs={"axis": "Y"},
         source=_projection_y_source,
+        attrs_resolver=_projection_y_attrs,
     ),
     Variable(
         name=TIME_COORD_NAME,
@@ -344,12 +378,11 @@ VARIABLES: list[Variable] = [
             "standard_name": "time",
             "long_name": "observation time",
             "axis": "T",
-            # CF-1.8 §4.4: time coordinate must declare units + calendar.
-            # Firecube stores the coord as native datetime64[s]; these attrs
-            # allow CF-aware tools (cfchecker, firecube advise compliance) to
-            # recognise and decode the axis correctly.
-            "units": "seconds since 2000-01-01 00:00:00",
-            "calendar": "standard",
+            # NOTE (issue #3): 'units' and 'calendar' intentionally NOT set here.
+            # The on-disk dtype is native datetime64[s]; xarray manages CF units and
+            # calendar through the encoding channel, not attrs. Writing them into attrs
+            # causes a collision on xr.open_zarr(store).to_zarr(new_store) because
+            # xarray refuses to overwrite existing attrs with encoding values.
         },
         source=_time_source,
     ),
@@ -376,7 +409,7 @@ VARIABLES: list[Variable] = [
             "grid_mapping_name": "geostationary",
             "latitude_of_projection_origin": 0.0,
             "longitude_of_projection_origin": 0.0,
-            "perspective_point_height": 35786400.0,
+            "perspective_point_height": MTG_PERSPECTIVE_POINT_HEIGHT_M,
             "sweep_angle_axis": "y",
             "semi_major_axis": 6378137.0,
             "semi_minor_axis": 6356752.31424518,

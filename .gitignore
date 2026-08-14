@@ -1,0 +1,24 @@
+# Firecube plugin state
+.sisyphus/
+.reports/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Build
+dist/
+build/
+*.egg-info/
+.coverage
+htmlcov/
+
+# macOS
+.DS_Store

@@ -216,27 +216,125 @@ def test_x_y_variables_in_variables_list() -> None:
 
 
 @pytest.mark.unit
-def test_x_y_dims_and_attrs() -> None:
-    x_var = next(v for v in VARIABLES if v.name == "x")
-    y_var = next(v for v in VARIABLES if v.name == "y")
+def test_x_y_attrs_meter_mode() -> None:
+    # Check Variable-level invariants (dims, dtype, fill_value) via VARIABLES registry.
+    x_var_reg = next(v for v in VARIABLES if v.name == "x")
+    y_var_reg = next(v for v in VARIABLES if v.name == "y")
+    assert x_var_reg.dims == ("x",)
+    assert y_var_reg.dims == ("y",)
+    assert x_var_reg.dtype == np.float64
+    assert y_var_reg.dtype == np.float64
+    assert x_var_reg.fill_value is None
+    assert y_var_reg.fill_value is None
+
+    # Check CF attrs via build_specs (attrs_resolver merges at spec-build time).
+    specs = build_specs(MtgFciL1cConfig(), "FDHSI")
+    g = next(g for g in specs if g.group == "data_1km")
+    x_spec = next(a for a in g.arrays if a.name == "x")
+    y_spec = next(a for a in g.arrays if a.name == "y")
+    assert x_spec.attrs is not None
+    assert y_spec.attrs is not None
+    assert x_spec.attrs["standard_name"] == "projection_x_coordinate"
+    assert y_spec.attrs["standard_name"] == "projection_y_coordinate"
+    assert x_spec.attrs["units"] == "m"
+    assert y_spec.attrs["units"] == "m"
+    assert x_spec.attrs["axis"] == "X"
+    assert y_spec.attrs["axis"] == "Y"
+
+
+@pytest.mark.unit
+def test_x_y_attrs_radian_mode() -> None:
+    specs = build_specs(MtgFciL1cConfig(projection_units="radian"), "FDHSI")
+    g = next(g for g in specs if g.group == "data_1km")
+    x_var = next(a for a in g.arrays if a.name == "x")
+    y_var = next(a for a in g.arrays if a.name == "y")
     assert x_var.attrs is not None
     assert y_var.attrs is not None
-    assert x_var.dims == ("x",)
-    assert y_var.dims == ("y",)
-    assert x_var.dtype == np.float64
-    assert y_var.dtype == np.float64
     assert x_var.attrs["standard_name"] == "projection_x_angular_coordinate"
     assert y_var.attrs["standard_name"] == "projection_y_angular_coordinate"
     assert x_var.attrs["units"] == "radian"
     assert y_var.attrs["units"] == "radian"
     assert x_var.attrs["axis"] == "X"
     assert y_var.attrs["axis"] == "Y"
-    assert x_var.fill_value is None
-    assert y_var.fill_value is None
 
 
 @pytest.mark.unit
-def test_x_y_source_values_1km() -> None:
+def test_projection_units_default_is_meter() -> None:
+    assert MtgFciL1cConfig().projection_units == "meter"
+
+
+@pytest.mark.unit
+def test_projection_units_accepts_meter_metre_radian() -> None:
+    assert MtgFciL1cConfig(projection_units="meter").projection_units == "meter"
+    assert MtgFciL1cConfig(projection_units="metre").projection_units == "metre"
+    assert MtgFciL1cConfig(projection_units="radian").projection_units == "radian"
+
+
+@pytest.mark.unit
+def test_projection_units_metre_is_alias_for_meter() -> None:
+    from firecube_mtg_fci_l1c._variable import VariableContext as _VC
+    from firecube_mtg_fci_l1c.schema import _projection_x_source
+
+    ctx_meter = _VC(
+        group="data_1km",
+        product_type="FDHSI",
+        config=MtgFciL1cConfig(projection_units="meter"),
+        dimsize=11136,
+        n_channels=8,
+        logical_channels=(),
+    )
+    ctx_metre = _VC(
+        group="data_1km",
+        product_type="FDHSI",
+        config=MtgFciL1cConfig(projection_units="metre"),
+        dimsize=11136,
+        n_channels=8,
+        logical_channels=(),
+    )
+    x_meter = _projection_x_source(ctx_meter)
+    x_metre = _projection_x_source(ctx_metre)
+    assert x_meter is not None
+    assert x_metre is not None
+    assert np.array_equal(x_metre, x_meter)
+
+
+@pytest.mark.unit
+def test_projection_units_rejects_invalid() -> None:
+    with pytest.raises(ValueError, match="projection_units"):
+        MtgFciL1cConfig(projection_units="foot")
+
+
+@pytest.mark.unit
+def test_x_y_source_values_1km_radian_mode() -> None:
+    from firecube_mtg_fci_l1c._variable import VariableContext as _VC
+    from firecube_mtg_fci_l1c.schema import _projection_x_source, _projection_y_source
+
+    ctx = _VC(
+        group="data_1km",
+        product_type="FDHSI",
+        config=MtgFciL1cConfig(projection_units="radian"),
+        dimsize=11136,
+        n_channels=8,
+        logical_channels=(),
+    )
+    x_arr = _projection_x_source(ctx)
+    y_arr = _projection_y_source(ctx)
+    assert x_arr is not None
+    assert y_arr is not None
+    assert x_arr.shape == (11136,)
+    assert y_arr.shape == (11136,)
+    assert x_arr.dtype == np.float64
+    # x is monotonically increasing (east-positive)
+    assert np.all(np.diff(x_arr) > 0)
+    # y is monotonically increasing
+    assert np.all(np.diff(y_arr) > 0)
+    # Check first values roughly match the FCI offset constant
+    assert abs(x_arr[0] - (-0.1556038047568524)) < 1e-10
+    assert abs(y_arr[0] - (-0.1556038047568524)) < 1e-10
+
+
+@pytest.mark.unit
+def test_x_y_source_values_meter_mode_1km() -> None:
     from firecube_mtg_fci_l1c._variable import VariableContext as _VC
     from firecube_mtg_fci_l1c.schema import _projection_x_source, _projection_y_source
 
@@ -255,17 +353,13 @@ def test_x_y_source_values_1km() -> None:
     assert x_arr.shape == (11136,)
     assert y_arr.shape == (11136,)
     assert x_arr.dtype == np.float64
-    # x is monotonically decreasing (column 0 east-of-nadir)
-    assert np.all(np.diff(x_arr) < 0)
-    # y is monotonically increasing
+    assert np.all(np.diff(x_arr) > 0)
     assert np.all(np.diff(y_arr) > 0)
-    # Check first values roughly match the FCI offset constant
-    assert abs(x_arr[0] - 0.1556038047568524) < 1e-10
-    assert abs(y_arr[0] - (-0.1556038047568524)) < 1e-10
+    assert abs(x_arr[0] - (-5568500.0)) < 1.0
 
 
 @pytest.mark.unit
-def test_x_y_source_values_500m_and_2km() -> None:
+def test_x_y_source_values_meter_mode_500m_and_2km() -> None:
     from firecube_mtg_fci_l1c._variable import VariableContext as _VC
     from firecube_mtg_fci_l1c.schema import _projection_x_source, _projection_y_source
 
@@ -283,7 +377,7 @@ def test_x_y_source_values_500m_and_2km() -> None:
         assert x_arr is not None, f"x is None for {group}"
         assert y_arr is not None, f"y is None for {group}"
         assert x_arr.shape == (dimsize,)
-        assert np.all(np.diff(x_arr) < 0), f"x not decreasing for {group}"
+        assert np.all(np.diff(x_arr) > 0), f"x not increasing for {group}"
         assert np.all(np.diff(y_arr) > 0), f"y not increasing for {group}"
 
 

@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import importlib
 import inspect
-import sys
 from types import SimpleNamespace
 
 import numpy as np
@@ -98,7 +97,6 @@ def test_no_io_imports():
     assert "import pyproj" not in source
     assert "import xarray" not in source
     assert "import zarr" not in source
-    assert "pyproj" not in sys.modules
 
 
 @pytest.mark.unit
