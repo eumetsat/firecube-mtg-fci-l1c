@@ -72,38 +72,7 @@ throughput or awkward interactions with `zarr_shard_target_bytes`.
 
 ---
 
-## Idea 3 — Diagnose the four pre-existing CF advisor test failures
-
-**What:** Investigate why
-`tests/test_integration.py::test_cf_advisor_zero_errors_per_group` fails in
-all four parametrisations (`FDHSI-groups0-True/False`,
-`HRFI-groups1-True/False`) with
-`AttributeError: 'CFFinding' object has no attribute 'path'`.
-
-**Anchor:** These failures were observed empirically during v0.1.5
-verification (see [DONE.md](DONE.md) 2026-08-13). They are not caused by
-v0.1.5 work but are unhandled technical debt.
-
-**Investigation before deciding:**
-1. Identify the source of `CFFinding`: is it a firecube-core symbol, a
-   dependency (like `compliance-checker`), or plugin code?
-2. Determine whether `CFFinding.path` was renamed or removed in a dependency
-   upgrade (grep git log for `path` on the `CFFinding` class).
-3. Decide the correct fix path:
-   - **Bug in the CF advisor**: file upstream, xfail with owner + removal
-     condition
-   - **Plugin passes wrong shape to advisor**: fix the invocation
-   - **Advisor API changed**: update plugin's advisor call site
-
-**Not yet because:** without knowing which of the three cases applies, we
-can't choose between "fix the plugin", "xfail with tracked upstream bug", or
-"delete the test if the advisor invocation is obsolete". Static-archaeology
-xfail without an owner is a [TESTING_STANDARDS.md](TESTING_STANDARDS.md)
-violation.
-
----
-
-## Idea 4 — Channel-image export helpers for visualisation and labeling
+## Idea 3 — Channel-image export helpers for visualisation and labeling
 
 **What:** Add a plugin-owned utility that reads a channel from a plugin-written
 Zarr cube, crops to a lat/lon bounding box (or explicit pixel window), applies
