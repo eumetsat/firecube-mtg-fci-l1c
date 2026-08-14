@@ -563,7 +563,7 @@ wheels = [
 [[package]]
 name = "firecube"
 version = "0.1.4"
-source = { editable = "../../firecube" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore", extra = ["crt"] },
     { name = "dask", extra = ["array"] },
@@ -583,57 +583,9 @@ dependencies = [
     { name = "xarray" },
     { name = "zarr" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "botocore", extras = ["crt"], specifier = ">=1.42.19" },
-    { name = "dask", extras = ["array"], specifier = ">=2025.1.0" },
-    { name = "duckdb", specifier = ">=1.4.1" },
-    { name = "fsspec", specifier = ">=2025.9.0" },
-    { name = "h5netcdf", specifier = ">=1.4.2" },
-    { name = "h5py", specifier = ">=3.11.0" },
-    { name = "healpix-geo", marker = "extra == 'healpix'", specifier = ">=0.1.2" },
-    { name = "healpix-geo", marker = "extra == 'test'", specifier = ">=0.1.2" },
-    { name = "moto", extras = ["s3", "server"], marker = "extra == 'test'", specifier = ">=5.0.0" },
-    { name = "netcdf4", specifier = ">=1.7.1.post2" },
-    { name = "numpy", specifier = ">=2.3.3" },
-    { name = "obstore", marker = "extra == 'obstore'", specifier = ">=0.4.0" },
-    { name = "obstore", marker = "extra == 'test'", specifier = ">=0.4.0" },
-    { name = "opentelemetry-exporter-otlp", specifier = ">=1.37.0" },
-    { name = "opentelemetry-sdk", specifier = ">=1.37.0" },
-    { name = "pandas", specifier = ">=2.3.3" },
-    { name = "prometheus-client", specifier = ">=0.23.1" },
-    { name = "psutil", specifier = ">=7.1.0" },
-    { name = "pyarrow", specifier = ">=16.1.0" },
-    { name = "s3fs", specifier = ">=2025.9.0" },
-    { name = "tensogram", marker = "extra == 'tensogram'", specifier = ">=0.22.0,<0.23" },
-    { name = "tensogram", marker = "extra == 'test'", specifier = ">=0.22.0,<0.23" },
-    { name = "tensogram-xarray", marker = "extra == 'tensogram'", specifier = ">=0.22.0,<0.23" },
-    { name = "tensogram-xarray", marker = "extra == 'test'", specifier = ">=0.22.0,<0.23" },
-    { name = "tensogram-zarr", marker = "extra == 'tensogram'", specifier = ">=0.22.0,<0.23" },
-    { name = "tensogram-zarr", marker = "extra == 'test'", specifier = ">=0.22.0,<0.23" },
-    { name = "xarray", specifier = ">=2025.10.1" },
-    { name = "zarr", specifier = ">=3.1.3" },
-]
-provides-extras = ["obstore", "tensogram", "healpix", "test"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pyright", specifier = ">=1.1.410" },
-    { name = "pytest", specifier = ">=8.4.2" },
-    { name = "pytest-asyncio", specifier = ">=1.2.0" },
-    { name = "pytest-cov", specifier = ">=7.0.0" },
-    { name = "pytest-mock", specifier = ">=3.15.1" },
-    { name = "pytest-xdist", specifier = ">=3.8.0" },
-    { name = "ruff", specifier = ">=0.14.0" },
-]
-docs = [
-    { name = "mkdocs", specifier = ">=1.5.3,<2.0" },
-    { name = "mkdocs-click", specifier = ">=0.9.0" },
-    { name = "mkdocs-macros-plugin", specifier = ">=1.0,<2.0" },
-    { name = "mkdocs-material", specifier = ">=9.5.3" },
-    { name = "mkdocs-mermaid2-plugin", specifier = ">=0.6.0" },
-    { name = "mkdocstrings", extras = ["python"], specifier = ">=0.24.0" },
+sdist = { url = "https://files.pythonhosted.org/packages/2e/f3/0f5ba0cd2df1d2d3dd586e946440680ee39cc4d04ce5714bd7a5e9f9b96f/firecube-0.1.4.tar.gz", hash = "sha256:eece38ccb4dff8d6f596aa7df21f0ffcbab9248ea67be85f37928c043515d805", size = 1142246, upload-time = "2026-07-24T11:51:54.38Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bb/2c/8a2470ce8b7b03e9223aff067f20823ed628a3f6b499b7bb137f02233d75/firecube-0.1.4-py3-none-any.whl", hash = "sha256:20fb44fba4d7c6d93d32fc4e0e35eaa9771c5eeab5917e4970700da82ad0f9b6", size = 472042, upload-time = "2026-07-24T11:51:52.651Z" },
 ]
 
 [[package]]
@@ -664,7 +616,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "firecube", editable = "../../firecube" },
+    { name = "firecube", specifier = ">=0.1.4" },
     { name = "h5netcdf", specifier = ">=1.8" },
     { name = "mypy", marker = "extra == 'dev'" },
     { name = "numpy", specifier = ">=2.4" },
