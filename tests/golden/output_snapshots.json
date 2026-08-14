@@ -1,6 +1,6 @@
 {
   "fdhsi_defaults": {
-    "hash": "4e1c4f26cb25ecaaac6e607f84a0380997edde26e9eb81233cd1670c7e430096",
+    "hash": "a74c658b07f03e7bc002716051455d803d08e55beb2bfc395fae17595e340ded",
     "options": {},
     "product_type": "FDHSI",
     "structure": {
@@ -243,10 +243,8 @@
             "time": {
               "attrs": {
                 "axis": "T",
-                "calendar": "standard",
                 "long_name": "observation time",
-                "standard_name": "time",
-                "units": "seconds since 2000-01-01 00:00:00"
+                "standard_name": "time"
               },
               "chunks": [
                 1
@@ -265,9 +263,9 @@
               "attrs": {
                 "axis": "X",
                 "firecube_static_written": true,
-                "long_name": "MTG geostationary projection x angle",
-                "standard_name": "projection_x_angular_coordinate",
-                "units": "radian"
+                "long_name": "x coordinate of projection",
+                "standard_name": "projection_x_coordinate",
+                "units": "m"
               },
               "chunks": [
                 4
@@ -286,9 +284,9 @@
               "attrs": {
                 "axis": "Y",
                 "firecube_static_written": true,
-                "long_name": "MTG geostationary projection y angle",
-                "standard_name": "projection_y_angular_coordinate",
-                "units": "radian"
+                "long_name": "y coordinate of projection",
+                "standard_name": "projection_y_coordinate",
+                "units": "m"
               },
               "chunks": [
                 4
@@ -546,10 +544,8 @@
             "time": {
               "attrs": {
                 "axis": "T",
-                "calendar": "standard",
                 "long_name": "observation time",
-                "standard_name": "time",
-                "units": "seconds since 2000-01-01 00:00:00"
+                "standard_name": "time"
               },
               "chunks": [
                 1
@@ -568,9 +564,9 @@
               "attrs": {
                 "axis": "X",
                 "firecube_static_written": true,
-                "long_name": "MTG geostationary projection x angle",
-                "standard_name": "projection_x_angular_coordinate",
-                "units": "radian"
+                "long_name": "x coordinate of projection",
+                "standard_name": "projection_x_coordinate",
+                "units": "m"
               },
               "chunks": [
                 4
@@ -589,9 +585,9 @@
               "attrs": {
                 "axis": "Y",
                 "firecube_static_written": true,
-                "long_name": "MTG geostationary projection y angle",
-                "standard_name": "projection_y_angular_coordinate",
-                "units": "radian"
+                "long_name": "y coordinate of projection",
+                "standard_name": "projection_y_coordinate",
+                "units": "m"
               },
               "chunks": [
                 4
@@ -619,7 +615,7 @@
     }
   },
   "hrfi_defaults": {
-    "hash": "009ece4324b0835e9b55e4d2bb7b87fa95151c1bef446931c81e8d4c570b364d",
+    "hash": "59d7dc383fbe032c32358a6abceaba4603ed218447f0cc02b4a5d665150203ce",
     "options": {},
     "product_type": "HRFI",
     "structure": {
@@ -862,10 +858,8 @@
             "time": {
               "attrs": {
                 "axis": "T",
-                "calendar": "standard",
                 "long_name": "observation time",
-                "standard_name": "time",
-                "units": "seconds since 2000-01-01 00:00:00"
+                "standard_name": "time"
               },
               "chunks": [
                 1
@@ -884,9 +878,9 @@
               "attrs": {
                 "axis": "X",
                 "firecube_static_written": true,
-                "long_name": "MTG geostationary projection x angle",
-                "standard_name": "projection_x_angular_coordinate",
-                "units": "radian"
+                "long_name": "x coordinate of projection",
+                "standard_name": "projection_x_coordinate",
+                "units": "m"
               },
               "chunks": [
                 4
@@ -905,9 +899,9 @@
               "attrs": {
                 "axis": "Y",
                 "firecube_static_written": true,
-                "long_name": "MTG geostationary projection y angle",
-                "standard_name": "projection_y_angular_coordinate",
-                "units": "radian"
+                "long_name": "y coordinate of projection",
+                "standard_name": "projection_y_coordinate",
+                "units": "m"
               },
               "chunks": [
                 4
@@ -1165,10 +1159,8 @@
             "time": {
               "attrs": {
                 "axis": "T",
-                "calendar": "standard",
                 "long_name": "observation time",
-                "standard_name": "time",
-                "units": "seconds since 2000-01-01 00:00:00"
+                "standard_name": "time"
               },
               "chunks": [
                 1
@@ -1187,9 +1179,9 @@
               "attrs": {
                 "axis": "X",
                 "firecube_static_written": true,
-                "long_name": "MTG geostationary projection x angle",
-                "standard_name": "projection_x_angular_coordinate",
-                "units": "radian"
+                "long_name": "x coordinate of projection",
+                "standard_name": "projection_x_coordinate",
+                "units": "m"
               },
               "chunks": [
                 4
@@ -1208,9 +1200,9 @@
               "attrs": {
                 "axis": "Y",
                 "firecube_static_written": true,
-                "long_name": "MTG geostationary projection y angle",
-                "standard_name": "projection_y_angular_coordinate",
-                "units": "radian"
+                "long_name": "y coordinate of projection",
+                "standard_name": "projection_y_coordinate",
+                "units": "m"
               },
               "chunks": [
                 4

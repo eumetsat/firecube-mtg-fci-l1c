@@ -259,6 +259,7 @@ The following dependencies are only required for building, editing, or testing:
 | `ruff` | 0.15.20 | Development tools | MIT |  | https://docs.astral.sh/ruff | Direct `dev` dependency. |
 | `mypy` | 2.1.0 | Development tools | MIT |  | https://www.mypy-lang.org/ | Direct `dev` dependency. |
 | `matplotlib` | 3.11.0 | Development tools | PSF-2.0 |  | https://matplotlib.org | Direct `dev` dependency group entry (notebooks/plots); PSF-based, BSD-compatible. |
+| `pyproj` | 3.7.2 | Development tools | MIT |  | https://pyproj4.github.io/pyproj/ | Direct `dev` dependency; used by projection CRS oracle tests. |
 
 ## Copyright and License
 

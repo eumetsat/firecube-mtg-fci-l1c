@@ -3,10 +3,12 @@
 Operator-facing plugin and production-script settings.
 
 - [Plugin `--option` flags](#plugin---option-flags)
+- [Projection units](#projection-units)
 - [Time-axis options (`time_epoch`, `time_slots`)](#time-axis-options)
 - [`scripts/fci-ingest.sh` environment variables](#scriptsfci-ingestsh-environment-variables)
 - [Chunk and shard layout](#chunk-and-shard-layout)
 - [Geolocation grids workflow](#geolocation-grids-workflow)
+- [Fix FillValue (post-ingest)](#fix-fillvalue-post-ingest)
 
 ---
 
@@ -32,6 +34,7 @@ All are optional.
 | `zarr_shard_target_bytes` | `134217728` (128 MiB) | Target bytes per shard for the default policy |
 | `zarr_shard_overrides` | `null` | Explicit per-group `(time, y, x, channel)` shard shapes, e.g. `{"data_1km": [1, 2784, 11136, 1]}` |
 | `zarr_chunk_overrides` | `null` | Explicit per-group chunk shapes; takes precedence over `zarr_chunk_y` |
+| `projection_units` | `meter` | Units for the `x` and `y` projection coordinate arrays. Valid values: `meter` (default), `metre` (alias for `meter`), `radian`. See [Projection units](#projection-units). |
 
 ```bash
 # Process only 1 km data, drop pixel_time
@@ -50,6 +53,32 @@ firecube ingest mtg_fci_l1c \
     --target file:///path/to/output.zarr \
     --output-format zarr --write-mode staged \
     --option channels=vis_06,ir_105
+```
+
+---
+
+## Projection units
+
+The `projection_units` option controls the units written to the `x` and `y`
+coordinate arrays.
+
+| Value | `standard_name` | `units` | When to use |
+|---|---|---|---|
+| `meter` (default) | `projection_x_coordinate` | `m` | Works out of the box with rioxarray, cartopy, GDAL, and satpy |
+| `metre` | `projection_x_coordinate` | `m` | Alias for `meter`; identical output |
+| `radian` | `projection_x_angular_coordinate` | `radian` | Native unit from the source netCDF; use when working directly with satellite geometry |
+
+> **Warning:** changing `projection_units` between ingests to the same store
+> raises `SchemaDriftError`. Choose a value once per store, before
+> preallocation, and keep it consistent across all pods.
+
+```bash
+# Change to radian coordinates 
+firecube ingest mtg_fci_l1c \
+    --input-data /path/to/fci-zips \
+    --target file:///path/to/output.zarr \
+    --output-format zarr --write-mode staged \
+    --option projection_units=radian
 ```
 
 ---
@@ -238,3 +267,36 @@ firecube ingest mtg_fci_l1c \
 
 Array specs (dtype, per-resolution sizes, NaN-at-limb semantics) are in
 [FCI Data in Zarr](fci-data-in-zarr.md).
+
+---
+
+## Fix FillValue (post-ingest)
+
+By default, numeric arrays such as `counts` do not have a `_FillValue`
+attribute stamped in the Zarr metadata. xarray uses `_FillValue` to mask fill
+pixels to `NaN` on read. Without it, fill pixels appear as raw integer values.
+This is a known limitation tracked in
+[issue #2](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/2).
+
+The `fix-fillvalue` command stamps the CF `_FillValue` attribute on numeric
+arrays in an existing store as a post-ingest workaround.
+
+**Run only after ingestion has completed.** The store must be offline (no
+active ingest pods writing to it).
+
+### Dry run (default)
+
+Preview what would be stamped without making any changes:
+
+```bash
+firecube plugins mtg_fci_l1c fix-fillvalue --store <path>
+```
+
+### Apply
+
+```bash
+firecube plugins mtg_fci_l1c fix-fillvalue --store <path> --yes-i-really-mean-it
+```
+
+After running, xarray will mask fill pixels to `NaN` on read for all stamped
+arrays.

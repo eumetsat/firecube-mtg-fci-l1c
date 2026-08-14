@@ -40,6 +40,8 @@ _VALID_PIXEL_TIME_DTYPES: frozenset[str] = frozenset(
     {"float64", "float32", "int32", "int64"}
 )
 
+_VALID_PROJECTION_UNITS: frozenset[str] = frozenset({"meter", "metre", "radian"})
+
 
 @dataclass
 class MtgFciL1cConfig(BasePluginConfig):
@@ -72,6 +74,17 @@ class MtgFciL1cConfig(BasePluginConfig):
     overflow-free for any practical timeframe.
     """
 
+    projection_units: str = "meter"
+    """Projection coordinate units for the x/y axes.
+
+    ``meter`` (default) uses metres with ``standard_name=projection_x_coordinate``
+    and ``units=m``. ``metre`` is an alias for ``meter`` with identical
+    behaviour. ``radian`` uses angular coordinates with
+    ``standard_name=projection_x_angular_coordinate`` and ``units=radian``.
+    Changing this option between ingests to the same store raises
+    ``SchemaDriftError``.
+    """
+
     scratch_dir: str | None = None
     """Base directory for scratch extraction. Uses system temp if None."""
 
@@ -84,7 +97,8 @@ class MtgFciL1cConfig(BasePluginConfig):
     When True, each ``data_<res>`` array gets a byte-budgeted shard derived from
     its chunk shape (see ``zarr_shard_target_bytes``). Static lat/lon get
     byte-budgeted chunks but are never sharded (full-disk static shards would be
-    enormous at 1km/500m). Set False to disable sharding entirely.
+    enormous at 1km/500m). Set ``zarr_sharding=False`` to disable
+    sharding entirely.
     """
 
     zarr_shard_target_bytes: int = 128 * 1024 * 1024
@@ -185,6 +199,12 @@ class MtgFciL1cConfig(BasePluginConfig):
             raise ValueError(
                 f"pixel_time_dtype must be one of {sorted(_VALID_PIXEL_TIME_DTYPES)!r}, "
                 f"got {self.pixel_time_dtype!r}"
+            )
+
+        if self.projection_units not in _VALID_PROJECTION_UNITS:
+            raise ValueError(
+                f"projection_units must be one of {sorted(_VALID_PROJECTION_UNITS)!r}, "
+                f"got {self.projection_units!r}"
             )
 
         if self.zarr_shard_overrides is not None:

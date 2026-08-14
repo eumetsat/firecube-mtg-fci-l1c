@@ -1,6 +1,6 @@
 {
   "FDHSI__include_calibration=False_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "15c8f0e9a62aa0ba0b9e1c1f22bb2becc7dcb1d1ef65766a0fc1f815c9453278",
+    "hash": "8209d80d48f29e424f03e70eeb030f6926ab900837605e6923af663e8eab0541",
     "normalized_spec": [
       {
         "arrays": [
@@ -89,10 +89,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -113,9 +111,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -136,9 +134,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -259,10 +257,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -283,9 +279,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -306,9 +302,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -345,7 +341,7 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "c0fb81d220395d61216ac3c36adc817cc70fdfe86780430b74ead5e801c7c0de",
+    "hash": "dfbe3483c586317f26118b170eb98e5146295fd3276e3a472a5ac814aae2c76b",
     "normalized_spec": [
       {
         "arrays": [
@@ -472,10 +468,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -496,9 +490,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -519,9 +513,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -680,10 +674,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -704,9 +696,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -727,9 +719,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -766,7 +758,7 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "151e7c86d1ab226da464085ac70ac145c07a4432bead5b5ec451d08db81ebf89",
+    "hash": "d26411e8225fb8900baa80f06b881aaf3ef6fa82737c414b51dd48c59cfb790d",
     "normalized_spec": [
       {
         "arrays": [
@@ -902,10 +894,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -926,9 +916,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -949,9 +939,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -1119,10 +1109,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -1143,9 +1131,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -1166,9 +1154,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -1205,7 +1193,7 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "c4395e358d5077e39e4680f160bc8a9d35ff1f9dba192696bb0fd17472e19733",
+    "hash": "bc9da62ded92f677d865247eb0d582628e2623175d6cb9c983a13314564d99f8",
     "normalized_spec": [
       {
         "arrays": [
@@ -1379,10 +1367,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -1403,9 +1389,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -1426,9 +1412,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -1634,10 +1620,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -1658,9 +1642,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -1681,9 +1665,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -1720,7 +1704,7 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "df8f22e8b85955742477d4b2136cff229ffc0d9ab29047c05e1c5930462baaea",
+    "hash": "211892b3207970697edf03b166b22535a1680ed50c9dd395ec43eb42ddc95725",
     "normalized_spec": [
       {
         "arrays": [
@@ -1860,10 +1844,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -1884,9 +1866,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -1907,9 +1889,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -2083,10 +2065,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -2107,9 +2087,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -2130,9 +2110,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -2171,7 +2151,7 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "0024a1f98f5dbf32ba61c7e47e6e46720e163969e4e8c15b5880cbc867c95668",
+    "hash": "e79f4e3f9313975a7a709938fca7f1a1e2defd12de6cbf810581536e5f4b2fcd",
     "normalized_spec": [
       {
         "arrays": [
@@ -2350,10 +2330,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -2374,9 +2352,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -2397,9 +2375,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -2612,10 +2590,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -2636,9 +2612,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -2659,9 +2635,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -2700,7 +2676,7 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "0c36df413c9b52dd04be3c0f17a8b81d88bf8abba989c7073ca26fd52c0ce554",
+    "hash": "8d57688ea50014c64f252492ab6d8a7443f6e9dd1158e12ba9fbfee5aaf5c0b0",
     "normalized_spec": [
       {
         "arrays": [
@@ -2888,10 +2864,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -2912,9 +2886,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -2935,9 +2909,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -3159,10 +3133,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -3183,9 +3155,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -3206,9 +3178,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -3247,7 +3219,7 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "b19638c684ad6fffc6e22cffa94d7b2d67b19a9a7b89db204af53311a70b0f99",
+    "hash": "30bcbe51faef28ab14baff8c019ef80604991e7b98ee08e33d618af5675c8829",
     "normalized_spec": [
       {
         "arrays": [
@@ -3474,10 +3446,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -3498,9 +3468,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -3521,9 +3491,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -3784,10 +3754,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -3808,9 +3776,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -3831,9 +3799,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -3872,7 +3840,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "c0a3b8ed7af32ed449f3b8a5ef54683af197bd6ddc02a495473d2bcae1fb8537",
+    "hash": "99ddd7b67722d2262ffbbfc87d01fbf2687d77b446c0045abda0b30d6b286644",
     "normalized_spec": [
       {
         "arrays": [
@@ -4009,10 +3977,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -4033,9 +3999,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -4056,9 +4022,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -4227,10 +4193,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -4251,9 +4215,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -4274,9 +4238,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -4313,7 +4277,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "dde81941a7d95d869d9e8365ec2258f5bd9c19fe97e35d8f8e343c136682f87d",
+    "hash": "f9299959e190145a4bca0204fad731bc867304fbb9a1c9f1e6c2e6110d6dee92",
     "normalized_spec": [
       {
         "arrays": [
@@ -4488,10 +4452,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -4512,9 +4474,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -4535,9 +4497,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -4744,10 +4706,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -4768,9 +4728,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -4791,9 +4751,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -4830,7 +4790,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "2680eb031721f0206d6944086932acd63418b4da1f9b458a4551afb527607d5e",
+    "hash": "eff44e1c306f5ad5056dca8763bac28168461a2ff967b8f41423369b82fde89b",
     "normalized_spec": [
       {
         "arrays": [
@@ -5014,10 +4974,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -5038,9 +4996,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -5061,9 +5019,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -5279,10 +5237,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -5303,9 +5259,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -5326,9 +5282,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -5365,7 +5321,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "deb4c5a44fd0fde97f1ae43e06ca66fb9c6716bf5fa90a211678823c73ddf9d1",
+    "hash": "eabcc5801a473fcce01d81be3a26ddb11fca8f47aae2875f2e9bfc4fe2dc5e3a",
     "normalized_spec": [
       {
         "arrays": [
@@ -5587,10 +5543,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -5611,9 +5565,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -5634,9 +5588,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -5890,10 +5844,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -5914,9 +5866,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -5937,9 +5889,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -5976,7 +5928,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "9262e9dcf499d63af91e00980e914c0edb3e43b043ffe0824a575fb9a82d24dd",
+    "hash": "d7d9f16fbc3d6bfff5ec1368d57a44e9bd48fa389aec098782006fa1798ee571",
     "normalized_spec": [
       {
         "arrays": [
@@ -6164,10 +6116,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -6188,9 +6138,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -6211,9 +6161,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -6435,10 +6385,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -6459,9 +6407,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -6482,9 +6430,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -6523,7 +6471,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "a26073eeb00466fd1f2ccb8590a507548c5729cf25bf17710418c6efad47bb6e",
+    "hash": "ace66ae488d511e6dbc3840cc2df97c9078d7d2bef58b5b50d9dce5f17240308",
     "normalized_spec": [
       {
         "arrays": [
@@ -6750,10 +6698,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -6774,9 +6720,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -6797,9 +6743,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -7060,10 +7006,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -7084,9 +7028,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -7107,9 +7051,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -7148,7 +7092,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "81e3ac8c5c8f6a2259f52991cf3e1a14a7304983a3715efbd09eaffb4b2644d7",
+    "hash": "a3b7e0b8d7e430ab710387b3161f563343996356f62492429ab8ecc15cc33a23",
     "normalized_spec": [
       {
         "arrays": [
@@ -7384,10 +7328,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -7408,9 +7350,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -7431,9 +7373,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -7703,10 +7645,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -7727,9 +7667,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -7750,9 +7690,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -7791,7 +7731,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "b0e32a2cabdc589ebfb864ad7c294a45a837a410974775ebd98611a79f74d01f",
+    "hash": "b13c2a7427b5092642762d362718c287c766b8a9f860bf6da1d46585f751d3e5",
     "normalized_spec": [
       {
         "arrays": [
@@ -8066,10 +8006,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -8090,9 +8028,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -8113,9 +8051,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -8424,10 +8362,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -8448,9 +8384,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -8471,9 +8407,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               5568
@@ -8512,7 +8448,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "0de4d993c20b9eb3754ecfc7ee2b24cd93e3c7ad7c2144bb0534da4e2e22eb04",
+    "hash": "a8df470c6d8e9e607a1087a34d20f2b821c64301f24522729c2ea89ad4629b2b",
     "normalized_spec": [
       {
         "arrays": [
@@ -8601,10 +8537,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -8625,9 +8559,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -8648,9 +8582,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -8771,10 +8705,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -8795,9 +8727,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -8818,9 +8750,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -8857,7 +8789,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "426495baba5593ef8a9b52a2e8b435fe38998d686eb269e6a6de15220e503997",
+    "hash": "bafdaa398e75ba8947deb7c7fa2612e332e068e9dbfeb89852b8750c60165f6b",
     "normalized_spec": [
       {
         "arrays": [
@@ -8984,10 +8916,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -9008,9 +8938,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -9031,9 +8961,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -9192,10 +9122,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -9216,9 +9144,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -9239,9 +9167,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -9278,7 +9206,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "92dcee28b3710e3cddcfce99ccfdf4252347b885e9b490ffd574a7cecd900938",
+    "hash": "8b254450604fc33d6b4dc98e99afc53c1c744eec2be4ddec6859f9be880f4abb",
     "normalized_spec": [
       {
         "arrays": [
@@ -9414,10 +9342,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -9438,9 +9364,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -9461,9 +9387,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -9631,10 +9557,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -9655,9 +9579,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -9678,9 +9602,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -9717,7 +9641,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "c6a3ee0b0f8299c37a76f67479bd630010a546224290a0711c54f9fac9dc3f7d",
+    "hash": "af9b6f813e111314059f875f2afd6b53b4c8d768304afcc284baac2557b94e94",
     "normalized_spec": [
       {
         "arrays": [
@@ -9891,10 +9815,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -9915,9 +9837,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -9938,9 +9860,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -10146,10 +10068,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -10170,9 +10090,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -10193,9 +10113,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -10232,7 +10152,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "bdb3ab98ea6890cbfd7b1090e62c7e104a89079e8fae74664ffd633c52a4a3a5",
+    "hash": "7c1ea3667732bff647072354467c0dfa1748c438a371dcee616eee6ecb58eabc",
     "normalized_spec": [
       {
         "arrays": [
@@ -10372,10 +10292,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -10396,9 +10314,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -10419,9 +10337,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -10595,10 +10513,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -10619,9 +10535,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -10642,9 +10558,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -10683,7 +10599,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "3f6792fbc49cad2a4f4fa21f0866d2b77333e92359e5e373141102a986d2cfba",
+    "hash": "3387ad668d0fdc228e5b0ea72484c0fde6c97727dbc0a4862bd51636ee1529d9",
     "normalized_spec": [
       {
         "arrays": [
@@ -10862,10 +10778,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -10886,9 +10800,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -10909,9 +10823,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -11124,10 +11038,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -11148,9 +11060,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -11171,9 +11083,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -11212,7 +11124,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "6253918d495513e286ffaa528f03f4d82fa8d5c1cfa3486516e44ce3b456fe53",
+    "hash": "323545022683ffb7fda42b89b184e5f45886114e9bf3d3ba27027fbb1c244cb2",
     "normalized_spec": [
       {
         "arrays": [
@@ -11400,10 +11312,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -11424,9 +11334,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -11447,9 +11357,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -11671,10 +11581,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -11695,9 +11603,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -11718,9 +11626,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -11759,7 +11667,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "973467359d775ccb7d1688690e51a0a4add310dbbe24801fc93cb61e42f6e8f9",
+    "hash": "461fe24cb9a17da6fbb8bb162a344f5c8055454c7d8035689dab72ef02ee4b6c",
     "normalized_spec": [
       {
         "arrays": [
@@ -11986,10 +11894,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -12010,9 +11916,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -12033,9 +11939,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -12296,10 +12202,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -12320,9 +12224,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -12343,9 +12247,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -12384,7 +12288,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "96615be4da53765c89d05d6d60813d75cb9f3da420849ce1399fc42bb439685d",
+    "hash": "2a79551878e3d5feb897ec360efb0aedc0abaf095b4a9aed7ea291d7beaa85b7",
     "normalized_spec": [
       {
         "arrays": [
@@ -12521,10 +12425,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -12545,9 +12447,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -12568,9 +12470,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -12739,10 +12641,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -12763,9 +12663,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -12786,9 +12686,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -12825,7 +12725,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "86414b8751cc9895b42bc7d277853d1438e0702a8ba855a76b9fec983785cb55",
+    "hash": "7bd4b62c23dba66c8d9b3a66c5001980e5d77e67f767c5a896b2d40e53da6ad4",
     "normalized_spec": [
       {
         "arrays": [
@@ -13000,10 +12900,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -13024,9 +12922,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -13047,9 +12945,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -13256,10 +13154,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -13280,9 +13176,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -13303,9 +13199,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -13342,7 +13238,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "46791814fbc71f50a2e293db3cacb579dc6808621f86bd7c9012929c0aa46508",
+    "hash": "0697fdade9cc491c00741446f0e00462aa53ae67f9dd5482ba72841c34617f9b",
     "normalized_spec": [
       {
         "arrays": [
@@ -13526,10 +13422,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -13550,9 +13444,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -13573,9 +13467,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -13791,10 +13685,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -13815,9 +13707,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -13838,9 +13730,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -13877,7 +13769,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "fba8f733ccdb908970a982b16d1ad7c3cf6183c7ab7f79fe1b2fbd902c73dcab",
+    "hash": "c05e4c79fa120bfc92f488d647806e5e1e28b59c2d65e11fa16d070cfa47ca91",
     "normalized_spec": [
       {
         "arrays": [
@@ -14099,10 +13991,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -14123,9 +14013,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -14146,9 +14036,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -14402,10 +14292,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -14426,9 +14314,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -14449,9 +14337,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -14488,7 +14376,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "b54ee76c8c9d193725d6561a6e628792942b0d91384eb4fea80578d57f9a42b0",
+    "hash": "02d320c2e3a4a9406e049ab4372f7e029baf20dc9dac3774ef058576c2a195fa",
     "normalized_spec": [
       {
         "arrays": [
@@ -14676,10 +14564,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -14700,9 +14586,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -14723,9 +14609,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -14947,10 +14833,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -14971,9 +14855,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -14994,9 +14878,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -15035,7 +14919,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "5d97a112d3c37a1367199ebdbb2c10b569614079a43abe70d2f238facd662d50",
+    "hash": "7d43239ef4f8fb30f6a80061ccad899b3a450cfb072b2d1790abf5b8b4d4819a",
     "normalized_spec": [
       {
         "arrays": [
@@ -15262,10 +15146,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -15286,9 +15168,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -15309,9 +15191,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -15572,10 +15454,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -15596,9 +15476,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -15619,9 +15499,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -15660,7 +15540,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "28e3b50db162db95ee74c4300cefb90b6e86c0b726e522461972a8983cc9a0d2",
+    "hash": "3b31bf5483daf42bd8a639c602e0bacd88b17f4d00854267f26b23c3d5af4294",
     "normalized_spec": [
       {
         "arrays": [
@@ -15896,10 +15776,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -15920,9 +15798,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -15943,9 +15821,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -16215,10 +16093,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -16239,9 +16115,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -16262,9 +16138,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -16303,7 +16179,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "788fe12138fe02f327bad3d6e26b1806fbae66d05e265c748fe5ac4a3fffe765",
+    "hash": "e1ab1e52d77f5f454c9dfccd01e19eba459c8c77745a43180ffa0f8bb2aee808",
     "normalized_spec": [
       {
         "arrays": [
@@ -16578,10 +16454,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -16602,9 +16476,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -16625,9 +16499,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               11136
@@ -16936,10 +16810,8 @@
           {
             "attrs": {
               "axis": "T",
-              "calendar": "standard",
               "long_name": "observation time",
-              "standard_name": "time",
-              "units": "seconds since 2000-01-01 00:00:00"
+              "standard_name": "time"
             },
             "chunks": [
               1
@@ -16960,9 +16832,9 @@
           {
             "attrs": {
               "axis": "X",
-              "long_name": "MTG geostationary projection x angle",
-              "standard_name": "projection_x_angular_coordinate",
-              "units": "radian"
+              "long_name": "x coordinate of projection",
+              "standard_name": "projection_x_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272
@@ -16983,9 +16855,9 @@
           {
             "attrs": {
               "axis": "Y",
-              "long_name": "MTG geostationary projection y angle",
-              "standard_name": "projection_y_angular_coordinate",
-              "units": "radian"
+              "long_name": "y coordinate of projection",
+              "standard_name": "projection_y_coordinate",
+              "units": "m"
             },
             "chunks": [
               22272

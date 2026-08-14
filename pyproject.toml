@@ -1,6 +1,6 @@
 [project]
 name = "firecube-mtg-fci-l1c"
-version = "0.1.4"
+version = "0.1.5"
 description = "Firecube ingestor plugin for MTG FCI L1C FDHSI and HRFI products"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -29,6 +29,7 @@ dev = [
     "pytest",
     "ruff",
     "mypy",
+    "pyproj>=3.6",
 ]
 
 [project.entry-points."firecube.plugins"]
@@ -50,6 +51,7 @@ dev = [
     "ruff",
     "mypy",
     "matplotlib>=3.11.0",
+    "pyproj>=3.6",
 ]
 
 [tool.mypy]
