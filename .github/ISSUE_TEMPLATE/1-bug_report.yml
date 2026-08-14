@@ -1,0 +1,149 @@
+name: Bug report
+description: Report incorrect behavior, a crash, or corrupted output in the MTG FCI L1C plugin.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please give us enough detail to
+        reproduce it. Firecube requires **explicit product and storage flags** —
+        include the full command you ran so we can see them.
+
+        Do **not** paste credentials, tokens, or private data URIs. Redact them.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A clear, one- or two-sentence description of the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: The exact command(s), including all `--option` flags. Redact secrets.
+      placeholder: |
+        1. firecube zarr preallocate mtg_fci_l1c --product-name ... --target ... --write-mode direct --option product_type=FDHSI --option time_epoch=YYYY-MM-DD --option time_slots=N
+        2. firecube ingest mtg_fci_l1c --input-data ... --target ... --slot-start N --slot-end M --option ...
+        3. ...
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include the full error message and traceback if there is one.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: plugin_version
+    attributes:
+      label: Plugin version
+      description: Output of `python -c "import importlib.metadata as m; print(m.version('firecube-mtg-fci-l1c'))"`.
+      placeholder: "0.1.5"
+    validations:
+      required: true
+  - type: input
+    id: firecube_version
+    attributes:
+      label: Firecube version
+      description: Output of `firecube --version`.
+      placeholder: "0.1.4"
+    validations:
+      required: true
+  - type: dropdown
+    id: product_type
+    attributes:
+      label: Product type
+      description: Which FCI L1C product family is affected?
+      multiple: true
+      options:
+        - FDHSI (Full Disk High Spectral Imagery)
+        - HRFI (High-Resolution Fast Imagery)
+        - Both / not sure
+        - Not product-specific
+    validations:
+      required: true
+  - type: dropdown
+    id: resolution_group
+    attributes:
+      label: Resolution group(s) affected
+      multiple: true
+      options:
+        - data_500m (HRFI only)
+        - data_1km
+        - data_2km (FDHSI only)
+        - Not resolution-specific
+    validations:
+      required: true
+  - type: dropdown
+    id: write_mode
+    attributes:
+      label: Write mode
+      options:
+        - direct (direct-region Zarr)
+        - staged
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: storage_type
+    attributes:
+      label: Storage type
+      options:
+        - local (filesystem)
+        - S3
+        - Other object storage
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Install source
+      options:
+        - PyPI
+        - Git checkout (source)
+        - Container image
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Python version, OS, storage driver, and any relevant options.
+      placeholder: |
+        - Python: 3.12.x
+        - OS: Linux / macOS / Windows (+ version)
+        - Storage driver: fsspec / obstore
+        - Slot range / parallelism: e.g. --slot-start 0 --slot-end 144, PARALLELISM=8, SLOTS_PER_POD=6
+        - Relevant --option values: e.g. pixel_time_dtype=int32, projection_units=radian
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Data / state impact
+      description: >-
+        Did this affect the output Zarr store, Firecube's `.firecube/` control plane,
+        or resume/append state? Is the store now corrupt, partially written, or
+        requiring `firecube chunks runs abandon` before retry?
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: I removed all credentials, tokens, and private URIs from this report.
+          required: true

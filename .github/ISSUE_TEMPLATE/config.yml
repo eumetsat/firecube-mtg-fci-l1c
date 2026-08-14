@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Plugin documentation
+    url: https://github.com/eumetsat/firecube-mtg-fci-l1c/tree/main/docs
+    about: Check the docs before filing — customization, performance tuning, and production ingestion workflows are covered there.
+  - name: Firecube core documentation
+    url: https://eumetsat.github.io/firecube/
+    about: Questions about direct-region Zarr, parallel writes, control plane, or plugin API belong upstream.
+  - name: Firecube core issue tracker
+    url: https://github.com/eumetsat/firecube/issues
+    about: If the bug is in Firecube itself (not the FCI plugin), file it upstream instead.

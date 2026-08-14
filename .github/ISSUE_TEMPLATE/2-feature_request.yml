@@ -1,0 +1,76 @@
+name: Feature request
+description: Propose a new capability, config option, or improvement for the MTG FCI L1C plugin.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing an improvement. This plugin favors small, explicit
+        changes that respect firecube-core's plugin contract and this repo's
+        architectural invariants (see `plans/DESIGN.md`). Please describe the
+        problem before the solution, and be concrete about scope.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What are you trying to do with the FCI plugin, and why is it hard or impossible today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should the plugin do? Sketch the CLI surface, config option, schema change, or API if relevant.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the plugin does this touch?
+      multiple: true
+      options:
+        - Zarr schema / variables / CF attrs
+        - Config options (`MtgFciL1cConfig`)
+        - Streaming reads / netCDF handling
+        - Geolocation / grids
+        - CLI subcommands (`fix-fillvalue`, `geo`, ...)
+        - Production scripts (`scripts/fci-ingest.sh`)
+        - Chunking / sharding / compression
+        - Documentation
+        - Firecube-core parity / upstream feature adoption
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches, existing workarounds, or why they fall short.
+    validations:
+      required: false
+  - type: textarea
+    id: compat
+    attributes:
+      label: Compatibility & scope
+      description: >-
+        Would this change the persisted Zarr schema (triggering `SchemaDriftError` on
+        existing stores), the public `MtgFciL1cConfig` surface, or existing CLI
+        behavior? Should it be opt-in via a config flag to keep the default output
+        stable? Would it require a cold migration (re-ingest from source)?
+    validations:
+      required: false
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I would be willing to help implement this.
+          required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
