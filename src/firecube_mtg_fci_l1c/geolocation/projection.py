@@ -29,8 +29,9 @@ MSG/SEVIRI) use pre-computed lat/lon lookup tables instead.
 Coordinate expectations:
     - Input pixel coordinates follow the FCI fixed-grid convention with 1-based
       detector indices used by the projection formulas.
-    - Returned arrays use image indexing order ``[row, col]`` where row 0 is the
-      northern edge and col 0 is the western edge of the full-disk image.
+    - Returned arrays use the FCI native ``[row, col]`` order: row 0 is the
+      southern edge and col 0 is the western edge of the full-disk image,
+      matching the row order of the L1C files and of the cube's ``y``/``x``.
     - Longitudes are normalized to ``[-180, 180)`` after optional
       ``sub_satellite_lon`` shifting.
 
@@ -121,7 +122,7 @@ def compute_latlon(
         Tuple of (latitude, longitude) as float32 numpy arrays with shape
         (dimsize, dimsize). Off-Earth pixels are set to NaN.
 
-        Arrays are indexed as ``[row, col]`` in image order (north-to-south,
+        Arrays are indexed as ``[row, col]`` in FCI native order (south-to-north,
         west-to-east). Longitudes are in degrees east and wrapped to
         ``[-180, 180)``.
 

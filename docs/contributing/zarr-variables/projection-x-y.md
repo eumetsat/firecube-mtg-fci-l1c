@@ -9,10 +9,12 @@ The FCI L1C product stores per-nc_part packed `int16` arrays at `data/<channel>/
 - `x` (shape `(dimsize,)`): same across all nc_parts and all channels at one resolution; decodes to `projection_x_angular_coordinate` (azimuth angle from sub-satellite point)
 - `y` (shape `(rows_per_nc_part,)`): different rows per nc_part; assemble across all nc_parts to get the full-disk `(dimsize,)` coord; decodes to `projection_y_angular_coordinate` (elevation angle)
 
-Nominal 1km decoding constants:
+The packed values are 1-based column/row numbers (`valid_range = [1, dimsize]`), and the decoding constants are per resolution:
 
-- `scale_factor`: `±2.79435763233999e-05` rad/index (negative for x, positive for y)
-- `add_offset`: `±0.1556038047568524` rad
+- `scale_factor`: `-|s|` for x, `+|s|` for y, with `|s|` = `1.39717881617e-05` (500 m), `2.79435763233999e-05` (1 km), `5.58871526468e-05` (2 km) rad/index
+- `add_offset`: `+(dimsize / 2 + 0.5) * |s|` for x, `-(dimsize / 2 + 0.5) * |s|` for y (1 km: `0.1556038`, 2 km: `0.1556178`, 500 m: `0.1555968` rad)
+
+So packed column `c` (1-based) decodes to `x = (dimsize / 2 + 0.5 - c) * |s|`, positive-westward: column 1 is the west edge and nadir lies between columns `dimsize/2` and `dimsize/2 + 1`. Row 1 is the south edge (`y` negative). The Zarr arrays are 0-based and east-positive, so index `i` on either axis is at `(i - (dimsize / 2 - 0.5)) * |s|` (the sign of the file's `x` is flipped, see [#1](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/1)).
 
 Multiply by satellite altitude (35,786,400 m for MTG) to convert radians to ground-projected metres.
 
@@ -22,8 +24,8 @@ These coordinates are static per group, so the source function lives in the stat
 
 ### Case A: Computed analytically from constants
 
-> **Status: IMPLEMENTED in FCI L1C plugin**: see `_projection_x_source` / `_projection_y_source` in `schema.py`
-> and `FCI_PROJ_SCALE_RAD_PER_INDEX` / `FCI_PROJ_OFFSET_RAD` in `_constants.py`.
+> **Status: IMPLEMENTED in FCI L1C plugin**: see `_projection_angle_source` (shared by `_projection_x_source` /
+> `_projection_y_source`) in `schema.py` and `FCI_PROJ_SCALE_RAD_PER_INDEX` in `_constants.py`.
 
 If you know the projection geometry (FCI uses fixed sampling), you can compute the coords without touching the NetCDF:
 
@@ -36,20 +38,15 @@ _FCI_PROJ_SCALE: dict[str, float] = {
     "1km":  2.79435763233999e-05,
     "2km":  5.58871526468e-05,
 }
-_FCI_PROJ_OFFSET: dict[str, float] = {
-    "500m": 0.1556038047568524,
-    "1km":  0.1556038047568524,
-    "2km":  0.1556038047568524,
-}
 
 
-def _projection_x_radians_source(ctx: VariableContext) -> np.ndarray | None:
+def _projection_angle_source(ctx: VariableContext) -> np.ndarray | None:
+    """Scan angle of each pixel centre; identical for x and y (square, symmetric grid)."""
     res = ctx.group.removeprefix("data_")
     if res not in _FCI_PROJ_SCALE:
         return None
-    scale = -_FCI_PROJ_SCALE[res]   # x scale is negative (column 0 is east-of-nadir)
-    offset = _FCI_PROJ_OFFSET[res]
-    return np.arange(ctx.dimsize, dtype=np.float64) * scale + offset
+    centre = ctx.dimsize / 2 - 0.5          # index of nadir (between the two central pixels)
+    return (np.arange(ctx.dimsize, dtype=np.float64) - centre) * _FCI_PROJ_SCALE[res]
 
 
 Variable(
@@ -63,22 +60,8 @@ Variable(
         "long_name": "MTG geostationary projection x angle",
         "axis": "X",
     },
-    source=_projection_x_radians_source,
+    source=_projection_angle_source,
 ),
-```
-
-Mirror for `y` with the positive scale and inverted offset sign:
-
-```python
-def _projection_y_radians_source(ctx: VariableContext) -> np.ndarray | None:
-    res = ctx.group.removeprefix("data_")
-    if res not in _FCI_PROJ_SCALE:
-        return None
-    scale = _FCI_PROJ_SCALE[res]    # y scale is positive
-    offset = -_FCI_PROJ_OFFSET[res]
-    return np.arange(ctx.dimsize, dtype=np.float64) * scale + offset
-
-
 Variable(
     name="y",
     dims=("y",),
@@ -90,9 +73,11 @@ Variable(
         "long_name": "MTG geostationary projection y angle",
         "axis": "Y",
     },
-    source=_projection_y_radians_source,
+    source=_projection_angle_source,
 ),
 ```
+
+Check the result against `compute_latlon` through `pyproj` (see `tests/test_projection_crs_oracle.py`): `x[col]`, `y[row]` must be the geos coordinates of the pixel whose `latitude`/`longitude` the plugin writes for `(row, col)`.
 
 ### Case B: Decoded from NetCDF (data-driven)
 
@@ -118,12 +103,9 @@ _FCI_SATELLITE_ALTITUDE_M = 35_786_400.0
 
 
 def _projection_x_metres_source(ctx: VariableContext) -> np.ndarray | None:
-    res = ctx.group.removeprefix("data_")
-    if res not in _FCI_PROJ_SCALE:
+    radians = _projection_angle_source(ctx)
+    if radians is None:
         return None
-    scale = -_FCI_PROJ_SCALE[res]
-    offset = _FCI_PROJ_OFFSET[res]
-    radians = np.arange(ctx.dimsize, dtype=np.float64) * scale + offset
     return radians * _FCI_SATELLITE_ALTITUDE_M
 
 
@@ -156,7 +138,8 @@ Use the angular version (`radian`, `projection_x_angular_coordinate`) when you w
 - Using `dims=("y", "x")`. Those are 2D fields (lat/lon). Projection coords are 1D: `("x",)` or `("y",)`.
 - Forgetting the `axis` attribute. CF requires `axis="X"` or `axis="Y"` for projection coords so tools like xarray and cartopy recognise them.
 - Mixing radian and metre units in the same array. Pick one per Variable and label it correctly in `attrs["units"]`.
-- Sign-flipping x scale. FCI's x scale factor is negative (column 0 is east-of-nadir, increasing column index moves west). Match the source NetCDF or your column-major decoding will be mirrored.
+- Copying the file's `x` sign. FCI's `x` is positive-westward (column 1 is the west edge, `x` decreases with column index). The cube is east-positive, so the sign is flipped; the pixel order is not.
+- Feeding a 0-based index into the file's `add_offset`. The packed values start at 1, and `add_offset` differs per resolution. Use the symmetric form `(i - (dimsize / 2 - 0.5)) * |s|` (see [#8](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/8)); a 0-based index with the 1 km offset shifts every pixel by 0.75 to 1.5 px.
 
 ## See also
 

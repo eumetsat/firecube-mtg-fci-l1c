@@ -19,7 +19,6 @@ from firecube_mtg_fci_l1c._constants import (
     CHUNK_DEFAULTS_BY_RESOLUTION,
     CONSTANTS,
     FCI_COLLECTION_IDS,
-    FCI_PROJ_OFFSET_RAD,
     FCI_PROJ_SCALE_RAD_PER_INDEX,
     FCI_PROJ_SWEEP_AXIS,
     PRODUCT_TYPE_FDHSI,
@@ -80,7 +79,6 @@ def test_projection_sampling_constants_match_source_netcdf():
     assert FCI_PROJ_SCALE_RAD_PER_INDEX["1km"] == 2.79435763233999e-05
     assert FCI_PROJ_SCALE_RAD_PER_INDEX["500m"] == 1.39717881617e-05
     assert FCI_PROJ_SCALE_RAD_PER_INDEX["2km"] == 5.58871526468e-05
-    assert FCI_PROJ_OFFSET_RAD == 0.1556038047568524
     assert FCI_PROJ_SWEEP_AXIS == "y"
     assert round(
         FCI_PROJ_SCALE_RAD_PER_INDEX["2km"] / FCI_PROJ_SCALE_RAD_PER_INDEX["1km"],
