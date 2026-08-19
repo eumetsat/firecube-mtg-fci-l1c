@@ -33,7 +33,6 @@ import numpy as np  # pyright: ignore[reportMissingImports]
 
 from . import _variable
 from ._constants import (
-    FCI_PROJ_OFFSET_RAD,
     FCI_PROJ_SCALE_RAD_PER_INDEX,
     MTG_PERSPECTIVE_POINT_HEIGHT_M,
 )
@@ -154,26 +153,34 @@ def _longitude_source(ctx: VariableContext) -> np.ndarray | None:
     return lon
 
 
-def _projection_x_source(ctx: VariableContext) -> np.ndarray | None:
+def _projection_angle_source(ctx: VariableContext) -> np.ndarray | None:
+    """Return the geos scan angle (radians) or distance (metres) of each pixel centre.
+
+    Shared by ``x`` and ``y``: the FCI fixed grid is square and symmetric around
+    the sub-satellite point, so index ``i`` on either axis sits at
+    ``(i - (dimsize / 2 - 0.5)) * scale``. This equals the L1C files' own
+    ``x``/``y`` for packed column/row ``i + 1`` (their ``add_offset`` is
+    ``(dimsize / 2 + 0.5) * |scale|`` per resolution), negated for ``x``
+    because the files store ``x`` positive-westward while the cube is
+    east-positive.
+    """
     res = ctx.group.removeprefix("data_")
     if res not in FCI_PROJ_SCALE_RAD_PER_INDEX:
         return None
     scale = FCI_PROJ_SCALE_RAD_PER_INDEX[res]
-    rad = np.arange(ctx.dimsize, dtype=np.float64) * scale + (-FCI_PROJ_OFFSET_RAD)
+    centre = ctx.dimsize / 2 - 0.5
+    rad = (np.arange(ctx.dimsize, dtype=np.float64) - centre) * scale
     if ctx.config.projection_units in ("meter", "metre"):
         return rad * MTG_PERSPECTIVE_POINT_HEIGHT_M
     return rad
+
+
+def _projection_x_source(ctx: VariableContext) -> np.ndarray | None:
+    return _projection_angle_source(ctx)
 
 
 def _projection_y_source(ctx: VariableContext) -> np.ndarray | None:
-    res = ctx.group.removeprefix("data_")
-    if res not in FCI_PROJ_SCALE_RAD_PER_INDEX:
-        return None
-    scale = FCI_PROJ_SCALE_RAD_PER_INDEX[res]
-    rad = np.arange(ctx.dimsize, dtype=np.float64) * scale + (-FCI_PROJ_OFFSET_RAD)
-    if ctx.config.projection_units in ("meter", "metre"):
-        return rad * MTG_PERSPECTIVE_POINT_HEIGHT_M
-    return rad
+    return _projection_angle_source(ctx)
 
 
 def _time_source(ctx: VariableContext) -> None:

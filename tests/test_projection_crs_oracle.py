@@ -138,3 +138,88 @@ def test_radian_mode_after_scaling_matches_meter_mode() -> None:
         "radian-mode x scaled by MTG perspective-point height must equal "
         "meter-mode x element-wise."
     )
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("group", "dimsize"),
+    [
+        ("data_500m", 22272),
+        ("data_1km", 11136),
+        ("data_2km", 5568),
+    ],
+)
+def test_centre_pixels_straddle_nadir_all_resolutions(group: str, dimsize: int) -> None:
+    """Issue #8: index 0 must be pixel centre ``-(dimsize/2 - 0.5)`` steps from nadir.
+
+    The FCI fixed grid has an even number of pixels per axis, so nadir lies on
+    the boundary between the two central pixels: their centres sit at
+    ``-scale/2`` and ``+scale/2``. This pins the offset per resolution without
+    reference to any constant copied from a file.
+    """
+    from firecube_mtg_fci_l1c._constants import FCI_PROJ_SCALE_RAD_PER_INDEX
+
+    scale = FCI_PROJ_SCALE_RAD_PER_INDEX[group.removeprefix("data_")]
+    ctx = _build_ctx(group, dimsize, MtgFciL1cConfig(projection_units="radian"))
+    for arr in (_projection_x_source(ctx), _projection_y_source(ctx)):
+        assert arr is not None
+        half = dimsize // 2
+        assert arr[half - 1] == pytest.approx(-scale / 2, abs=1e-15)
+        assert arr[half] == pytest.approx(scale / 2, abs=1e-15)
+        assert arr[0] == pytest.approx(-arr[-1], abs=1e-15)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("group", "resolution_m", "dimsize"),
+    [
+        ("data_1km", 1000, 11136),
+        ("data_2km", 2000, 5568),
+    ],
+)
+def test_x_y_land_on_latlon_pixel_centres(
+    group: str, resolution_m: int, dimsize: int
+) -> None:
+    """Issue #8: ``x[col]``/``y[row]`` must be the geos coordinates of the pixel
+    whose ``latitude``/``longitude`` the plugin writes for ``(row, col)``.
+
+    Projects a sample of ``compute_latlon`` pixels through the plugin's own
+    ``spatial_ref`` WKT with pyproj and compares against ``x``/``y`` in pixel
+    units. Before the fix this was off by a constant -1.00 px (1 km) and
+    -0.75 px (2 km) on both axes. 500 m is covered by the centre-pixel test
+    above; its full grid is too heavy for a unit test.
+    """
+    from firecube_mtg_fci_l1c._constants import (
+        FCI_PROJ_SCALE_RAD_PER_INDEX,
+        MTG_PERSPECTIVE_POINT_HEIGHT_M,
+    )
+    from firecube_mtg_fci_l1c.geolocation.projection import compute_latlon
+
+    ctx = _build_ctx(group, dimsize, MtgFciL1cConfig())
+    x = _projection_x_source(ctx)
+    y = _projection_y_source(ctx)
+    assert x is not None and y is not None
+    lat, lon = compute_latlon(resolution_m)
+
+    idx = np.arange(dimsize // 10, dimsize - dimsize // 10, dimsize // 40)
+    rows, cols = np.meshgrid(idx, idx, indexing="ij")
+    to_geos = Transformer.from_crs(
+        CRS.from_epsg(4326), CRS.from_wkt(_MTG_GEOS_WKT), always_xy=True
+    )
+    gx, gy = to_geos.transform(
+        lon[rows, cols].astype(np.float64), lat[rows, cols].astype(np.float64)
+    )
+    ok = np.isfinite(gx) & np.isfinite(gy)
+    assert ok.sum() > 100
+
+    px_m = (
+        FCI_PROJ_SCALE_RAD_PER_INDEX[group.removeprefix("data_")]
+        * MTG_PERSPECTIVE_POINT_HEIGHT_M
+    )
+    dx = (x[cols] - gx)[ok] / px_m
+    dy = (y[rows] - gy)[ok] / px_m
+    # float32 lat/lon limits agreement to ~1e-2 px; a 1-based/offset error is >= 0.25 px.
+    assert abs(float(dx.mean())) < 0.05, f"x offset {dx.mean():+.3f} px"
+    assert abs(float(dy.mean())) < 0.05, f"y offset {dy.mean():+.3f} px"
+    assert float(np.abs(dx).max()) < 0.1
+    assert float(np.abs(dy).max()) < 0.1

@@ -328,9 +328,12 @@ def test_x_y_source_values_1km_radian_mode() -> None:
     assert np.all(np.diff(x_arr) > 0)
     # y is monotonically increasing
     assert np.all(np.diff(y_arr) > 0)
-    # Check first values roughly match the FCI offset constant
-    assert abs(x_arr[0] - (-0.1556038047568524)) < 1e-10
-    assert abs(y_arr[0] - (-0.1556038047568524)) < 1e-10
+    # Index 0 is pixel centre -(dimsize/2 - 0.5) sampling steps from nadir:
+    # 5567.5 * 2.79435763233999e-05 rad. Symmetric around 0.
+    assert abs(x_arr[0] - (-0.15557586)) < 1e-8
+    assert abs(y_arr[0] - (-0.15557586)) < 1e-8
+    assert abs(x_arr[0] + x_arr[-1]) < 1e-15
+    assert abs(x_arr[5567] + x_arr[5568]) < 1e-15
 
 
 @pytest.mark.unit
@@ -355,7 +358,8 @@ def test_x_y_source_values_meter_mode_1km() -> None:
     assert x_arr.dtype == np.float64
     assert np.all(np.diff(x_arr) > 0)
     assert np.all(np.diff(y_arr) > 0)
-    assert abs(x_arr[0] - (-5568500.0)) < 1.0
+    # -5567.5 px * 2.79435763233999e-05 rad/px * 35786400 m
+    assert abs(x_arr[0] - (-5567500.0)) < 1.0
 
 
 @pytest.mark.unit

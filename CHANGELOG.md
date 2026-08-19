@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- `FCI_PROJ_OFFSET_RAD` from `_constants.py` (internal, obsolete with the #8 fix).
+
+### Fixed
+
+- [#8](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/8) `x`/`y` projection coordinates were shifted west/south by 1.00 px (1 km), 0.75 px (2 km) and 1.50 px (500 m); they now land on the pixel centres of `latitude`/`longitude` and match the L1C files' own `x`/`y`. Data and lat/lon were never affected. Existing stores keep the old values (static arrays are write-once, re-ingest raises `SchemaDriftError`): ingest into a new store.
+- `compute_latlon` docstring: grids are in FCI native order (row 0 = south, col 0 = west), not north-to-south.
+
 ## [0.1.5] - 2026-08-13
 
 ### Added
