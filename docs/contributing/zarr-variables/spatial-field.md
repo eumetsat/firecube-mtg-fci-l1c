@@ -8,7 +8,7 @@ Spatial source functions are **pure projections** from `ctx.channel_payload`. Th
 
 ### Case A: Derived from existing payload fields
 
-If your new field is computed from the already-loaded `counts`, `pixel_quality`, or `pixel_time` arrays, the only edit is to `src/firecube_mtg_fci_l1c/schema.py`.
+If your new field is computed from the already-loaded `counts`, `pixel_quality`, or `pixel_time` arrays, the only edit is to `src/firecube_mtg_fci_l1c/_variables.py`.
 
 The `pixel_quality` field is an 8-bit flag array. Each bit has a defined meaning per the FCI L1C pixel quality specification (see the [`pixel_quality` bit table](../../fci-data-in-zarr.md#pixel_quality-bits)):
 
@@ -69,12 +69,12 @@ Both functions return a 2D `(y_rows, x_cols)` array for the current `(nc_part, c
 
 ### Case B: Requires new NetCDF data
 
-The FCI L1C product does not currently include cloud masks or geometry arrays (solar/satellite zenith angles) per pixel: those would come from L2 products. If you have an external per-pixel field at the same `(y, x)` resolution, the extension pattern is identical: add a reader method on `NCPartReader` (or your own loader), add the field to `ChannelSlicePayload`, populate it in `load_channel_slice()`, then add the projection source in `schema.py`.
+The FCI L1C product does not currently include cloud masks or geometry arrays (solar/satellite zenith angles) per pixel: those would come from L2 products. If you have an external per-pixel field at the same `(y, x)` resolution, the extension pattern is identical: add a reader method on `NCPartReader` (or your own loader), add the field to `ChannelSlicePayload`, populate it in `load_channel_slice()`, then add the projection source in `_variables.py`.
 
 The code below shows the schema-side shape. If you had a `read_external_field(channel)` method on `NCPartReader`, this is what the full extension looks like:
 
 ```python
-# In _streaming.py
+# In _decode.py
 @dataclasses.dataclass(frozen=True)
 class ChannelSlicePayload:
     counts: np.ndarray
@@ -82,19 +82,19 @@ class ChannelSlicePayload:
     pixel_time: np.ndarray | None
     external_field: np.ndarray | None   # NEW: user-added
 
-# In schema.py
+# In _variables.py
 def _external_field_source(ctx: VariableContext) -> np.ndarray | None:
     return ctx.channel_payload.external_field if ctx.channel_payload else None
 ```
 
-The source stays a one-liner. All I/O lives in `_streaming.py`.
+The source stays a one-liner. All I/O lives in `_decode.py`.
 
 ## Files touched
 
 | Case | Files |
 |---|---|
-| A (derived) | `src/firecube_mtg_fci_l1c/schema.py` |
-| B (new data) | `src/firecube_mtg_fci_l1c/_streaming.py` + `src/firecube_mtg_fci_l1c/schema.py` |
+| A (derived) | `src/firecube_mtg_fci_l1c/_variables.py` |
+| B (new data) | `src/firecube_mtg_fci_l1c/_decode.py` + `src/firecube_mtg_fci_l1c/_variables.py` |
 
 ## Common mistakes
 

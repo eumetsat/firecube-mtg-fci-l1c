@@ -24,6 +24,8 @@ import types
 import numpy as np
 import pytest
 
+from firecube.core.api import IndexSpec, ItemInfo, RegularTimeAxis
+
 
 class TestMtgFciL1cIngestorImport:
     def test_import(self):
@@ -183,6 +185,57 @@ class TestTimestampExtraction:
         assert extract_timestamp_from_path(path) is None
 
 
+class TestIndexSpecAndInspectItem:
+    @pytest.mark.parametrize(
+        ("product_type", "expected_groups"),
+        [
+            ("FDHSI", ["data_1km", "data_2km"]),
+            ("HRFI", ["data_500m", "data_1km"]),
+        ],
+    )
+    def test_index_spec_returns_resolution_groups(self, product_type, expected_groups):
+        from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig, MtgFciL1cIngestor
+
+        ingestor = MtgFciL1cIngestor()
+        cfg = MtgFciL1cConfig(product_type=product_type, time_slots=144)
+        ingestor.plugin_config = cfg
+
+        spec = ingestor.index_spec(SimpleNamespace(source="/tmp"))
+
+        assert isinstance(spec, IndexSpec)
+        assert spec is not None
+        assert spec.name == ingestor.INDEX_MODEL
+        assert list(spec.groups) == expected_groups
+        for axis in spec.groups.values():
+            assert isinstance(axis, RegularTimeAxis)
+            assert axis.coordinate == "time"
+            assert axis.epoch == f"{cfg.time_epoch}T00:00:00Z"
+            assert axis.cadence_s == 600
+            assert axis.mode == "floor"
+            assert axis.slot_count == 144
+
+    def test_inspect_item_returns_timestamp_coordinate(self):
+        from datetime import datetime
+
+        from firecube_mtg_fci_l1c.ingestor import MtgFciL1cIngestor
+
+        ingestor = MtgFciL1cIngestor()
+
+        item = Path("W_XX-EUMETSAT--20241001005154--END.zip")
+        info = ingestor.inspect_item(item, SimpleNamespace(source="/tmp"))
+
+        assert info == ItemInfo(coordinate=datetime(2024, 10, 1, 0, 51, 54))
+
+    def test_inspect_item_drops_invalid_items(self):
+        from firecube_mtg_fci_l1c.ingestor import MtgFciL1cIngestor
+
+        ingestor = MtgFciL1cIngestor()
+
+        info = ingestor.inspect_item(Path("no-timestamp-here.zip"), SimpleNamespace())
+
+        assert info is None
+
+
 class TestBuildWriteIntentsLogging:
     def test_logs_exception_when_nc_part_read_fails(self, monkeypatch):
         import datetime
@@ -232,7 +285,9 @@ class TestBuildWriteIntentsLogging:
         scratch_mod: Any = types.ModuleType("firecube_mtg_fci_l1c._scratch")
         scratch_mod.BatchScratch = FakeScratch
         monkeypatch.setitem(sys.modules, "firecube_mtg_fci_l1c._scratch", scratch_mod)
-        monkeypatch.setattr(ingestor_mod, "list_fci_nc_parts", lambda _dir: [Path("/tmp/nc_part.nc")])
+        monkeypatch.setattr(
+            ingestor_mod, "list_fci_nc_parts", lambda _dir: [Path("/tmp/nc_part.nc")]
+        )
         monkeypatch.setattr(ingestor_mod, "NCPartReader", FakeReader)
         monkeypatch.setattr(
             ingestor_mod,
@@ -246,7 +301,9 @@ class TestBuildWriteIntentsLogging:
             batch_id="batch-1",
         )
 
-        ctx: Any = SimpleNamespace(run_id="run-1", source="/tmp", option=lambda *_args: None)
+        ctx: Any = SimpleNamespace(
+            run_id="run-1", source="/tmp", option=lambda *_args: None
+        )
 
         intents = ingestor.build_write_intents(batch, ctx)  # pyright: ignore[reportArgumentType]
 
@@ -258,20 +315,32 @@ class TestBuildWriteIntentsLogging:
 
 
 class TestVariableDispatchRegressions:
-    def test_spatial_phase_reads_each_channel_payload_once(self):
+    def test_spatial_phase_emits_callable_payloads(self):
         from firecube_mtg_fci_l1c._group_plan import GroupPlan
-        from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig, MtgFciL1cIngestor
+        from firecube_mtg_fci_l1c._decode import ChunkOwnedAssembler
+        from firecube_mtg_fci_l1c.ingestor import (
+            BatchResources,
+            MtgFciL1cConfig,
+            MtgFciL1cIngestor,
+        )
 
-        class CountingReader:
+        class CountingSharedReader:
             def __init__(self):
-                self.read_calls: list[str] = []
+                self.decode_calls: list[tuple[Path, str]] = []
 
-            def read_channel_data(self, channel: str):
-                self.read_calls.append(channel)
-                return (
-                    np.ones((2, 2), dtype=np.uint16),
-                    np.zeros((2, 2), dtype=np.uint8),
-                    np.zeros((2, 2), dtype=np.int32),
+            def decode_spatial(
+                self,
+                part_path: Path,
+                channel: str,
+                index2time: dict[int, float] | None,
+                pixel_time_dtype: np.dtype,
+            ):
+                del index2time, pixel_time_dtype
+                self.decode_calls.append((part_path, channel))
+                return SimpleNamespace(
+                    counts=np.ones((2, 2), dtype=np.uint16),
+                    pixel_quality=np.zeros((2, 2), dtype=np.uint8),
+                    pixel_time=np.zeros((2, 2), dtype=np.float64),
                 )
 
         config = MtgFciL1cConfig(
@@ -282,21 +351,26 @@ class TestVariableDispatchRegressions:
             include_geolocation=False,
         )
         ingestor = MtgFciL1cIngestor()
-        reader = CountingReader()
+        shared_reader = CountingSharedReader()
+        part_path = Path("/tmp/part.nc")
         plan = GroupPlan(
             product_type="FDHSI",
             resolution="1km",
             group="data_1km",
-            dimsize=11136,
+            dimsize=2,
             logical_channels=("vis_04",),
             nc_channels=("vis_04",),
         )
+        with ingestor._batch_resources_lock:
+            ingestor._batch_resources["batch-1"] = BatchResources(
+                chunk_owned_cache=ChunkOwnedAssembler(shared_reader)  # type: ignore[arg-type]
+            )
 
         intents = ingestor._emit_spatial_intents(
+            "batch-1",
             plan,
             0,
-            reader,
-            slice(0, 2),
+            [(part_path, (0, 2))],
             {0: 0.0},
             np.dtype(np.float64),
             config,
@@ -307,7 +381,62 @@ class TestVariableDispatchRegressions:
             "pixel_quality",
             "pixel_time",
         ]
-        assert reader.read_calls == ["vis_04"]
+        assert all(callable(intent.data) for intent in intents)
+        assert not any(isinstance(intent.data, np.ndarray) for intent in intents)
+        assert shared_reader.decode_calls == []
+
+        np.testing.assert_array_equal(
+            intents[0].data(), np.ones((2, 2), dtype=np.uint16)
+        )
+        assert shared_reader.decode_calls == [(part_path, "vis_04")]
+
+    def test_pixel_time_none_does_not_emit_intent(self):
+        from firecube_mtg_fci_l1c._group_plan import GroupPlan
+        from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig, MtgFciL1cIngestor
+
+        class UnusedSharedReader:
+            def __init__(self):
+                self.decode_calls: list[tuple[Path, str]] = []
+
+            def decode_spatial(self, *args, **kwargs):
+                self.decode_calls.append((args, kwargs))
+                raise AssertionError(
+                    "decode_spatial must not be called when pixel_time is skipped"
+                )
+
+        config = MtgFciL1cConfig(
+            product_type="FDHSI",
+            include_pixel_quality=True,
+            include_pixel_time=True,
+            include_calibration=False,
+            include_geolocation=False,
+        )
+        ingestor = MtgFciL1cIngestor()
+        shared_reader = UnusedSharedReader()
+        part_path = Path("/tmp/part.nc")
+        plan = GroupPlan(
+            product_type="FDHSI",
+            resolution="1km",
+            group="data_1km",
+            dimsize=2,
+            logical_channels=("vis_04",),
+            nc_channels=("vis_04",),
+        )
+
+        intents = ingestor._emit_spatial_intents(
+            "batch-1",
+            plan,
+            0,
+            [(part_path, (0, 2))],
+            None,
+            np.dtype(np.float64),
+            config,
+        )
+
+        arrays = [intent.array for intent in intents]
+        assert "pixel_time" not in arrays
+        assert arrays == ["counts", "pixel_quality"]
+        assert shared_reader.decode_calls == []
 
     def test_time_channel_values_are_aggregated_once_per_timestamp(self, monkeypatch):
         import datetime
@@ -361,6 +490,9 @@ class TestVariableDispatchRegressions:
                     np.zeros((2, 2), dtype=np.int32),
                 )
 
+            def close(self):
+                return None
+
         scratch_mod: Any = types.ModuleType("firecube_mtg_fci_l1c._scratch")
         scratch_mod.BatchScratch = FakeScratch
         monkeypatch.setitem(sys.modules, "firecube_mtg_fci_l1c._scratch", scratch_mod)
@@ -370,6 +502,11 @@ class TestVariableDispatchRegressions:
             lambda _dir: [Path("/tmp/part-a.nc"), Path("/tmp/part-b.nc")],
         )
         monkeypatch.setattr(ingestor_mod, "NCPartReader", FakeReader)
+        # SharedNcPartReader instantiates NCPartReader from _decode, so the
+        # fake also has to replace that binding for calibration reads to hit it.
+        import firecube_mtg_fci_l1c._decode as streaming_mod
+
+        monkeypatch.setattr(streaming_mod, "NCPartReader", FakeReader)
         monkeypatch.setattr(
             ingestor_mod,
             "extract_timestamp_from_path",
@@ -391,7 +528,9 @@ class TestVariableDispatchRegressions:
             metadata={},
             batch_id="batch-1",
         )
-        ctx: Any = SimpleNamespace(run_id="run-1", source="/tmp", option=lambda *_args: None)
+        ctx: Any = SimpleNamespace(
+            run_id="run-1", source="/tmp", option=lambda *_args: None
+        )
 
         intents = ingestor.build_write_intents(batch, ctx)  # pyright: ignore[reportArgumentType]
 

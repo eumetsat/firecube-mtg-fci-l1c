@@ -19,9 +19,14 @@ from __future__ import annotations
 import zipfile
 from pathlib import Path
 
+import h5netcdf  # pyright: ignore[reportMissingImports]
+import numpy as np  # pyright: ignore[reportMissingImports]
 import pytest
 
 from firecube_mtg_fci_l1c._scratch import BatchScratch
+from firecube_mtg_fci_l1c._decode import (  # pyright: ignore[reportMissingImports]
+    SharedNcPartReader,
+)
 
 pytestmark = pytest.mark.unit
 
@@ -31,6 +36,23 @@ def _make_zip(path: Path, members: dict[str, bytes]) -> Path:
         for name, data in members.items():
             zf.writestr(name, data)
     return path
+
+
+def _write_minimal_nc_part(path: Path) -> None:
+    with h5netcdf.File(path, "w") as ds:
+        data_group = ds.create_group("data")
+        measured = data_group.create_group("vis_04").create_group("measured")
+        measured.dimensions["y"] = 2
+        measured.dimensions["x"] = 3
+        radiance = measured.create_variable(
+            "effective_radiance",
+            ("y", "x"),
+            data=np.full((2, 3), 7, dtype=np.uint16),
+        )
+        radiance.attrs["start_position_row"] = 1
+        radiance.attrs["end_position_row"] = 2
+        radiance.attrs["scale_factor"] = 0.5
+        radiance.attrs["add_offset"] = 1.5
 
 
 def test_extract_zip_returns_numbered_dirs_and_contents(tmp_path: Path):
@@ -73,3 +95,25 @@ def test_zip_slip_member_rejected(tmp_path: Path):
         with pytest.raises(ValueError, match="zip-slip"):
             scratch.extract_zip(evil)
     assert not (tmp_path / "escape.nc").exists()
+
+
+def test_shared_reader_closes_when_exception_raised_mid_batch(tmp_path: Path):
+    # Mirrors the ingestor's nested lifecycle so a mid-batch failure cannot
+    # leak nc_part file handles or the scratch root.
+    part = tmp_path / "body.nc"
+    _write_minimal_nc_part(part)
+
+    shared = SharedNcPartReader()
+
+    with pytest.raises(RuntimeError, match="mid-batch failure"):
+        with BatchScratch(str(tmp_path / "scratch"), "run-batch_0000") as scratch:
+            root = scratch.scratch_root
+            with shared:
+                shared.decode_channel(part, "vis_04")
+                cached_reader = shared._readers[Path(part)]
+                assert cached_reader._ds is not None
+                raise RuntimeError("mid-batch failure")
+
+    assert cached_reader._ds is None
+    assert shared._readers == {}
+    assert not root.exists()

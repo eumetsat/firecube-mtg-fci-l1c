@@ -37,7 +37,7 @@ import numpy as np
 import pytest
 
 from firecube_mtg_fci_l1c.config import MtgFciL1cConfig
-from firecube_mtg_fci_l1c.schema import build_specs
+from firecube_mtg_fci_l1c._variables import build_specs
 
 _PRODUCT_TYPES = ["FDHSI", "HRFI"]
 _FLAG_NAMES = (

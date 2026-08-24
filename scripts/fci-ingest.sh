@@ -20,8 +20,9 @@
 #   * one 10-min repeat cycle = one slot:
 #     slot = (timestamp_utc - time_epoch_utc_midnight) / cadence
 #   * a pod writes ALL resolution groups for its range -> NO --slot-group
-#   * every pod gets the SAME --input-data; the plugin's filter_items_to_slot_range
-#     keeps only the ZIPs whose slot falls in [slot_start, slot_end)
+#   * every pod gets the SAME --input-data; the engine resolves each item's
+#     inspect_item coordinate against the declared axis and keeps only the
+#     ZIPs whose slot falls in [slot_start, slot_end)
 #   * mode="floor": split on whole-slot boundaries only (never split a cycle)
 #
 # Two-phase: (0) generate shared geo grids once + preallocate the axis, then
@@ -44,6 +45,8 @@ mkdir -p "$LOGDIR"
 exec > >(tee -a "$LOGDIR/run.log") 2>&1
 RUN_T0=$(date +%s)
 fmt_dur() { local s=$1; printf '%dh%02dm%02ds' $((s/3600)) $((s%3600/60)) $((s%60)); }
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_SRC="$SCRIPT_DIR/../src"
 
 # ---- what to ingest --------------------------------------------------------
 PLUGIN="${PLUGIN:-mtg_fci_l1c}"
@@ -185,20 +188,106 @@ for a in range(s, e, step):
 PY
 }
 
+gen_ranges_json() {
+  python3 - "$SLOT_START" "$SLOT_END" "$SLOTS_PER_POD" <<'PY'
+import json
+import sys
+
+s, e, step = map(int, sys.argv[1:4])
+print(json.dumps([
+    {"slot_start": a, "slot_end": min(a + step, e)}
+    for a in range(s, e, step)
+]))
+PY
+}
+
+select_static_writer_plan() {
+  python3 - "$REPO_SRC" <<'PY'
+import json
+import sys
+
+repo_src = sys.argv[1]
+if repo_src not in sys.path:
+    sys.path.insert(0, repo_src)
+
+from firecube_mtg_fci_l1c._production_helper import select_static_writer
+
+plan = json.load(sys.stdin)
+_, selected = select_static_writer(plan)
+print(json.dumps(selected))
+PY
+}
+
+write_plan_tsv() {
+  python3 - "$REPO_SRC" "$LOGDIR/fanout-plan.tsv" <<'PY'
+import json
+import sys
+
+repo_src, output_path = sys.argv[1:3]
+if repo_src not in sys.path:
+    sys.path.insert(0, repo_src)
+
+from firecube_mtg_fci_l1c._production_helper import validate_single_static_writer
+
+
+def field(entry, names):
+    for name in names:
+        if name in entry:
+            return entry[name]
+    raise KeyError(f"slot range entry lacks any of {names!r}: {entry!r}")
+
+
+plan = json.load(sys.stdin)
+validate_single_static_writer(plan)
+with open(output_path, "w", encoding="utf-8") as stream:
+    for index, entry in enumerate(plan):
+        slot_start = int(field(entry, ("slot_start", "start", "slotStart")))
+        slot_end = int(field(entry, ("slot_end", "end", "slotEnd")))
+        emit_static = "true" if entry.get("emit_static_variables") is True else "false"
+        stream.write(f"{index}\t{slot_start}\t{slot_end}\t{emit_static}\n")
+print(len(plan))
+PY
+}
+
+echo ">> building fan-out plan"
+if FANOUT_PLAN_JSON=$("$FIRECUBE" zarr slots "$PLUGIN" \
+    --target "$TARGET" --product-name "$PRODUCT_NAME" \
+    --storage-type "$STORAGE_TYPE" --storage-driver "$STORAGE_DRIVER" \
+    --write-mode "$WRITE_MODE" \
+    "${COMMON_OPTS[@]}" \
+    --format json 2> "$LOGDIR/firecube-zarr-slots.err"); then
+  echo ">> fan-out plan from firecube zarr slots"
+else
+  echo ">> firecube zarr slots unavailable or failed; falling back to local range generation"
+  sed 's/^/   /' "$LOGDIR/firecube-zarr-slots.err" || true
+  FANOUT_PLAN_JSON="$(gen_ranges_json)"
+fi
+
+SELECTED_FANOUT_PLAN_JSON="$(printf '%s' "$FANOUT_PLAN_JSON" | select_static_writer_plan)"
+npods="$(printf '%s' "$SELECTED_FANOUT_PLAN_JSON" | write_plan_tsv)"
+if [[ "$npods" -eq 0 ]]; then
+    echo "ERROR: fan-out plan is empty. Nothing to ingest." >&2; exit 2
+fi
+echo ">> static writer: pod index 0 in fan-out plan order"
+
 FAN_T0=$(date +%s)
-gen_ranges | xargs -P "$PARALLELISM" -n2 bash -c '
-  s=$1; e=$2
+if [[ ! -s "$LOGDIR/fanout-plan.tsv" ]]; then
+  echo "ERROR: fan-out plan is empty. Nothing to ingest." >&2; exit 2
+fi
+cat "$LOGDIR/fanout-plan.tsv" | xargs -P "$PARALLELISM" -n4 bash -c '
+  idx=$1; s=$2; e=$3; emit_static=$4
   log="$LOGDIR/pod_${s}_${e}.log"
   t0=$(date +%s)
   # word-split COMMON_STR / FORCE_STR intentionally (they are pre-tokenized --option pairs)
   if "$FIRECUBE" ingest "$PLUGIN" \
-       --input-data "$INPUT" --target "$TARGET" \
-       --storage-type "$STORAGE_TYPE" --storage-driver "$STORAGE_DRIVER" --write-mode "$WRITE_MODE" \
-       $COMMON_STR $FORCE_STR \
-       --slot-start "$s" --slot-end "$e" > "$log" 2>&1; then
-    echo "ok   [$s,$e)  $(( $(date +%s) - t0 ))s"
+        --input-data "$INPUT" --target "$TARGET" \
+        --storage-type "$STORAGE_TYPE" --storage-driver "$STORAGE_DRIVER" --write-mode "$WRITE_MODE" \
+        $COMMON_STR $FORCE_STR \
+        --option "emit_static_variables=$emit_static" \
+        --slot-start "$s" --slot-end "$e" > "$log" 2>&1; then
+    echo "ok   pod=$idx static=$emit_static [$s,$e)  $(( $(date +%s) - t0 ))s"
   else
-    echo "FAIL [$s,$e)  $(( $(date +%s) - t0 ))s  -> $log"
+    echo "FAIL pod=$idx static=$emit_static [$s,$e)  $(( $(date +%s) - t0 ))s  -> $log"
   fi
 ' _ | tee "$LOGDIR/results.txt"
 
@@ -210,10 +299,30 @@ echo ">> fan-out: $((npods - nfail))/$npods pod(s) OK in $(fmt_dur "$FAN_ELAPSED
 echo ">> total run time: $(fmt_dur "$RUN_ELAPSED") (${RUN_ELAPSED}s)"
 echo ">> logs: $LOGDIR  (full transcript: run.log)"
 if [[ "$nfail" -eq 0 ]]; then
+  echo ">> running static marker drift-check"
+  python3 - "$REPO_SRC" "$TARGET" <<'PY'
+import sys
+
+repo_src, target = sys.argv[1:3]
+if repo_src not in sys.path:
+    sys.path.insert(0, repo_src)
+
+from firecube_mtg_fci_l1c._production_helper import verify_zarr_static_markers
+
+try:
+    verify_zarr_static_markers(target)
+except RuntimeError as exc:
+    print(str(exc), file=sys.stderr)
+    raise SystemExit(1) from exc
+print("DRIFT-CHECK OK: static markers present")
+PY
   echo ">> all $npods pod(s) OK. Window [$SLOT_START,$SLOT_END) ingested."
 else
   echo ">> $nfail pod(s) FAILED. Re-run is safe (written slots no-op):"
   grep '^FAIL' "$LOGDIR/results.txt" | sed 's/^/   /'
+  if grep -q '^FAIL .*static=true' "$LOGDIR/results.txt"; then
+    echo "ERROR: static writer pod failed; static arrays may be incomplete." >&2
+  fi
   echo "   If a FAIL is a stale claim/run from a crash, clear it like the OPERA flow:"
   echo "     firecube chunks claims list --product-name $TARGET"
   echo "     firecube chunks runs list  --product-name $TARGET --status started"

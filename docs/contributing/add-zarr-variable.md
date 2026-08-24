@@ -1,6 +1,6 @@
 # How to Add a Zarr Variable
 
-All variables are declared in `src/firecube_mtg_fci_l1c/schema.py`. No other file needs editing.
+All variables are declared in `src/firecube_mtg_fci_l1c/_variables.py`. No other file needs editing.
 
 ## The Recipe
 
@@ -23,7 +23,7 @@ That's it. The ingestor's generic phase emitters dispatch by `dims` shape, so th
 
 ## Key Rules
 
-**One file.** `schema.py` is the single edit target. Don't touch `ingestor.py` for schema or attrs changes.
+**One file.** `_variables.py` is the single edit target. Don't touch `ingestor.py` for schema or attrs changes.
 
 **No lambdas.** Source functions must be module-level so `VARIABLES` stays picklable for `ProcessPoolExecutor` workers.
 
@@ -52,7 +52,7 @@ Run the narrowest tests first:
 
 ```bash
 uv run ruff check src/
-uv run pytest tests/test_variable.py -q
+uv run pytest tests/test_schema.py -q
 ```
 
 For changes that write data:

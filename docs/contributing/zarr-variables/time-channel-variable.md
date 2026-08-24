@@ -8,7 +8,7 @@ Time-channel source functions are **pure projections** from per-channel aggregat
 
 ### Case A: Derived from existing aggregated data
 
-If your value is derived from `ctx.calibration_table` (the slope/offset dict), the only edit is to `src/firecube_mtg_fci_l1c/schema.py`.
+If your value is derived from `ctx.calibration_table` (the slope/offset dict), the only edit is to `src/firecube_mtg_fci_l1c/_variables.py`.
 
 The example below computes a per-channel SNR estimate as `slope / noise_floor`, where `noise_floor` is a hardcoded per-channel constant from the FCI instrument spec. This is illustrative: production would source noise floor values from external calibration files.
 
@@ -53,7 +53,7 @@ The function returns a 1D array of length `ctx.n_channels`, or `None` to skip.
 
 If you need a value that isn't already aggregated, the schema source remains pure but you must also extend the ingestor. The example below adds `noise_warning_count`: the total number of noise-warning pixels per channel per acquisition, read from `data/<channel>/quality_channel/number_of_noise_warning_pixels` in the NetCDF.
 
-**1. `src/firecube_mtg_fci_l1c/_streaming.py`**: add a reader method on `NCPartReader`:
+**1. `src/firecube_mtg_fci_l1c/_decode.py`**: add a reader method on `NCPartReader`:
 
 ```python
 def read_noise_warning_count(self, channel: str) -> int | None:
@@ -74,7 +74,7 @@ def read_noise_warning_count(self, channel: str) -> int | None:
     return int(np.asarray(quality["number_of_noise_warning_pixels"][...]).item())
 ```
 
-**2. `src/firecube_mtg_fci_l1c/_variable.py`**: add a new field on `VariableContext`:
+**2. `src/firecube_mtg_fci_l1c/_schema.py`**: add a new field on `VariableContext`:
 
 ```python
 @dataclasses.dataclass(frozen=True)
@@ -110,7 +110,7 @@ intents.extend(
 
 Update `_emit_time_channel_intents` to accept and forward the new field when constructing `VariableContext`.
 
-**4. `src/firecube_mtg_fci_l1c/schema.py`**: add the pure-projection source:
+**4. `src/firecube_mtg_fci_l1c/_variables.py`**: add the pure-projection source:
 
 ```python
 def _noise_warning_count_source(ctx: VariableContext) -> np.ndarray | None:
@@ -143,8 +143,8 @@ The NetCDF path is `data/<channel>/quality_channel/number_of_noise_warning_pixel
 
 | Case | Files |
 |---|---|
-| A (derived) | `src/firecube_mtg_fci_l1c/schema.py` |
-| B (new data) | `_streaming.py` + `_variable.py` + `ingestor.py` + `schema.py` |
+| A (derived) | `src/firecube_mtg_fci_l1c/_variables.py` |
+| B (new data) | `_decode.py` + `_schema.py` + `ingestor.py` + `_variables.py` |
 
 ## Shape rule
 

@@ -1,15 +1,13 @@
-# Firecube plugin state
-.sisyphus/
-.reports/
+# Hidden files and directories are ignored by default; allowlist what ships.
+.*
+!/.gitignore
+!/.github/
+!/.prompts/
 
 # Python
 __pycache__/
 *.pyc
 *.pyo
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.venv/
 venv/
 env/
 
@@ -17,8 +15,4 @@ env/
 dist/
 build/
 *.egg-info/
-.coverage
 htmlcov/
-
-# macOS
-.DS_Store

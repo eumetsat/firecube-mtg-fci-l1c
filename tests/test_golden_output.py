@@ -35,7 +35,7 @@ import pytest
 import zarr
 
 from firecube_mtg_fci_l1c.config import MtgFciL1cConfig
-from firecube_mtg_fci_l1c.schema import build_specs
+from firecube_mtg_fci_l1c._variables import build_specs
 
 sys.path.insert(0, str(Path(__file__).parent))
 from test_integration import _run_ingest  # noqa: E402
@@ -109,7 +109,9 @@ def _hash(data: Any) -> str:
     return hashlib.sha256(serialized.encode()).hexdigest()
 
 
-def _expected_topology(config: MtgFciL1cConfig, product_type: str) -> dict[str, list[str]]:
+def _expected_topology(
+    config: MtgFciL1cConfig, product_type: str
+) -> dict[str, list[str]]:
     specs = build_specs(config, product_type)
     return {
         spec.group: sorted(array.name for array in spec.arrays)
@@ -152,7 +154,9 @@ def _snapshot_case(
 
 
 def _build_snapshots(
-    tmp_path: Path, fdhsi_zip: Path, hrfi_zip: Path  # noqa: F811
+    tmp_path: Path,
+    fdhsi_zip: Path,
+    hrfi_zip: Path,  # noqa: F811
 ) -> dict[str, dict[str, Any]]:
     return {
         "fdhsi_defaults": _snapshot_case(

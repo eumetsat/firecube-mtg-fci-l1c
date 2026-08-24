@@ -9,10 +9,10 @@ This plugin ingests MTG FCI Level 1C FDHSI and HRFI products into direct-region 
 These rules are non-negotiable. Violating any of them requires a `plans/DONE.md` entry explaining the exception.
 
 - **Direct-region only.** This plugin uses Firecube's direct-region Zarr write path (`DirectZarrIngestor`), never the template append path. See Firecube's [Direct Region Zarr](https://eumetsat.github.io/firecube/concepts/output-formats/zarr/direct-region/).
-- **Plugin owns FCI schema.** Every variable declared in `src/firecube_mtg_fci_l1c/schema.py` is FCI-specific: CF attributes, chunking hints, sharding shape, static-vs-time-indexed classification. Core owns none of this.
+- **Plugin owns FCI schema.** Every variable declared in `src/firecube_mtg_fci_l1c/_variables.py` is FCI-specific: CF attributes, chunking hints, sharding shape, static-vs-time-indexed classification. Core owns none of this.
 - **Sharding shape is plugin-owned.** Per firecube DESIGN.md:84-86, plugins declare per-array shard shape via `ZarrArraySpec.shards`. The plugin's `_byte_budgeted_4d_shard()` derivation applies FCI data physics (byte budgeting from resolution, per-group scoping, static-lat/lon exemption). Core cannot own this without hardcoding FCI knowledge.
 - **Sharding enable/disable flag defers to Firecube template config when core wires it.** As of firecube 0.1.4.post1 the plugin owns `zarr_sharding` locally. Once core wires `ZarrTemplateConfig.zarr_sharding` to `DirectZarrIngestor` (mirroring PR #42 codec parity), the plugin will migrate to read the flag from `template_config` and remove its own field. Tracked in [TODO.md](TODO.md) §1.
-- **Source functions in schema variables are pure and picklable.** They project from `VariableContext`; I/O belongs in `_streaming.py` and `ingestor.py`. No lambdas, no nested functions. Enforced by `AGENTS.md` and process-worker execution model.
+- **Source functions in schema variables are pure and picklable.** They project from `VariableContext`; I/O belongs in `_decode.py` and `ingestor.py`. No lambdas, no nested functions. Enforced by `AGENTS.md` and process-worker execution model.
 - **No direct writes to Firecube control-plane state.** The plugin does not touch `.firecube/` directory. All state mutation goes through Firecube's `ChunkManager` facade (which the plugin does not import directly — it emits `WriteIntent` and lets Firecube coordinate).
 - **Slot ranges are disjoint for parallel ingestion.** `pipeline_workers=1` per pod. Scale through separate slot-range pods, not through worker concurrency inside one pod. See `docs/guides/production-ingestion.md`.
 - **Firecube baseline pinned to a released version.** The plugin depends on `firecube>=0.1.4` (or newer as bumped in DONE.md). Unreleased core versions are never pinned as a dependency. Adoption of new core features waits for their release tag.
@@ -43,8 +43,7 @@ There is no field on `MtgFciL1cConfig` that overlaps semantically with `ZarrTemp
 
 ## Compression Model
 
-- **Firecube 0.1.4.post1 behavior**: `DirectZarrIngestor` does not consume `ZarrTemplateConfig` — all arrays are compressed with zarr v3 default `ZstdCodec(level=0)` regardless of any template setting.
-- **Firecube 0.1.5+ behavior (once released)**: `DirectZarrIngestor` consumes `zarr_compression` and `zarr_codecs` from template (PR #42). Default `zarr_compression=True` preserves the `ZstdCodec(level=0)` behavior for existing cubes. Operators can opt out with `--option zarr_compression=false` (uncompressed) or set `--option zarr_codecs='[...]'` for custom pipelines.
+- **Default**: `zarr_compression=true` compresses all arrays with `ZstdCodec(level=0)`. Operators can set `zarr_compression=false` for uncompressed output or `zarr_codecs='[...]'` for a custom pipeline.
 - **Plugin does not set explicit compression**: per-array `filters`, `serializer`, `compressors` on `ZarrArraySpec` are all `None` (inherit template default). This is deliberate — compression is an operator concern, not a plugin decision.
 
 ## Decided Questions

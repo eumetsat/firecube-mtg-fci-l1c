@@ -91,9 +91,9 @@ class TestStreamingIngestorConfig:
 
     def test_streaming_chunk_shape_defaults_match_nc_part_stripes(self):
         config = MtgFciL1cConfig()
-        assert config.get_streaming_chunk_shape("data_500m") == (1, 556, 22272, 1)
-        assert config.get_streaming_chunk_shape("data_1km") == (1, 278, 11136, 1)
-        assert config.get_streaming_chunk_shape("data_2km") == (1, 139, 5568, 1)
+        assert config.get_group_chunk_shape("data_500m") == (1, 556, 22272, 1)
+        assert config.get_group_chunk_shape("data_1km") == (1, 278, 11136, 1)
+        assert config.get_group_chunk_shape("data_2km") == (1, 139, 5568, 1)
 
 
 class TestBatchGroupSelection:

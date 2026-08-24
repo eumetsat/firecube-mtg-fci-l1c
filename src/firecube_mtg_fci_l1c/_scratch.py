@@ -21,10 +21,31 @@ archive members that would escape the destination directory.
 
 from __future__ import annotations
 
+import atexit
+import threading
 import tempfile
 import zipfile
 from pathlib import Path
 from types import TracebackType
+
+
+_pending_cleanup_threads: list[threading.Thread] = []
+_pending_lock = threading.Lock()
+
+
+def register_cleanup_thread(thread: threading.Thread) -> None:
+    with _pending_lock:
+        _pending_cleanup_threads.append(thread)
+
+
+def _await_pending_cleanups() -> None:
+    with _pending_lock:
+        threads = list(_pending_cleanup_threads)
+    for thread in threads:
+        thread.join(timeout=30)
+
+
+atexit.register(_await_pending_cleanups)
 
 
 def _safe_extractall(zf: zipfile.ZipFile, dest: Path) -> None:
@@ -64,7 +85,9 @@ class BatchScratch:
     def extract_zip(self, zip_path: Path) -> Path:
         """Extract *zip_path* into a numbered subdirectory and return its path."""
         self._extract_counter += 1
-        extract_dir = self._scratch_root / f"{Path(zip_path).stem}-{self._extract_counter}"
+        extract_dir = (
+            self._scratch_root / f"{Path(zip_path).stem}-{self._extract_counter}"
+        )
         extract_dir.mkdir(parents=True, exist_ok=True)
         with zipfile.ZipFile(zip_path, "r") as zf:
             _safe_extractall(zf, extract_dir)

@@ -235,7 +235,7 @@ def fix_fillvalue(store: Path, yes_i_really_mean_it: bool) -> None:
     import zarr
 
     from .config import MtgFciL1cConfig
-    from .schema import build_specs
+    from ._variables import build_specs
 
     eligible_arrays: dict[str, set[str]] = {}
     for pt in ("FDHSI", "HRFI"):

@@ -16,10 +16,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from firecube.ingestor.api import (  # pyright: ignore[reportMissingImports]
     PluginConfig as BasePluginConfig,
+    ZarrTemplateConfig,
 )
 
 from ._constants import (
@@ -31,6 +32,15 @@ from ._constants import (
     logical_channel_resolution_map,
 )
 
+# Maximum zarr_chunk_y per resolution for chunk-owned assembly (2 × nc_part row count).
+# Values exceeding this would require assembling from > 2 nc_parts per output chunk,
+# which violates the bounded-cache invariant. Config parse rejects them loudly.
+MAX_CHUNK_Y_PER_RESOLUTION: dict[str, int] = {
+    "500m": 1112,  # 2 × 556
+    "1km": 556,  # 2 × 278
+    "2km": 278,  # 2 × 139
+}
+
 # Every ``data_<res>`` group that could be sharded, across all product types.
 _VALID_SHARD_GROUPS: frozenset[str] = frozenset(
     f"data_{res}" for resolutions in VALID_RESOLUTIONS.values() for res in resolutions
@@ -41,6 +51,10 @@ _VALID_PIXEL_TIME_DTYPES: frozenset[str] = frozenset(
 )
 
 _VALID_PROJECTION_UNITS: frozenset[str] = frozenset({"meter", "metre", "radian"})
+
+
+def _default_template_config() -> ZarrTemplateConfig:
+    return ZarrTemplateConfig(zarr_sharding=True)
 
 
 @dataclass
@@ -57,6 +71,13 @@ class MtgFciL1cConfig(BasePluginConfig):
     include_pixel_time: bool = True
     include_calibration: bool = True
     include_geolocation: bool = True
+    emit_static_variables: bool = True
+    """Emit static coordinate arrays (latitude, longitude, x, y, spatial_ref).
+
+    Set ``False`` on non-owner pods in a parallel fan-out to avoid redundant
+    static writes. The production helper (``scripts/fci-ingest.sh``) sets this
+    automatically; operators should not need to set it manually.
+    """
     fci_grids_file: str | None = None
     """Path to pre-generated .npz grids file.
 
@@ -91,16 +112,6 @@ class MtgFciL1cConfig(BasePluginConfig):
     zarr_chunk_y: int | None = None
     """Y-dimension chunk size for Zarr arrays. If None, uses nc_part-aligned defaults."""
 
-    zarr_sharding: bool = True
-    """Enable Zarr sharding for the time-indexed 4-D data arrays.
-
-    When True, each ``data_<res>`` array gets a byte-budgeted shard derived from
-    its chunk shape (see ``zarr_shard_target_bytes``). Static lat/lon get
-    byte-budgeted chunks but are never sharded (full-disk static shards would be
-    enormous at 1km/500m). Set ``zarr_sharding=False`` to disable
-    sharding entirely.
-    """
-
     zarr_shard_target_bytes: int = 128 * 1024 * 1024
     """Target uncompressed bytes per shard for the default shard policy.
 
@@ -129,7 +140,7 @@ class MtgFciL1cConfig(BasePluginConfig):
     Validation rules (two phases):
     - Phase 1 (here, ``__post_init__``): rank-4, positive dims, time==1, channel==1,
       group in ``_VALID_SHARD_GROUPS``. Run at config construction time.
-    - Phase 2 (``get_streaming_chunk_shape``): y ≤ dimsize, x ≤ dimsize, and
+    - Phase 2 (``get_group_chunk_shape``): y ≤ dimsize, x ≤ dimsize, and
       cross-check against ``zarr_shard_overrides`` for divisibility. Run at schema
       build time when dimsize is known.
 
@@ -174,6 +185,21 @@ class MtgFciL1cConfig(BasePluginConfig):
     length directly rather than derive it from an end date.
     """
 
+    _template_config: ZarrTemplateConfig = field(
+        default_factory=_default_template_config,
+        init=False,
+        repr=False,
+        compare=False,
+    )
+
+    @property
+    def template_config(self) -> ZarrTemplateConfig:
+        return self._template_config
+
+    @template_config.setter
+    def template_config(self, value: ZarrTemplateConfig) -> None:
+        self._template_config = value
+
     def __post_init__(self) -> None:
         """Validate sharding config: positive target, and override shape sanity.
 
@@ -206,6 +232,29 @@ class MtgFciL1cConfig(BasePluginConfig):
                 f"projection_units must be one of {sorted(_VALID_PROJECTION_UNITS)!r}, "
                 f"got {self.projection_units!r}"
             )
+
+        if self.zarr_chunk_y is not None:
+            if self.product_type is not None or self.resolutions is not None:
+                selected = frozenset(self.get_resolutions(self.product_type))
+                resolution_maxima = [
+                    (res, max_val)
+                    for res, max_val in MAX_CHUNK_Y_PER_RESOLUTION.items()
+                    if res in selected
+                ]
+            else:
+                resolution_maxima = [("1km", MAX_CHUNK_Y_PER_RESOLUTION["1km"])]
+            for res, max_val in resolution_maxima:
+                if (
+                    self.zarr_chunk_overrides is not None
+                    and f"data_{res}" in self.zarr_chunk_overrides
+                ):
+                    continue
+                if self.zarr_chunk_y > max_val:
+                    raise ValueError(
+                        f"zarr_chunk_y={self.zarr_chunk_y} exceeds max supported for "
+                        f"chunk-owned assembly at resolution {res}; use zarr_chunk_y <= {max_val} "
+                        "or file an issue."
+                    )
 
         if self.zarr_shard_overrides is not None:
             for group, shard_shape in self.zarr_shard_overrides.items():
@@ -251,6 +300,14 @@ class MtgFciL1cConfig(BasePluginConfig):
                     raise ValueError(
                         f"zarr_chunk_overrides[{group!r}] channel dim must be 1 "
                         f"(FCI writes channels independently), got {chunk_shape!r}"
+                    )
+                res = group.replace("data_", "")
+                max_y = MAX_CHUNK_Y_PER_RESOLUTION.get(res)
+                if max_y is not None and chunk_shape[1] > max_y:
+                    raise ValueError(
+                        f"zarr_chunk_overrides[{group!r}] y={chunk_shape[1]} "
+                        "exceeds max supported for chunk-owned assembly at "
+                        f"resolution {res}; use y <= {max_y} or file an issue."
                     )
 
     def get_resolutions(self, product_type: str | None = None) -> list[str]:
@@ -307,7 +364,7 @@ class MtgFciL1cConfig(BasePluginConfig):
 
         return matched
 
-    def get_streaming_chunk_shape(self, group: str) -> tuple[int, ...]:
+    def get_group_chunk_shape(self, group: str) -> tuple[int, ...]:
         """Return streaming-optimized chunk shape for a group.
 
         Precedence (highest wins):

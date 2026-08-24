@@ -34,6 +34,7 @@ class ResolutionInfo(TypedDict):
     dimsize: int
     nc_channels: list[str]
 
+
 # String identifiers embedded in EUMETSAT ZIP filenames.
 PRODUCT_TYPE_FDHSI = "FDHSI"
 PRODUCT_TYPE_HRFI = "HRFI"
@@ -138,7 +139,7 @@ CHUNK_DEFAULTS_BY_RESOLUTION: dict[str, int] = {
 #
 # Derived from source NetCDF data/<channel>/measured/x and y coordinate
 # attributes (scale_factor magnitude). Constants store POSITIVE magnitudes.
-# schema.py builds both axes as (index - (dimsize / 2 - 0.5)) * scale, which
+# _variables.py builds both axes as (index - (dimsize / 2 - 0.5)) * scale, which
 # is symmetric around the sub-satellite point and matches the L1C files' own
 # x/y for the corresponding 1-based packed column/row (the files use
 # add_offset = (dimsize / 2 + 0.5) * |scale| per resolution). x is
@@ -161,7 +162,7 @@ FCI_PROJ_SWEEP_AXIS: str = "y"
 
 @lru_cache(maxsize=None)
 def logical_channel_resolution_map(product_type: str) -> dict[str, str]:
-    """Map LOGICAL channel name to resolution. User-facing (schema.py, config.py)."""
+    """Map LOGICAL channel name to resolution. User-facing (_variables.py, config.py)."""
     result: dict[str, str] = {}
     for resolution, info in CONSTANTS[product_type].items():
         for channel in info["channels"]:
@@ -171,12 +172,13 @@ def logical_channel_resolution_map(product_type: str) -> dict[str, str]:
 
 @lru_cache(maxsize=None)
 def nc_channel_resolution_map(product_type: str) -> dict[str, str]:
-    """Map NetCDF channel alias to resolution. Reader-facing (_streaming.py)."""
+    """Map NetCDF channel alias to resolution. Reader-facing (_decode.py)."""
     result: dict[str, str] = {}
     for resolution, info in CONSTANTS[product_type].items():
         for nc_channel in info["nc_channels"]:
             result[nc_channel] = resolution
     return result
+
 
 def dimsize_for(product_type: str, resolution: str) -> int:
     """Return the detector dimension for a product/resolution, or 0 if unknown."""

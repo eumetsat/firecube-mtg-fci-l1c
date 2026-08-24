@@ -31,15 +31,15 @@ from __future__ import annotations
 
 import numpy as np  # pyright: ignore[reportMissingImports]
 
-from . import _variable
+from . import _schema
 from ._constants import (
     FCI_PROJ_SCALE_RAD_PER_INDEX,
     MTG_PERSPECTIVE_POINT_HEIGHT_M,
 )
 from .config import MtgFciL1cConfig
-from ._variable import Variable, VariableContext, variable_enabled
+from ._schema import Variable, VariableContext, variable_enabled
 
-# Re-exported so that existing ``from .schema import Variable, VariableContext``
+# Re-exported so that existing ``from ._variables import Variable, VariableContext``
 # imports continue to work without change.
 __all__ = [
     "Variable",
@@ -68,7 +68,7 @@ _MTG_GEOS_WKT: str = (
     'METHOD["Geostationary Satellite (Sweep Y)"],'
     'PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433]],'
     'PARAMETER["Satellite Height",35786400,LENGTHUNIT["metre",1]]],'
-    'CS[Cartesian,2],'
+    "CS[Cartesian,2],"
     'AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],'
     'AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]]]'
 )
@@ -345,7 +345,11 @@ VARIABLES: list[Variable] = [
         dims=("y", "x"),
         dtype=np.float32,
         fill_value=np.float32(np.nan),
-        attrs={"units": "degrees_north", "standard_name": "latitude", "long_name": "latitude"},
+        attrs={
+            "units": "degrees_north",
+            "standard_name": "latitude",
+            "long_name": "latitude",
+        },
         source=_latitude_source,
         enabled_by="include_geolocation",
     ),
@@ -354,7 +358,11 @@ VARIABLES: list[Variable] = [
         dims=("y", "x"),
         dtype=np.float32,
         fill_value=np.float32(np.nan),
-        attrs={"units": "degrees_east", "standard_name": "longitude", "long_name": "longitude"},
+        attrs={
+            "units": "degrees_east",
+            "standard_name": "longitude",
+            "long_name": "longitude",
+        },
         source=_longitude_source,
         enabled_by="include_geolocation",
     ),
@@ -444,4 +452,4 @@ VARIABLES: list[Variable] = [
     # -----------------------------------------------------------------------
 ]
 
-build_specs = build_all_specs = _variable.build_specs
+build_specs = build_all_specs = _schema.build_specs

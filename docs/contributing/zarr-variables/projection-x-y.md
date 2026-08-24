@@ -25,12 +25,12 @@ These coordinates are static per group, so the source function lives in the stat
 ### Case A: Computed analytically from constants
 
 > **Status: IMPLEMENTED in FCI L1C plugin**: see `_projection_angle_source` (shared by `_projection_x_source` /
-> `_projection_y_source`) in `schema.py` and `FCI_PROJ_SCALE_RAD_PER_INDEX` in `_constants.py`.
+> `_projection_y_source`) in `_variables.py` and `FCI_PROJ_SCALE_RAD_PER_INDEX` in `_constants.py`.
 
 If you know the projection geometry (FCI uses fixed sampling), you can compute the coords without touching the NetCDF:
 
 ```python
-# In schema.py: radians version
+# In _variables.py: radians version
 import numpy as np
 
 _FCI_PROJ_SCALE: dict[str, float] = {
@@ -83,13 +83,13 @@ Check the result against `compute_latlon` through `pyproj` (see `tests/test_proj
 
 If you need the actual packed values from the NetCDF (in case calibration drifts or you want exact byte-level fidelity), extend the static phase to read x/y from the first nc_part of each batch. This requires architectural changes since the static phase currently has no nc_part access:
 
-1. **`src/firecube_mtg_fci_l1c/_streaming.py`**: add `NCPartReader.read_projection_x()` and `read_projection_y()` that return `(int16_array, scale_factor, add_offset)` from `data/<first_channel>/measured/x` and `y`.
+1. **`src/firecube_mtg_fci_l1c/_decode.py`**: add `NCPartReader.read_projection_x()` and `read_projection_y()` that return `(int16_array, scale_factor, add_offset)` from `data/<first_channel>/measured/x` and `y`.
 2. **`src/firecube_mtg_fci_l1c/ingestor.py`**: during the first nc_part read in `build_write_intents`, capture x/y for each plan and stash on a new `VariableContext` field (e.g., `projection_x_decoded: np.ndarray | None`). For `y`, accumulate across nc_parts using `read_row_range()` to know each part's row offsets.
-3. **`src/firecube_mtg_fci_l1c/_variable.py`**: add the new ctx fields.
-4. **`src/firecube_mtg_fci_l1c/schema.py`**: add pure-projection source functions.
+3. **`src/firecube_mtg_fci_l1c/_schema.py`**: add the new ctx fields.
+4. **`src/firecube_mtg_fci_l1c/_variables.py`**: add pure-projection source functions.
 
 ```python
-# In schema.py: Case B source (after the extensions above)
+# In _variables.py: Case B source (after the extensions above)
 def _projection_x_radians_source(ctx: VariableContext) -> np.ndarray | None:
     return ctx.projection_x_decoded if ctx.projection_x_decoded is not None else None
 ```
@@ -130,8 +130,8 @@ Use the angular version (`radian`, `projection_x_angular_coordinate`) when you w
 
 | Case | Files |
 |---|---|
-| A (analytical) | `src/firecube_mtg_fci_l1c/schema.py` |
-| B (NetCDF-decoded) | `_streaming.py` + `_variable.py` + `ingestor.py` + `schema.py` |
+| A (analytical) | `src/firecube_mtg_fci_l1c/_variables.py` |
+| B (NetCDF-decoded) | `_decode.py` + `_schema.py` + `ingestor.py` + `_variables.py` |
 
 ## Common mistakes
 

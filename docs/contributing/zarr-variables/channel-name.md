@@ -4,7 +4,7 @@ The `channel_name` variable maps channel index `0..n-1` back to logical channel 
 
 ## Implementation
 
-Both pieces live in `src/firecube_mtg_fci_l1c/schema.py`.
+Both pieces live in `src/firecube_mtg_fci_l1c/_variables.py`.
 
 ### Source function
 
@@ -71,7 +71,7 @@ Variable(
 
 | File | Change |
 |------|--------|
-| `src/firecube_mtg_fci_l1c/schema.py` | Add source function + append `Variable(...)` to `VARIABLES` |
+| `src/firecube_mtg_fci_l1c/_variables.py` | Add source function + append `Variable(...)` to `VARIABLES` |
 
 ## Common mistakes
 

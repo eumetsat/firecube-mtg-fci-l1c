@@ -1,8 +1,6 @@
 {
   "fdhsi_defaults": {
-    "hash": "1286ec3defe28fc8f2554d3b2b43feffc51b8327f8966926185a3592e8279d56",
-    "options": {},
-    "product_type": "FDHSI",
+    "hash": "c5997e8f646ace824a2986b68fb8309457ffc00673799c6802cac32e36546455",
     "structure": {
       "attrs": {},
       "groups": {
@@ -22,7 +20,6 @@
               ],
               "dtype": "|S16",
               "fill_value": "",
-              "has_static_marker": true,
               "shape": [
                 2
               ]
@@ -49,7 +46,6 @@
               ],
               "dtype": "uint16",
               "fill_value": 65535,
-              "has_static_marker": false,
               "shape": [
                 1,
                 4,
@@ -74,7 +70,6 @@
               ],
               "dtype": "float32",
               "fill_value": "nan",
-              "has_static_marker": true,
               "shape": [
                 4,
                 4
@@ -97,7 +92,6 @@
               ],
               "dtype": "float32",
               "fill_value": "nan",
-              "has_static_marker": true,
               "shape": [
                 4,
                 4
@@ -118,7 +112,6 @@
               ],
               "dtype": "float64",
               "fill_value": "nan",
-              "has_static_marker": false,
               "shape": [
                 1,
                 2
@@ -156,7 +149,6 @@
               ],
               "dtype": "uint8",
               "fill_value": 0,
-              "has_static_marker": false,
               "shape": [
                 1,
                 4,
@@ -187,7 +179,6 @@
               ],
               "dtype": "float64",
               "fill_value": "nan",
-              "has_static_marker": false,
               "shape": [
                 1,
                 4,
@@ -210,7 +201,6 @@
               ],
               "dtype": "float64",
               "fill_value": "nan",
-              "has_static_marker": false,
               "shape": [
                 1,
                 2
@@ -234,7 +224,6 @@
               "dimension_names": [],
               "dtype": "int8",
               "fill_value": 0,
-              "has_static_marker": false,
               "shape": []
             },
             "time": {
@@ -251,7 +240,6 @@
               ],
               "dtype": "datetime64[s]",
               "fill_value": null,
-              "has_static_marker": false,
               "shape": [
                 1
               ]
@@ -272,7 +260,6 @@
               ],
               "dtype": "float64",
               "fill_value": 0.0,
-              "has_static_marker": true,
               "shape": [
                 4
               ]
@@ -293,7 +280,6 @@
               ],
               "dtype": "float64",
               "fill_value": 0.0,
-              "has_static_marker": true,
               "shape": [
                 4
               ]
@@ -323,7 +309,6 @@
               ],
               "dtype": "|S16",
               "fill_value": "",
-              "has_static_marker": true,
               "shape": [
                 1
               ]
@@ -350,7 +335,6 @@
               ],
               "dtype": "uint16",
               "fill_value": 65535,
-              "has_static_marker": false,
               "shape": [
                 1,
                 4,
@@ -375,7 +359,6 @@
               ],
               "dtype": "float32",
               "fill_value": "nan",
-              "has_static_marker": true,
               "shape": [
                 4,
                 4
@@ -398,7 +381,6 @@
               ],
               "dtype": "float32",
               "fill_value": "nan",
-              "has_static_marker": true,
               "shape": [
                 4,
                 4
@@ -419,7 +401,6 @@
               ],
               "dtype": "float64",
               "fill_value": "nan",
-              "has_static_marker": false,
               "shape": [
                 1,
                 1
@@ -457,7 +438,6 @@
               ],
               "dtype": "uint8",
               "fill_value": 0,
-              "has_static_marker": false,
               "shape": [
                 1,
                 4,
@@ -488,7 +468,6 @@
               ],
               "dtype": "float64",
               "fill_value": "nan",
-              "has_static_marker": false,
               "shape": [
                 1,
                 4,
@@ -511,7 +490,6 @@
               ],
               "dtype": "float64",
               "fill_value": "nan",
-              "has_static_marker": false,
               "shape": [
                 1,
                 1
@@ -535,7 +513,6 @@
               "dimension_names": [],
               "dtype": "int8",
               "fill_value": 0,
-              "has_static_marker": false,
               "shape": []
             },
             "time": {
@@ -552,7 +529,6 @@
               ],
               "dtype": "datetime64[s]",
               "fill_value": null,
-              "has_static_marker": false,
               "shape": [
                 1
               ]
@@ -573,7 +549,6 @@
               ],
               "dtype": "float64",
               "fill_value": 0.0,
-              "has_static_marker": true,
               "shape": [
                 4
               ]
@@ -594,7 +569,6 @@
               ],
               "dtype": "float64",
               "fill_value": 0.0,
-              "has_static_marker": true,
               "shape": [
                 4
               ]
@@ -612,9 +586,7 @@
     }
   },
   "hrfi_defaults": {
-    "hash": "191a6634629e8b51da5891c5f31f0169334974ecd7f61bb4c14a8c3586fc7d73",
-    "options": {},
-    "product_type": "HRFI",
+    "hash": "70eb5e24b05f73c7f0f3e106fdd8342a9fba1ca3131c2d24012ef6d9dde9ebec",
     "structure": {
       "attrs": {},
       "groups": {
@@ -634,7 +606,6 @@
               ],
               "dtype": "|S16",
               "fill_value": "",
-              "has_static_marker": true,
               "shape": [
                 1
               ]
@@ -661,7 +632,6 @@
               ],
               "dtype": "uint16",
               "fill_value": 65535,
-              "has_static_marker": false,
               "shape": [
                 1,
                 4,
@@ -686,7 +656,6 @@
               ],
               "dtype": "float32",
               "fill_value": "nan",
-              "has_static_marker": true,
               "shape": [
                 4,
                 4
@@ -709,7 +678,6 @@
               ],
               "dtype": "float32",
               "fill_value": "nan",
-              "has_static_marker": true,
               "shape": [
                 4,
                 4
@@ -730,7 +698,6 @@
               ],
               "dtype": "float64",
               "fill_value": "nan",
-              "has_static_marker": false,
               "shape": [
                 1,
                 1
@@ -768,7 +735,6 @@
               ],
               "dtype": "uint8",
               "fill_value": 0,
-              "has_static_marker": false,
               "shape": [
                 1,
                 4,
@@ -799,7 +765,6 @@
               ],
               "dtype": "float64",
               "fill_value": "nan",
-              "has_static_marker": false,
               "shape": [
                 1,
                 4,
@@ -822,7 +787,6 @@
               ],
               "dtype": "float64",
               "fill_value": "nan",
-              "has_static_marker": false,
               "shape": [
                 1,
                 1
@@ -846,7 +810,6 @@
               "dimension_names": [],
               "dtype": "int8",
               "fill_value": 0,
-              "has_static_marker": false,
               "shape": []
             },
             "time": {
@@ -863,7 +826,6 @@
               ],
               "dtype": "datetime64[s]",
               "fill_value": null,
-              "has_static_marker": false,
               "shape": [
                 1
               ]
@@ -884,7 +846,6 @@
               ],
               "dtype": "float64",
               "fill_value": 0.0,
-              "has_static_marker": true,
               "shape": [
                 4
               ]
@@ -905,7 +866,6 @@
               ],
               "dtype": "float64",
               "fill_value": 0.0,
-              "has_static_marker": true,
               "shape": [
                 4
               ]
@@ -935,7 +895,6 @@
               ],
               "dtype": "|S16",
               "fill_value": "",
-              "has_static_marker": true,
               "shape": [
                 1
               ]
@@ -962,7 +921,6 @@
               ],
               "dtype": "uint16",
               "fill_value": 65535,
-              "has_static_marker": false,
               "shape": [
                 1,
                 4,
@@ -987,7 +945,6 @@
               ],
               "dtype": "float32",
               "fill_value": "nan",
-              "has_static_marker": true,
               "shape": [
                 4,
                 4
@@ -1010,7 +967,6 @@
               ],
               "dtype": "float32",
               "fill_value": "nan",
-              "has_static_marker": true,
               "shape": [
                 4,
                 4
@@ -1031,7 +987,6 @@
               ],
               "dtype": "float64",
               "fill_value": "nan",
-              "has_static_marker": false,
               "shape": [
                 1,
                 1
@@ -1069,7 +1024,6 @@
               ],
               "dtype": "uint8",
               "fill_value": 0,
-              "has_static_marker": false,
               "shape": [
                 1,
                 4,
@@ -1100,7 +1054,6 @@
               ],
               "dtype": "float64",
               "fill_value": "nan",
-              "has_static_marker": false,
               "shape": [
                 1,
                 4,
@@ -1123,7 +1076,6 @@
               ],
               "dtype": "float64",
               "fill_value": "nan",
-              "has_static_marker": false,
               "shape": [
                 1,
                 1
@@ -1147,7 +1099,6 @@
               "dimension_names": [],
               "dtype": "int8",
               "fill_value": 0,
-              "has_static_marker": false,
               "shape": []
             },
             "time": {
@@ -1164,7 +1115,6 @@
               ],
               "dtype": "datetime64[s]",
               "fill_value": null,
-              "has_static_marker": false,
               "shape": [
                 1
               ]
@@ -1185,7 +1135,6 @@
               ],
               "dtype": "float64",
               "fill_value": 0.0,
-              "has_static_marker": true,
               "shape": [
                 4
               ]
@@ -1206,7 +1155,6 @@
               ],
               "dtype": "float64",
               "fill_value": 0.0,
-              "has_static_marker": true,
               "shape": [
                 4
               ]
