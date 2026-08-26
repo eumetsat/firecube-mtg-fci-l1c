@@ -306,9 +306,8 @@ echo ">> total run time: $(fmt_dur "$RUN_ELAPSED") (${RUN_ELAPSED}s)"
 echo ">> logs: $LOGDIR  (full transcript: run.log)"
 if [[ "$nfail" -eq 0 ]]; then
   echo ">> running static marker drift-check"
-  # One interpreter for all 8 checks: per-array `firecube zarr validate` calls
-  # pay CLI+numpy import startup 16 times on the serial tail after the last
-  # pod (~3.4 s wall vs ~0.5 s for this form, same assertion).
+  # One interpreter for all marker checks: shelling out per array repays CLI
+  # and import startup on the serial tail after the last pod.
   DRIFT_PY="$(dirname "$FIRECUBE")/python3"
   [[ -x "$DRIFT_PY" ]] || DRIFT_PY=python3
   if "$DRIFT_PY" - "$TARGET" "$PLAN_GROUPS" <<'PY' 2> "$LOGDIR/drift-check.err"

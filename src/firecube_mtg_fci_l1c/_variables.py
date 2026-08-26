@@ -188,11 +188,6 @@ def _time_source(ctx: VariableContext) -> None:
     return None
 
 
-def _spatial_ref_source(ctx: VariableContext) -> None:
-    # Scalar grid-mapping container; CF attrs only, no data.
-    return None
-
-
 def _channel_name_source(ctx: VariableContext) -> np.ndarray:
     """Return channel names as a fixed-width byte string array."""
     return np.asarray(ctx.logical_channels, dtype="S16")
@@ -432,7 +427,7 @@ VARIABLES: list[Variable] = [
             "crs_wkt": _MTG_GEOS_WKT,
             "spatial_ref": _MTG_GEOS_WKT,
         },
-        source=_spatial_ref_source,
+        # Scalar grid-mapping container: CF attrs only, no data payload.
     ),
     # -----------------------------------------------------------------------
     # EXAMPLE (commented out): combined calibration coefficients

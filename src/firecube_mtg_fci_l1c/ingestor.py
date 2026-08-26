@@ -85,6 +85,7 @@ log = logging.getLogger("firecube.ingestor.mtg_fci_l1c")
 
 if TYPE_CHECKING:
     from ._scratch import BatchScratch
+    from ._variables import Variable, VariableContext
 
 
 @dataclasses.dataclass
@@ -376,25 +377,48 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                     pending.append((variable, ctx))
 
             for variable, ctx_ in pending:
-                static_key = f"{ctx_.group}/{variable.name}"
-                try:
-                    data = variable.source(ctx_)
-                except Exception:
-                    with self._static_lock:
-                        self._static_coords_written.discard(static_key)
-                    raise
-                if data is None:
-                    continue
                 intents.append(
                     WriteIntent(
                         group=ctx_.group,
                         array=variable.name,
                         ts_index=0,
-                        data=data,
+                        data=self._static_payload_loader(variable, ctx_),
                         kind="static",
                     )
                 )
         return intents
+
+    def _static_payload_loader(
+        self, variable: Variable, ctx: VariableContext
+    ) -> Callable[[], np.ndarray]:
+        """Return a zero-arg loader for a static variable's payload.
+
+        Static intents carry callables so the engine materialises a payload
+        only for intents it actually dispatches; an intent suppressed before
+        dispatch never resolves its data.
+        """
+        static_key = f"{ctx.group}/{variable.name}"
+        source = variable.source
+        if source is None:  # pragma: no cover - emission filters source=None
+            raise ValueError(f"static variable {static_key} declares no source")
+
+        def _load() -> np.ndarray:
+            try:
+                data = source(ctx)
+            except Exception:
+                with self._static_lock:
+                    self._static_coords_written.discard(static_key)
+                raise
+            if data is None:
+                # Variables without a data payload declare source=None and are
+                # filtered at emission; a source returning None here would
+                # silently drop a declared array.
+                raise RuntimeError(
+                    f"static source for {static_key} returned None at dispatch"
+                )
+            return data
+
+        return _load
 
     def _emit_timestamp_intents(
         self,

@@ -50,6 +50,10 @@ jobs:
           scanners: vuln,secret,license
           exit-code: '1'
           severity: CRITICAL,HIGH
+        env:
+          # mirror.gcr.io 403s GitHub-hosted runners; try GHCR and ECR first.
+          TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db:2,public.ecr.aws/aquasecurity/trivy-db:2,mirror.gcr.io/aquasec/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db:1,public.ecr.aws/aquasecurity/trivy-java-db:1,mirror.gcr.io/aquasec/trivy-java-db:1
 
   dependency-review:
     if: github.event_name == 'pull_request'
