@@ -37,6 +37,23 @@ jobs:
       - run: uv sync --locked --all-groups
       - run: uv run pytest tests/ -q --tb=short
 
+  license-headers:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: Require EUMETSAT license header on tracked Python files
+        run: |
+          missing=0
+          for f in $(git ls-files '*.py'); do
+            if ! head -3 "$f" | grep -q "Copyright.*EUMETSAT"; then
+              echo "missing license header: $f"
+              missing=1
+            fi
+          done
+          exit $missing
+
   security-scan:
     runs-on: ubuntu-latest
     permissions:
