@@ -22,7 +22,7 @@ import numpy as np
 import pytest
 
 from firecube_mtg_fci_l1c.config import MtgFciL1cConfig
-from firecube_mtg_fci_l1c.schema import (
+from firecube_mtg_fci_l1c._variables import (
     VARIABLES,
     Variable,
     VariableContext,
@@ -37,7 +37,9 @@ from firecube_mtg_fci_l1c.schema import (
 
 
 def test_variable_pickle_roundtrip() -> None:
-    v = Variable(name="x", dims=("x",), dtype="f8", fill_value=None, attrs={"units": "m"})
+    v = Variable(
+        name="x", dims=("x",), dtype="f8", fill_value=None, attrs={"units": "m"}
+    )
     assert pickle.loads(pickle.dumps(v)) == v
 
 
@@ -132,7 +134,9 @@ def test_variable_enabled_missing_attr_defaults_true() -> None:
 
 
 def test_variables_count() -> None:
-    assert len(VARIABLES) == 12, f"Expected 12, got {len(VARIABLES)}: {[v.name for v in VARIABLES]}"
+    assert len(VARIABLES) == 12, (
+        f"Expected 12, got {len(VARIABLES)}: {[v.name for v in VARIABLES]}"
+    )
 
 
 def test_channel_name_in_variables() -> None:
@@ -173,7 +177,9 @@ def test_variables_pickle_roundtrip() -> None:
 
 def test_variables_no_lambda_sources() -> None:
     lambdas = [
-        v.name for v in VARIABLES if v.source is not None and v.source.__name__ == "<lambda>"
+        v.name
+        for v in VARIABLES
+        if v.source is not None and v.source.__name__ == "<lambda>"
     ]
     assert not lambdas, f"Lambda sources detected (not picklable): {lambdas}"
 
@@ -272,8 +278,8 @@ def test_projection_units_accepts_meter_metre_radian() -> None:
 
 @pytest.mark.unit
 def test_projection_units_metre_is_alias_for_meter() -> None:
-    from firecube_mtg_fci_l1c._variable import VariableContext as _VC
-    from firecube_mtg_fci_l1c.schema import _projection_x_source
+    from firecube_mtg_fci_l1c._schema import VariableContext as _VC
+    from firecube_mtg_fci_l1c._variables import _projection_x_source
 
     ctx_meter = _VC(
         group="data_1km",
@@ -306,8 +312,11 @@ def test_projection_units_rejects_invalid() -> None:
 
 @pytest.mark.unit
 def test_x_y_source_values_1km_radian_mode() -> None:
-    from firecube_mtg_fci_l1c._variable import VariableContext as _VC
-    from firecube_mtg_fci_l1c.schema import _projection_x_source, _projection_y_source
+    from firecube_mtg_fci_l1c._schema import VariableContext as _VC
+    from firecube_mtg_fci_l1c._variables import (
+        _projection_x_source,
+        _projection_y_source,
+    )
 
     ctx = _VC(
         group="data_1km",
@@ -338,8 +347,11 @@ def test_x_y_source_values_1km_radian_mode() -> None:
 
 @pytest.mark.unit
 def test_x_y_source_values_meter_mode_1km() -> None:
-    from firecube_mtg_fci_l1c._variable import VariableContext as _VC
-    from firecube_mtg_fci_l1c.schema import _projection_x_source, _projection_y_source
+    from firecube_mtg_fci_l1c._schema import VariableContext as _VC
+    from firecube_mtg_fci_l1c._variables import (
+        _projection_x_source,
+        _projection_y_source,
+    )
 
     ctx = _VC(
         group="data_1km",
@@ -364,8 +376,11 @@ def test_x_y_source_values_meter_mode_1km() -> None:
 
 @pytest.mark.unit
 def test_x_y_source_values_meter_mode_500m_and_2km() -> None:
-    from firecube_mtg_fci_l1c._variable import VariableContext as _VC
-    from firecube_mtg_fci_l1c.schema import _projection_x_source, _projection_y_source
+    from firecube_mtg_fci_l1c._schema import VariableContext as _VC
+    from firecube_mtg_fci_l1c._variables import (
+        _projection_x_source,
+        _projection_y_source,
+    )
 
     for group, dimsize in [("data_500m", 22272), ("data_2km", 5568)]:
         ctx = _VC(
@@ -511,42 +526,42 @@ def test_no_calibration_coefficients_variable() -> None:
 def test_chunk_override_takes_precedence_over_chunk_y() -> None:
     cfg = MtgFciL1cConfig(
         zarr_chunk_y=999,
-        zarr_chunk_overrides={"data_1km": (1, 2784, 11136, 1)},
+        zarr_chunk_overrides={"data_1km": (1, 556, 11136, 1)},
     )
     specs = build_specs(cfg, "FDHSI")
     g = next(g for g in specs if g.group == "data_1km")
     counts = next(a for a in g.arrays if a.name == "counts")
-    assert counts.chunks == (1, 2784, 11136, 1)
+    assert counts.chunks == (1, 556, 11136, 1)
 
 
 @pytest.mark.unit
 def test_chunk_override_combined_with_shard_override_full_disk() -> None:
-    """Power-user recipe: chunks divide dimsize, shards = full dimsize."""
+    """Power-user recipe: shards are a whole multiple of explicit chunks."""
     cfg = MtgFciL1cConfig(
-        zarr_chunk_overrides={"data_1km": (1, 2784, 11136, 1)},
-        zarr_shard_overrides={"data_1km": (1, 11136, 11136, 1)},
+        zarr_chunk_overrides={"data_1km": (1, 556, 11136, 1)},
+        zarr_shard_overrides={"data_1km": (1, 11120, 11136, 1)},
     )
     specs = build_specs(cfg, "FDHSI")
     g = next(g for g in specs if g.group == "data_1km")
     counts = next(a for a in g.arrays if a.name == "counts")
-    assert counts.chunks == (1, 2784, 11136, 1)
-    assert counts.shards == (1, 11136, 11136, 1)
-    assert counts.shards[1] // counts.chunks[1] == 4
+    assert counts.chunks == (1, 556, 11136, 1)
+    assert counts.shards == (1, 11120, 11136, 1)
+    assert counts.shards[1] // counts.chunks[1] == 20
     assert counts.shards[2] // counts.chunks[2] == 1
 
 
 @pytest.mark.unit
 def test_chunk_override_without_shard_override() -> None:
     """User overrides chunks only; shards stay byte-budgeted using new chunks."""
-    cfg = MtgFciL1cConfig(zarr_chunk_overrides={"data_1km": (1, 2784, 11136, 1)})
+    cfg = MtgFciL1cConfig(zarr_chunk_overrides={"data_1km": (1, 556, 11136, 1)})
     specs = build_specs(cfg, "FDHSI")
     g = next(g for g in specs if g.group == "data_1km")
     counts = next(a for a in g.arrays if a.name == "counts")
-    assert counts.chunks == (1, 2784, 11136, 1)
-    # byte-budget math: chunk_bytes = 1*2784*11136*2 = 62,029,824; budget = 134,217,728
-    # multiples = 134217728 // 62029824 = 2; cap = 11136 // 2784 = 4
-    # shard_y = max(2784, min(2,4) * 2784) = 5568
-    assert counts.shards == (1, 5568, 11136, 1)
+    assert counts.chunks == (1, 556, 11136, 1)
+    # byte-budget math: chunk_bytes = 1*556*11136*2 = 12,383,232; budget = 134,217,728
+    # multiples = 134217728 // chunk_bytes = 10; cap = 11136 // 556 = 20
+    # shard_y = max(556, min(10,20) * 556) = 5560
+    assert counts.shards == (1, 5560, 11136, 1)
 
 
 @pytest.mark.unit
@@ -561,9 +576,8 @@ def test_chunk_override_non_divisible_with_shard_override_raises() -> None:
 
 @pytest.mark.unit
 def test_chunk_override_y_exceeds_dimsize_raises() -> None:
-    cfg = MtgFciL1cConfig(zarr_chunk_overrides={"data_1km": (1, 99999, 11136, 1)})
-    with pytest.raises(ValueError, match="exceeds dimsize"):
-        build_specs(cfg, "FDHSI")
+    with pytest.raises(ValueError, match="exceeds max supported"):
+        MtgFciL1cConfig(zarr_chunk_overrides={"data_1km": (1, 99999, 11136, 1)})
 
 
 @pytest.mark.unit
@@ -579,29 +593,31 @@ def test_default_chunk_shape_unchanged_when_no_override() -> None:
 @pytest.mark.unit
 def test_mixed_per_resolution_override() -> None:
     """Only overriding data_1km; data_2km uses defaults."""
-    cfg = MtgFciL1cConfig(zarr_chunk_overrides={"data_1km": (1, 2784, 11136, 1)})
+    cfg = MtgFciL1cConfig(zarr_chunk_overrides={"data_1km": (1, 556, 11136, 1)})
     specs = build_specs(cfg, "FDHSI")
     g1km = next(g for g in specs if g.group == "data_1km")
     g2km = next(g for g in specs if g.group == "data_2km")
     counts_1km = next(a for a in g1km.arrays if a.name == "counts")
     counts_2km = next(a for a in g2km.arrays if a.name == "counts")
-    assert counts_1km.chunks == (1, 2784, 11136, 1)  # overridden
+    assert counts_1km.chunks == (1, 556, 11136, 1)  # overridden
     assert counts_2km.chunks == (1, 139, 5568, 1)  # default 2km
 
 
 @pytest.mark.unit
-def test_zarr_sharding_false_ignores_shard_overrides_but_keeps_chunk_overrides() -> None:
+def test_zarr_sharding_false_ignores_shard_overrides_but_keeps_chunk_overrides() -> (
+    None
+):
     """zarr_sharding=False produces shards=None regardless of shard overrides,
     but chunk overrides still apply to chunk shape."""
     cfg = MtgFciL1cConfig(
-        zarr_sharding=False,
-        zarr_chunk_overrides={"data_1km": (1, 2784, 11136, 1)},
-        zarr_shard_overrides={"data_1km": (1, 11136, 11136, 1)},
+        zarr_chunk_overrides={"data_1km": (1, 556, 11136, 1)},
+        zarr_shard_overrides={"data_1km": (1, 11120, 11136, 1)},
     )
+    cfg.template_config.zarr_sharding = False
     specs = build_specs(cfg, "FDHSI")
     g = next(g for g in specs if g.group == "data_1km")
     counts = next(a for a in g.arrays if a.name == "counts")
-    assert counts.chunks == (1, 2784, 11136, 1)  # chunk override still applied
+    assert counts.chunks == (1, 556, 11136, 1)  # chunk override still applied
     assert counts.shards is None  # sharding fully disabled
 
 
@@ -611,27 +627,35 @@ def test_chunk_overrides_cli_string_parser_path() -> None:
     the resulting config (with list values, not tuples) still passes validation
     and produces the correct schema."""
     # NOTE: from_options parses JSON strings, yielding lists not tuples
-    options = {"zarr_chunk_overrides": '{"data_1km":[1,2784,11136,1]}'}
+    options = {"zarr_chunk_overrides": '{"data_1km":[1,556,11136,1]}'}
     cfg = MtgFciL1cConfig.from_options(options)
     assert cfg.zarr_chunk_overrides is not None
     assert "data_1km" in cfg.zarr_chunk_overrides
-    assert tuple(cfg.zarr_chunk_overrides["data_1km"]) == (1, 2784, 11136, 1)
+    assert tuple(cfg.zarr_chunk_overrides["data_1km"]) == (1, 556, 11136, 1)
     # End-to-end: schema build accepts list values
     specs = build_specs(cfg, "FDHSI")
     counts = next(
-        a for g in specs if g.group == "data_1km" for a in g.arrays if a.name == "counts"
+        a
+        for g in specs
+        if g.group == "data_1km"
+        for a in g.arrays
+        if a.name == "counts"
     )
-    assert tuple(counts.chunks) == (1, 2784, 11136, 1)
+    assert tuple(counts.chunks) == (1, 556, 11136, 1)
 
 
 @pytest.mark.unit
 def test_chunk_overrides_dict_of_lists_accepted() -> None:
     """Validation in __post_init__ must handle both tuples and lists without error."""
     cfg = MtgFciL1cConfig(
-        zarr_chunk_overrides={"data_1km": [1, 2784, 11136, 1]}  # type: ignore[dict-item]
+        zarr_chunk_overrides={"data_1km": [1, 556, 11136, 1]}  # type: ignore[dict-item]
     )
     specs = build_specs(cfg, "FDHSI")
     counts = next(
-        a for g in specs if g.group == "data_1km" for a in g.arrays if a.name == "counts"
+        a
+        for g in specs
+        if g.group == "data_1km"
+        for a in g.arrays
+        if a.name == "counts"
     )
-    assert tuple(counts.chunks) == (1, 2784, 11136, 1)
+    assert tuple(counts.chunks) == (1, 556, 11136, 1)

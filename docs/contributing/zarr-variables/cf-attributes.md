@@ -1,10 +1,10 @@
 # CF Attributes
 
-Change, add, or remove CF attributes on any variable. All attrs live inline in the `Variable(...)` entry inside `schema.py`.
+Change, add, or remove CF attributes on any variable. All attrs live inline in the `Variable(...)` entry inside `_variables.py`.
 
 ## How
 
-Edit `src/firecube_mtg_fci_l1c/schema.py`. Find the `Variable(...)` entry for the target variable and update its `attrs` dict:
+Edit `src/firecube_mtg_fci_l1c/_variables.py`. Find the `Variable(...)` entry for the target variable and update its `attrs` dict:
 
 ```python
 Variable(
@@ -28,7 +28,7 @@ That's the only edit. No other file needs touching for an attrs-only change.
 
 | File | Change |
 |------|--------|
-| `src/firecube_mtg_fci_l1c/schema.py` | Update `attrs` dict of the target `Variable` entry |
+| `src/firecube_mtg_fci_l1c/_variables.py` | Update `attrs` dict of the target `Variable` entry |
 
 ## Renaming a variable
 
@@ -74,7 +74,7 @@ Don't put these in `attrs`. The ingestor manages them automatically:
 
 ## Common mistakes
 
-- Editing `ingestor.py` for a metadata-only change. Attrs live in `schema.py`.
+- Editing `ingestor.py` for a metadata-only change. Attrs live in `_variables.py`.
 - Adding a separate attrs registry or dict. Attrs are inline per `Variable`.
 - Setting `_FillValue` in `attrs`. Use the `fill_value` field on `Variable` instead.
 

@@ -20,8 +20,9 @@
 #   * one 10-min repeat cycle = one slot:
 #     slot = (timestamp_utc - time_epoch_utc_midnight) / cadence
 #   * a pod writes ALL resolution groups for its range -> NO --slot-group
-#   * every pod gets the SAME --input-data; the plugin's filter_items_to_slot_range
-#     keeps only the ZIPs whose slot falls in [slot_start, slot_end)
+#   * every pod gets the SAME --input-data; the engine resolves each item's
+#     inspect_item coordinate against the declared axis and keeps only the
+#     ZIPs whose slot falls in [slot_start, slot_end)
 #   * mode="floor": split on whole-slot boundaries only (never split a cycle)
 #
 # Two-phase: (0) generate shared geo grids once + preallocate the axis, then
@@ -44,7 +45,6 @@ mkdir -p "$LOGDIR"
 exec > >(tee -a "$LOGDIR/run.log") 2>&1
 RUN_T0=$(date +%s)
 fmt_dur() { local s=$1; printf '%dh%02dm%02ds' $((s/3600)) $((s%3600/60)) $((s%60)); }
-
 # ---- what to ingest --------------------------------------------------------
 PLUGIN="${PLUGIN:-mtg_fci_l1c}"
 PRODUCT_TYPE="${PRODUCT_TYPE:-FDHSI}"                 # FDHSI | HRFI
@@ -72,6 +72,8 @@ WRITE_MODE="${WRITE_MODE:-direct}"
 STORAGE_DRIVER="${STORAGE_DRIVER:-fsspec}"
 STORAGE_TYPE="${STORAGE_TYPE:-}"                      # inferred from TARGET scheme if empty
 FORCE_REINGEST="${FORCE_REINGEST:-1}"                # 1 = overwrite + idempotent re-run
+EXTRACT_WORKERS="${EXTRACT_WORKERS:-}"               # parallel ZIP extraction per pod (engine default: 4)
+EXTRA_OPTIONS="${EXTRA_OPTIONS:-}"                   # extra "--option k=v ..." appended to every invocation
 RESOLUTIONS="${RESOLUTIONS:-}"                        # optional subset, e.g. "1km" or "500m,1km"
 FIRECUBE="${FIRECUBE:-firecube}"
 ASSUME_YES="${ASSUME_YES:-0}"
@@ -135,6 +137,10 @@ fi
 COMMON_OPTS=(--option "product_type=$PRODUCT_TYPE" --option "time_epoch=$TIME_EPOCH" "${AXIS_OPT[@]}")
 [[ -n "$RESOLUTIONS" ]] && COMMON_OPTS+=(--option "resolutions=$RESOLUTIONS")
 [[ -n "$GRIDS_FILE"  ]] && COMMON_OPTS+=(--option "fci_grids_file=$GRIDS_FILE")
+[[ -n "$EXTRACT_WORKERS" ]] && COMMON_OPTS+=(--option "extract_workers=$EXTRACT_WORKERS")
+# deliberate word-splitting: EXTRA_OPTIONS is a flat "--option k=v ..." string
+# shellcheck disable=SC2206
+[[ -n "$EXTRA_OPTIONS" ]] && COMMON_OPTS+=($EXTRA_OPTIONS)
 FORCE_OPT=(); [[ "$FORCE_REINGEST" == "1" ]] && FORCE_OPT=(--option "force_reingest=true")
 
 npods=$(( (SLOT_END - SLOT_START + SLOTS_PER_POD - 1) / SLOTS_PER_POD ))
@@ -185,20 +191,109 @@ for a in range(s, e, step):
 PY
 }
 
+# Parse "firecube zarr slots --format json": dedupe per-group ranges into
+# shared pod ranges (an FCI pod writes ALL groups for its range), clip them to
+# the requested [SLOT_START, SLOT_END) window (zarr slots reports the whole
+# preallocated axis), write the TSV plan, and print three lines: static owner
+# slot_start, comma-separated group names, pod count. Reads the plan from
+# $LOGDIR/fanout-plan.json (a file, not stdin: `python3 -` takes the program
+# from stdin, so the heredoc and the plan data cannot share it).
+plan_from_slots_json() {
+  python3 - "$LOGDIR/fanout-plan.tsv" "$LOGDIR/fanout-plan.json" "$SLOT_START" "$SLOT_END" <<'PY'
+import json
+import sys
+
+output_path = sys.argv[1]
+with open(sys.argv[2], encoding="utf-8") as stream:
+    plan = json.load(stream)
+window_start, window_end = int(sys.argv[3]), int(sys.argv[4])
+ranges = sorted(
+    {
+        (max(int(r["slot_start"]), window_start), min(int(r["slot_end"]), window_end))
+        for r in plan["ranges"]
+        if max(int(r["slot_start"]), window_start) < min(int(r["slot_end"]), window_end)
+    }
+)
+groups = [g["name"] for g in plan["groups"]]
+owners = {
+    int(g["static_owner"]["slot_start"])
+    for g in plan["groups"]
+    if g.get("static_owner")
+}
+owner = min(owners) if owners else (ranges[0][0] if ranges else 0)
+with open(output_path, "w", encoding="utf-8") as stream:
+    for index, (slot_start, slot_end) in enumerate(ranges):
+        stream.write(f"{index}\t{slot_start}\t{slot_end}\n")
+print(owner)
+print(",".join(groups))
+print(len(ranges))
+PY
+}
+
+# Fallback when zarr slots is unavailable: split the window locally and derive
+# the group names from the resolution list.
+plan_from_local_ranges() {
+  python3 - "$SLOT_START" "$SLOT_END" "$SLOTS_PER_POD" "$GRIDS_RES" "$LOGDIR/fanout-plan.tsv" <<'PY'
+import sys
+
+s, e, step = map(int, sys.argv[1:4])
+resolutions = sys.argv[4].split(",")
+output_path = sys.argv[5]
+ranges = [(a, min(a + step, e)) for a in range(s, e, step)]
+with open(output_path, "w", encoding="utf-8") as stream:
+    for index, (slot_start, slot_end) in enumerate(ranges):
+        stream.write(f"{index}\t{slot_start}\t{slot_end}\n")
+print(ranges[0][0] if ranges else 0)
+print(",".join(f"data_{res.strip()}" for res in resolutions))
+print(len(ranges))
+PY
+}
+
+echo ">> building fan-out plan"
+if FANOUT_PLAN_JSON=$("$FIRECUBE" zarr slots "$PLUGIN" \
+    --target "$TARGET" --product-name "$PRODUCT_NAME" \
+    --storage-type "$STORAGE_TYPE" --storage-driver "$STORAGE_DRIVER" \
+    --write-mode "$WRITE_MODE" \
+    "${COMMON_OPTS[@]}" \
+    --format json 2> "$LOGDIR/firecube-zarr-slots.err"); then
+  echo ">> fan-out plan from firecube zarr slots"
+  printf '%s' "$FANOUT_PLAN_JSON" > "$LOGDIR/fanout-plan.json"
+  PLAN_INFO="$(plan_from_slots_json)"
+else
+  echo ">> firecube zarr slots unavailable or failed; falling back to local range generation"
+  sed 's/^/   /' "$LOGDIR/firecube-zarr-slots.err" || true
+  PLAN_INFO="$(plan_from_local_ranges)"
+fi
+
+STATIC_OWNER_START="$(printf '%s' "$PLAN_INFO" | sed -n 1p)"
+PLAN_GROUPS="$(printf '%s' "$PLAN_INFO" | sed -n 2p)"
+npods="$(printf '%s' "$PLAN_INFO" | sed -n 3p)"
+if [[ "$npods" -eq 0 ]]; then
+    echo "ERROR: fan-out plan is empty. Nothing to ingest." >&2; exit 2
+fi
+echo ">> static writer: pod with slot_start=$STATIC_OWNER_START (engine-enforced)"
+export STATIC_OWNER_START
+
 FAN_T0=$(date +%s)
-gen_ranges | xargs -P "$PARALLELISM" -n2 bash -c '
-  s=$1; e=$2
+if [[ ! -s "$LOGDIR/fanout-plan.tsv" ]]; then
+  echo "ERROR: fan-out plan is empty. Nothing to ingest." >&2; exit 2
+fi
+cat "$LOGDIR/fanout-plan.tsv" | xargs -P "$PARALLELISM" -n3 bash -c '
+  idx=$1; s=$2; e=$3
+  static=false; [[ "$s" == "$STATIC_OWNER_START" ]] && static=true
   log="$LOGDIR/pod_${s}_${e}.log"
   t0=$(date +%s)
   # word-split COMMON_STR / FORCE_STR intentionally (they are pre-tokenized --option pairs)
   if "$FIRECUBE" ingest "$PLUGIN" \
-       --input-data "$INPUT" --target "$TARGET" \
-       --storage-type "$STORAGE_TYPE" --storage-driver "$STORAGE_DRIVER" --write-mode "$WRITE_MODE" \
-       $COMMON_STR $FORCE_STR \
-       --slot-start "$s" --slot-end "$e" > "$log" 2>&1; then
-    echo "ok   [$s,$e)  $(( $(date +%s) - t0 ))s"
+        --input-data "$INPUT" --target "$TARGET" \
+        --storage-type "$STORAGE_TYPE" --storage-driver "$STORAGE_DRIVER" --write-mode "$WRITE_MODE" \
+        $COMMON_STR $FORCE_STR \
+        --suppress-static-emission-for-non-owner \
+        --static-owner-slot-start "$STATIC_OWNER_START" \
+        --slot-start "$s" --slot-end "$e" > "$log" 2>&1; then
+    echo "ok   pod=$idx static=$static [$s,$e)  $(( $(date +%s) - t0 ))s"
   else
-    echo "FAIL [$s,$e)  $(( $(date +%s) - t0 ))s  -> $log"
+    echo "FAIL pod=$idx static=$static [$s,$e)  $(( $(date +%s) - t0 ))s  -> $log"
   fi
 ' _ | tee "$LOGDIR/results.txt"
 
@@ -210,10 +305,45 @@ echo ">> fan-out: $((npods - nfail))/$npods pod(s) OK in $(fmt_dur "$FAN_ELAPSED
 echo ">> total run time: $(fmt_dur "$RUN_ELAPSED") (${RUN_ELAPSED}s)"
 echo ">> logs: $LOGDIR  (full transcript: run.log)"
 if [[ "$nfail" -eq 0 ]]; then
+  echo ">> running static marker drift-check"
+  # One interpreter for all marker checks: shelling out per array repays CLI
+  # and import startup on the serial tail after the last pod.
+  DRIFT_PY="$(dirname "$FIRECUBE")/python3"
+  [[ -x "$DRIFT_PY" ]] || DRIFT_PY=python3
+  if "$DRIFT_PY" - "$TARGET" "$PLAN_GROUPS" <<'PY' 2> "$LOGDIR/drift-check.err"
+import sys
+
+import zarr
+
+target, groups_csv = sys.argv[1:3]
+root = zarr.open_group(target.removeprefix("file://"), mode="r")
+missing = []
+for group_name in [g for g in groups_csv.split(",") if g]:
+    group = root[group_name]
+    for array_name in ("latitude", "longitude", "x", "y"):
+        if array_name in group and "firecube_static_written" not in group[array_name].attrs:
+            missing.append(f"{group_name}/{array_name}")
+if missing:
+    print(
+        "DRIFT-CHECK FAIL: missing firecube_static_written on: " + ", ".join(missing),
+        file=sys.stderr,
+    )
+    sys.exit(1)
+PY
+  then
+    echo "DRIFT-CHECK OK: static markers present"
+  else
+    cat "$LOGDIR/drift-check.err" >&2
+    echo "ERROR: static arrays incomplete; re-run the owner slot range [$STATIC_OWNER_START,...)" >&2
+    exit 1
+  fi
   echo ">> all $npods pod(s) OK. Window [$SLOT_START,$SLOT_END) ingested."
 else
   echo ">> $nfail pod(s) FAILED. Re-run is safe (written slots no-op):"
   grep '^FAIL' "$LOGDIR/results.txt" | sed 's/^/   /'
+  if grep -q '^FAIL .*static=true' "$LOGDIR/results.txt"; then
+    echo "ERROR: static writer pod failed; static arrays may be incomplete." >&2
+  fi
   echo "   If a FAIL is a stale claim/run from a crash, clear it like the OPERA flow:"
   echo "     firecube chunks claims list --product-name $TARGET"
   echo "     firecube chunks runs list  --product-name $TARGET --status started"

@@ -52,11 +52,6 @@ def test_pixel_time_dtype_rejects_bogus():
         MtgFciL1cConfig(pixel_time_dtype="bogus")
 
 
-def test_batch_workers_rejected():
-    with pytest.raises(TypeError, match="batch_workers"):
-        MtgFciL1cConfig(batch_workers=1)  # pyright: ignore[reportCallIssue]
-
-
 def test_get_resolutions_filters_by_product_type():
     cfg = MtgFciL1cConfig(resolutions="1km,2km,500m")
     # 500m is not valid for FDHSI, so it is dropped.
@@ -79,9 +74,9 @@ def test_get_channels_unknown_channel_raises():
         cfg.get_channels("FDHSI")
 
 
-def test_get_streaming_chunk_shape_unknown_group_raises():
+def test_get_group_chunk_shape_unknown_group_raises():
     with pytest.raises(ValueError, match="Unknown resolution group"):
-        MtgFciL1cConfig().get_streaming_chunk_shape("data_999m")
+        MtgFciL1cConfig().get_group_chunk_shape("data_999m")
 
 
 @pytest.mark.parametrize("bad", [0, -1, -1024])
@@ -107,7 +102,7 @@ def test_zarr_shard_overrides_non_positive_rejected():
 
 def test_zarr_shard_defaults():
     cfg = MtgFciL1cConfig()
-    assert cfg.zarr_sharding is True
+    assert cfg.template_config.zarr_sharding is True
     assert cfg.zarr_shard_target_bytes == 128 * 1024 * 1024
     assert cfg.zarr_shard_overrides is None
 
@@ -116,9 +111,35 @@ def test_zarr_chunk_overrides_default_is_none() -> None:
     assert MtgFciL1cConfig().zarr_chunk_overrides is None
 
 
+def test_config_rejects_zarr_chunk_y_exceeding_2x_nc_part_rows_1km() -> None:
+    with pytest.raises(
+        ValueError, match="exceeds max supported for chunk-owned assembly"
+    ):
+        MtgFciL1cConfig(zarr_chunk_y=1200)
+
+
+def test_config_accepts_zarr_chunk_y_at_2x_nc_part_rows() -> None:
+    MtgFciL1cConfig(zarr_chunk_y=556)
+
+
+def test_config_accepts_zarr_chunk_y_below_nc_part_rows() -> None:
+    MtgFciL1cConfig(zarr_chunk_y=100)
+
+
+def test_config_accepts_none_zarr_chunk_y_default() -> None:
+    MtgFciL1cConfig()
+
+
 def test_zarr_chunk_overrides_accepts_valid_rank4() -> None:
-    cfg = MtgFciL1cConfig(zarr_chunk_overrides={"data_1km": (1, 2784, 11136, 1)})
-    assert cfg.zarr_chunk_overrides == {"data_1km": (1, 2784, 11136, 1)}
+    cfg = MtgFciL1cConfig(zarr_chunk_overrides={"data_1km": (1, 556, 11136, 1)})
+    assert cfg.zarr_chunk_overrides == {"data_1km": (1, 556, 11136, 1)}
+
+
+def test_config_rejects_zarr_chunk_overrides_exceeding_2x_nc_part_rows() -> None:
+    with pytest.raises(
+        ValueError, match="exceeds max supported for chunk-owned assembly"
+    ):
+        MtgFciL1cConfig(zarr_chunk_overrides={"data_1km": (1, 557, 11136, 1)})
 
 
 def test_zarr_chunk_overrides_rejects_bogus_group() -> None:

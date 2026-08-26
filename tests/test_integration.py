@@ -32,7 +32,7 @@ from firecube_mtg_fci_l1c._constants import (
 )
 from firecube_mtg_fci_l1c._data import validate_no_mixed_products
 from firecube_mtg_fci_l1c.config import MtgFciL1cConfig
-from firecube_mtg_fci_l1c.schema import build_specs
+from firecube_mtg_fci_l1c._variables import build_specs
 
 from firecube.core.cf.validator import validate_cf18
 from firecube.core.product.identity import ProductIdentity
@@ -115,7 +115,6 @@ def _run_ingest(
         output_format="zarr",
         storage=StorageContext(output=_make_local_storage_session(target_path)),
         options={
-            "pipeline_parallel": False,
             "force_reingest": True,
             "write_mode": "direct",
             # Fixtures use 2024-01-01 timestamps (pre-dating real FCI data); anchor
@@ -256,7 +255,14 @@ def test_backward_compatible_fdhsi(tmp_path: Path, fdhsi_zip: Path):
     out = _run_ingest(fdhsi_zip.parent, tmp_path)
     root = zarr.open_group(str(out), mode="r")
     grp = root["data_1km"]
-    for var in ["counts", "pixel_quality", "pixel_time", "slope", "offset", "channel_name"]:
+    for var in [
+        "counts",
+        "pixel_quality",
+        "pixel_time",
+        "slope",
+        "offset",
+        "channel_name",
+    ]:
         assert var in grp
     # lat/lon attrs come from declarative variable attrs and reach the store.
     grp_any: Any = grp
@@ -311,7 +317,9 @@ def test_channel_name_static_replay_is_idempotent(tmp_path: Path, fdhsi_zip: Pat
 @pytest.mark.integration
 @pytest.mark.plugin
 def test_fdhsi_2km_content_written_correctly(tmp_path: Path, fdhsi_zip: Path):
-    out = _run_ingest(fdhsi_zip.parent, tmp_path, options={"include_geolocation": False})
+    out = _run_ingest(
+        fdhsi_zip.parent, tmp_path, options={"include_geolocation": False}
+    )
     root = zarr.open_group(str(out), mode="r")
     data_2km = cast(Any, root["data_2km"])
 
@@ -555,7 +563,11 @@ def test_index_model_attrs_recorded_and_epoch_mismatch_rejected(
     _run_ingest(src, tmp_path, options={**base, "slot_start": 0, "slot_end": 1})
 
     root = zarr.open_group(str(store_path), mode="r")
-    model_attr = root.attrs["firecube_slot_index_model"]
+    # firecube v0.1.6+ stores resolved index under firecube_resolved_index.
+    model_attr = root.attrs.get("firecube_resolved_index") or root.attrs.get(
+        "firecube_slot_index_model"
+    )
+    assert model_attr is not None, "Expected firecube index attr not found in store"
     assert "eumetsat_repeat_cycle_v1" in str(model_attr)
     assert "2024-01-01" in str(model_attr)
 
@@ -615,7 +627,6 @@ def test_reused_ingestor_emits_static_for_each_target(
             output_format="zarr",
             storage=StorageContext(output=_make_local_storage_session(target_path)),
             options={
-                "pipeline_parallel": False,
                 "force_reingest": True,
                 "write_mode": "direct",
                 "time_epoch": "2024-01-01",
@@ -638,9 +649,10 @@ def test_slot_range_disjoint_writes(tmp_path: Path, small_fci_layout: list[int])
     """Two slot-range 'pods' write disjoint slots into one store without clobber.
 
     Exercises the full slot-range path for this plugin (capability gate,
-    filter_items_to_slot_range, global_expected_time_count, schema sizing, and
-    the post-intent range assertion). The two runs are sequential here; true
-    concurrent claim coordination is covered by core's own parallel fixtures.
+    engine-owned item filtering via inspect_item, resolved-index schema
+    sizing, and the post-intent range assertion). The two runs are sequential
+    here; true concurrent claim coordination is covered by core's own
+    parallel fixtures.
     """
     store_path = tmp_path / "out.zarr"
     src = tmp_path / "src"
@@ -774,9 +786,7 @@ def test_geolocation_idempotent_across_batches(
 
 @pytest.mark.integration
 @pytest.mark.plugin
-def test_zarr_metadata_invariants(
-    tmp_path: Path, fdhsi_zip: Path, hrfi_zip: Path
-):
+def test_zarr_metadata_invariants(tmp_path: Path, fdhsi_zip: Path, hrfi_zip: Path):
     # Given: an FDHSI ingest
     fdhsi_ws = tmp_path / "fdhsi_ws"
     fdhsi_ws.mkdir()
@@ -785,8 +795,12 @@ def test_zarr_metadata_invariants(
 
     # Then: only FDHSI groups exist
     fdhsi_groups = set(root_fdhsi.group_keys())
-    assert "data_1km" in fdhsi_groups, f"data_1km missing in FDHSI; groups: {fdhsi_groups}"
-    assert "data_2km" in fdhsi_groups, f"data_2km missing in FDHSI; groups: {fdhsi_groups}"
+    assert "data_1km" in fdhsi_groups, (
+        f"data_1km missing in FDHSI; groups: {fdhsi_groups}"
+    )
+    assert "data_2km" in fdhsi_groups, (
+        f"data_2km missing in FDHSI; groups: {fdhsi_groups}"
+    )
     assert "data_500m" not in fdhsi_groups, "data_500m must not exist in FDHSI output"
 
     data_1km = cast(Any, root_fdhsi["data_1km"])
@@ -841,7 +855,9 @@ def test_zarr_metadata_invariants(
 
     # Then: only HRFI groups exist
     hrfi_groups = set(root_hrfi.group_keys())
-    assert "data_500m" in hrfi_groups, f"data_500m missing in HRFI; groups: {hrfi_groups}"
+    assert "data_500m" in hrfi_groups, (
+        f"data_500m missing in HRFI; groups: {hrfi_groups}"
+    )
     assert "data_1km" in hrfi_groups, f"data_1km missing in HRFI; groups: {hrfi_groups}"
     assert "data_2km" not in hrfi_groups, "data_2km must not exist in HRFI output"
 
@@ -856,9 +872,7 @@ def test_zarr_metadata_invariants(
 
 @pytest.mark.integration
 @pytest.mark.plugin
-def test_partial_failure_metrics_preserved(
-    tmp_path: Path, small_fci_layout: list[int]
-):
+def test_partial_failure_metrics_preserved(tmp_path: Path, small_fci_layout: list[int]):
     src = tmp_path / "partial"
     src.mkdir()
 
@@ -879,7 +893,6 @@ def test_partial_failure_metrics_preserved(
         output_format="zarr",
         storage=StorageContext(output=_make_local_storage_session(target_path)),
         options={
-            "pipeline_parallel": False,
             "force_reingest": True,
             "write_mode": "direct",
             "time_epoch": "2024-01-01",
@@ -991,10 +1004,13 @@ def _format_errors(report: Any) -> str:
     ),
 )
 @pytest.mark.parametrize("include_geolocation", [True, False])
-@pytest.mark.parametrize("product_type,groups", [
-    ("FDHSI", ("data_1km", "data_2km")),
-    ("HRFI", ("data_500m", "data_1km")),
-])
+@pytest.mark.parametrize(
+    "product_type,groups",
+    [
+        ("FDHSI", ("data_1km", "data_2km")),
+        ("HRFI", ("data_500m", "data_1km")),
+    ],
+)
 def test_cf_advisor_zero_errors_per_group(
     product_type: str, groups: tuple[str, ...], include_geolocation: bool
 ) -> None:
@@ -1004,7 +1020,9 @@ def test_cf_advisor_zero_errors_per_group(
 
     for group in groups:
         ds = _build_cf_dataset_from_specs(specs, group)
-        report = validate_cf18(ds, product=f"file:///tmp/fci-cf/{product_type}.zarr", group=group)
+        report = validate_cf18(
+            ds, product=f"file:///tmp/fci-cf/{product_type}.zarr", group=group
+        )
         assert report.summary.errors == 0, (
             f"CF advisor reported {report.summary.errors} errors for {product_type}/{group} "
             f"(include_geolocation={include_geolocation}):\n{_format_errors(report)}"

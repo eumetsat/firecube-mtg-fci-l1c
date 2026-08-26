@@ -39,7 +39,7 @@ def test_time_variable_attrs_declared_without_units_or_calendar() -> None:
     ``open_zarr -> to_zarr`` roundtrip (xarray tries to re-write encoding-derived
     ``units`` into attrs that already contain them).
     """
-    from firecube_mtg_fci_l1c.schema import VARIABLES
+    from firecube_mtg_fci_l1c._variables import VARIABLES
 
     time_var = next(v for v in VARIABLES if v.name == "time")
     attrs = time_var.attrs or {}
@@ -116,8 +116,7 @@ def test_open_then_write_roundtrip_does_not_raise(
     ds2 = xr.open_zarr(str(roundtrip_path), consolidated=False)
     try:
         assert str(ds2.time.dtype).startswith("datetime64"), (
-            f"roundtripped time dtype should be datetime64-like, "
-            f"got {ds2.time.dtype!r}"
+            f"roundtripped time dtype should be datetime64-like, got {ds2.time.dtype!r}"
         )
     finally:
         ds2.close()

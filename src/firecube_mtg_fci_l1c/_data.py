@@ -16,7 +16,7 @@
 
 This module identifies product type, observation time, and valid source files.
 It does not read nc_parts or build arrays; streaming data reads live in
-``_streaming.py``.
+``_decode.py``.
 """
 
 from __future__ import annotations

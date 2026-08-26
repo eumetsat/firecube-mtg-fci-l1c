@@ -1,7 +1,7 @@
 # Zarr Variable Recipes
 
 Use these recipes when changing the Zarr schema declared in
-`src/firecube_mtg_fci_l1c/schema.py`.
+`src/firecube_mtg_fci_l1c/_variables.py`.
 
 | Task | Recipe |
 |---|---|

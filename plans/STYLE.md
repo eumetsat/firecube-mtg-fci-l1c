@@ -6,8 +6,8 @@ Anchored on [`AGENTS.md`](../AGENTS.md) Code Style section, expanded with plans/
 ## Python Code
 
 - **Explicit and readable over clever.** Type hints on all public functions; prefer descriptive names over compact expressions.
-- **No lambdas or nested functions in schema variable sources.** They must remain picklable for process workers (`_variable.py`, `schema.py`).
-- **Pure source functions in schema.** Variable-projection functions must be pure — they project from `VariableContext`. I/O belongs in `_streaming.py` and `ingestor.py`.
+- **No lambdas or nested functions in schema variable sources.** They must remain picklable for process workers (`_schema.py`, `_variables.py`).
+- **Pure source functions in schema.** Variable-projection functions must be pure — they project from `VariableContext`. I/O belongs in `_decode.py` and `ingestor.py`.
 - **Fail fast in config.** Validate `MtgFciL1cConfig` fields in `__post_init__`. Reject invalid values at config construction time, not deep in the pipeline.
 - **Type-check clean.** `uv run --frozen mypy src/` must pass with zero errors. Use `# type: ignore[<code>]` sparingly and only with a specific error code.
 - **Lint clean.** `uv run --frozen ruff check src/ tests/` must pass. Do not add new `# noqa` markers without a comment justifying them.

@@ -130,15 +130,38 @@ For float64 `pixel_time` at 500m the shard would be ~3.96 GB. Disable
 
 ### Known caveats
 
-- **Compression (`zarr_compression`) is UNVERIFIED for FCI.** The FCI plugin's
-  write path has not been end-to-end tested with compression. Do not rely on
-  `--option zarr_compression=true` for production output until separately verified.
 - **Mid-store strategy change**: switching chunks or shards on an existing store
   raises `SchemaDriftError`. Re-ingest from source to apply a new layout.
 - **`zarr_sharding=false` overrides everything**: `zarr_shard_overrides` shapes
   are ignored when sharding is disabled globally. Chunk overrides still apply.
 - **`--write-mode direct` to S3**: avoid large chunks (>1 nc_part); each nc_part
   write becomes a download-modify-upload cycle. Use `--write-mode staged` instead.
+
+## Codec choice
+
+The default codec (`ZstdCodec(level=0)`) is a reasonable starting point for most
+workloads. It compresses FCI uint16 counts data well and adds minimal CPU overhead
+at level 0. Before committing to a non-default codec in production, measure on a
+representative FCI slot with your actual read and write patterns.
+
+### Archive vs analysis trade-offs
+
+| Goal | Recommended approach | Notes |
+|---|---|---|
+| Minimize storage cost | Default `ZstdCodec(level=0)` or higher level | Higher Zstd levels (e.g. level 9) compress better but slow writes significantly. Measure before using in production. |
+| Maximize read throughput | `zarr_compression=false` (uncompressed) | Removes decompression overhead on read. Storage cost roughly doubles for uint16 counts. |
+| Balanced archive | Default `ZstdCodec(level=0)` | Good compression ratio with fast decompression. Suitable for long-term storage with occasional access. |
+| Custom pipeline | `zarr_codecs='[{"name": "blosc", ...}]'` | Blosc with LZ4 can be faster than Zstd for read-heavy workloads. Verify codec availability in your environment. |
+
+### Codec lock-in warning
+
+Changing `zarr_compression` or `zarr_codecs` on an existing store raises
+`SchemaDriftError`. The codec configuration is fixed at preallocation time.
+Choose once, before preallocation, and keep it consistent across all pods and
+re-ingest runs. To switch codecs, re-preallocate from scratch.
+
+See [Compression options](customization.md#compression-options) for the full
+`--option` syntax and examples.
 
 ## Concurrency: pipeline_workers=1
 

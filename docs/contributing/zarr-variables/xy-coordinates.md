@@ -4,7 +4,7 @@ Add a new static 2D array covering the full detector grid, such as `latitude` or
 
 ## How
 
-The existing `latitude` and `longitude` variables show the full pattern. Both live in `src/firecube_mtg_fci_l1c/schema.py`.
+The existing `latitude` and `longitude` variables show the full pattern. Both live in `src/firecube_mtg_fci_l1c/_variables.py`.
 
 ### Source function
 
@@ -45,7 +45,7 @@ Variable(
 
 Follow the same two-step pattern. The example below adds `solar_zenith_angle`: a per-pixel solar geometry field.
 
-FCI L1C does not include per-pixel solar zenith angles in the input; they would come from external solar geometry computation (e.g., `pyorbital.astronomy.sun_zenith_angle`). The extension pattern is: add the computation to the geolocation subpackage (mirroring `compute_latlon`), expose it via a `LatLonProvider` method, then add the projection source in `schema.py`. The code below shows the schema-side shape. The provider method `get_solar_zenith_angle` does not exist yet: the recipe describes what it would look like once you add it.
+FCI L1C does not include per-pixel solar zenith angles in the input; they would come from external solar geometry computation (e.g., `pyorbital.astronomy.sun_zenith_angle`). The extension pattern is: add the computation to the geolocation subpackage (mirroring `compute_latlon`), expose it via a `LatLonProvider` method, then add the projection source in `_variables.py`. The code below shows the schema-side shape. The provider method `get_solar_zenith_angle` does not exist yet: the recipe describes what it would look like once you add it.
 
 ```python
 def _solar_zenith_angle_source(ctx: VariableContext) -> np.ndarray | None:
@@ -81,13 +81,13 @@ If `get_solar_zenith_angle` is a new provider method, add it to `src/firecube_mt
 
 | File | Change |
 |------|--------|
-| `src/firecube_mtg_fci_l1c/schema.py` | Add source function + append `Variable(...)` to `VARIABLES` |
+| `src/firecube_mtg_fci_l1c/_variables.py` | Add source function + append `Variable(...)` to `VARIABLES` |
 | `src/firecube_mtg_fci_l1c/geolocation/provider.py` | Only if the source needs a new provider method (e.g. `get_solar_zenith_angle`) |
 
 ## Common mistakes
 
 - Calling `get_lat_lon(res_m)` with a single argument. The signature is `get_lat_lon(grids_file, resolution_m)`: pass `ctx.config.fci_grids_file` as the first argument.
-- Defining a local `_resolution_m_for_group` helper in `schema.py`. Use the method on the provider: `ctx.geo_provider.resolution_m_for_group(ctx.group)`.
+- Defining a local `_resolution_m_for_group` helper in `_variables.py`. Use the method on the provider: `ctx.geo_provider.resolution_m_for_group(ctx.group)`.
 - Returning pixel indices instead of projected or geographic coordinates. The source must return real-world values.
 - Defining the source as a lambda. It must be module-level for pickle-safety.
 - Computing static `(y, x)` arrays at every timestamp. Static arrays are written ONCE per group during the static phase. If your data varies per timestamp, you need a 4D spatial field: see [spatial-field.md](spatial-field.md).

@@ -1,0 +1,16 @@
+{
+  "pods": [
+    {"pod_id": "pod-0", "slot_range": "0-2", "exit_code": 0, "stdout_path": null, "stderr_path": null},
+    {"pod_id": "pod-1", "slot_range": "2-4", "exit_code": 0, "stdout_path": null, "stderr_path": null},
+    {"pod_id": "pod-2", "slot_range": "4-6", "exit_code": 0, "stdout_path": null, "stderr_path": null},
+    {"pod_id": "pod-3", "slot_range": "6-8", "exit_code": 0, "stdout_path": null, "stderr_path": null},
+    {"pod_id": "pod-4", "slot_range": "8-10", "exit_code": 0, "stdout_path": null, "stderr_path": null},
+    {"pod_id": "pod-5", "slot_range": "10-12", "exit_code": 0, "stdout_path": null, "stderr_path": null},
+    {"pod_id": "pod-6", "slot_range": "12-14", "exit_code": 0, "stdout_path": null, "stderr_path": null},
+    {"pod_id": "pod-7", "slot_range": "14-16", "exit_code": 0, "stdout_path": null, "stderr_path": null},
+    {"pod_id": "pod-8", "slot_range": "16-18", "exit_code": 0, "stdout_path": null, "stderr_path": null},
+    {"pod_id": "pod-9", "slot_range": "18-20", "exit_code": 0, "stdout_path": null, "stderr_path": null},
+    {"pod_id": "pod-10", "slot_range": "20-22", "exit_code": 0, "stdout_path": null, "stderr_path": null},
+    {"pod_id": "pod-11", "slot_range": "22-24", "exit_code": 0, "stdout_path": null, "stderr_path": null}
+  ]
+}

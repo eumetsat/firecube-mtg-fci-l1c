@@ -29,9 +29,9 @@ pytest.importorskip("pyproj")
 
 from pyproj import CRS, Transformer  # noqa: E402  (pyproj is optional)
 
-from firecube_mtg_fci_l1c._variable import VariableContext  # noqa: E402
+from firecube_mtg_fci_l1c._schema import VariableContext  # noqa: E402
 from firecube_mtg_fci_l1c.config import MtgFciL1cConfig  # noqa: E402
-from firecube_mtg_fci_l1c.schema import (  # noqa: E402
+from firecube_mtg_fci_l1c._variables import (  # noqa: E402
     _MTG_GEOS_WKT,
     _projection_x_source,
     _projection_y_source,
@@ -41,9 +41,7 @@ from firecube_mtg_fci_l1c.schema import (  # noqa: E402
 _MTG_SATELLITE_HEIGHT_M: float = 35786400.0
 
 
-def _build_ctx(
-    group: str, dimsize: int, config: MtgFciL1cConfig
-) -> VariableContext:
+def _build_ctx(group: str, dimsize: int, config: MtgFciL1cConfig) -> VariableContext:
     """Construct a minimal static-phase ``VariableContext`` for x/y sources."""
     return VariableContext(
         group=group,
@@ -96,15 +94,11 @@ def test_pyproj_lon_correlates_positively_with_x() -> None:
     assert x is not None and y is not None
 
     crs_geos = CRS.from_wkt(_MTG_GEOS_WKT)
-    to_lonlat = Transformer.from_crs(
-        crs_geos, CRS.from_epsg(4326), always_xy=True
-    )
+    to_lonlat = Transformer.from_crs(crs_geos, CRS.from_epsg(4326), always_xy=True)
 
     cols = np.linspace(0, dimsize - 1, 300).astype(int)
     row = dimsize // 2
-    lon_proj, _lat_proj = to_lonlat.transform(
-        x[cols], np.full(300, y[row])
-    )
+    lon_proj, _lat_proj = to_lonlat.transform(x[cols], np.full(300, y[row]))
 
     mask = np.isfinite(lon_proj)
     assert mask.sum() >= 10, (
@@ -123,9 +117,7 @@ def test_pyproj_lon_correlates_positively_with_x() -> None:
 def test_radian_mode_after_scaling_matches_meter_mode() -> None:
     """Radian-mode x, scaled by satellite height, must equal meter-mode x."""
     dimsize = 11136
-    x_meter = _projection_x_source(
-        _build_ctx("data_1km", dimsize, MtgFciL1cConfig())
-    )
+    x_meter = _projection_x_source(_build_ctx("data_1km", dimsize, MtgFciL1cConfig()))
     x_rad = _projection_x_source(
         _build_ctx(
             "data_1km",

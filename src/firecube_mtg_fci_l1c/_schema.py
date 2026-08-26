@@ -87,17 +87,6 @@ def variable_enabled(variable: Variable, config: MtgFciL1cConfig) -> bool:
     return bool(getattr(config, variable.enabled_by, True))
 
 
-_RESERVED_ATTR_KEYS: frozenset[str] = frozenset(
-    {
-        "_ARRAY_DIMENSIONS",
-        "_FillValue",
-        "firecube_run_id",
-        "firecube_span_id",
-        "firecube_internal",
-    }
-)
-
-
 def _copy_attrs(attrs: Mapping[str, Any] | None) -> dict[str, Any] | None:
     return dict(attrs) if attrs is not None else None
 
@@ -164,7 +153,9 @@ def _static_2d_chunks(dimsize: int, dtype: Any, target_bytes: int) -> tuple[int,
     return (tile_y, dimsize)
 
 
-def _variable_dtype(variable: Variable, config: MtgFciL1cConfig, time_coord_name: str) -> Any:
+def _variable_dtype(
+    variable: Variable, config: MtgFciL1cConfig, time_coord_name: str
+) -> Any:
     if variable.name == "pixel_time":
         dtype_map = {
             "float32": np.float32,
@@ -202,17 +193,19 @@ def _build_array_spec(
     fill_value = _effective_fill_value(variable, dtype)
 
     if dims == (time_coord_name, "y", "x", "channel"):
-        chunks = ctx.config.get_streaming_chunk_shape(ctx.group)
+        chunks = ctx.config.get_group_chunk_shape(ctx.group)
         if len(chunks) != 4:
             raise ValueError(f"Expected rank-4 chunks for {ctx.group}, got {chunks!r}")
         chunks4 = (chunks[0], chunks[1], chunks[2], chunks[3])
         shard_override = None
         if ctx.config.zarr_shard_overrides is not None:
             shard_override = ctx.config.zarr_shard_overrides.get(ctx.group)
-        if not ctx.config.zarr_sharding:
+        if not ctx.config.template_config.zarr_sharding:
             shards: tuple[int, ...] | None = None
         elif shard_override is not None:
-            _validate_shard_override(shard_override, chunks4, group=ctx.group, name=variable.name)
+            _validate_shard_override(
+                shard_override, chunks4, group=ctx.group, name=variable.name
+            )
             shards = shard_override
         else:
             shards = _byte_budgeted_4d_shard(
@@ -259,7 +252,9 @@ def _build_array_spec(
             name=variable.name,
             shape=(ctx.dimsize, ctx.dimsize),
             dtype=dtype,
-            chunks=_static_2d_chunks(ctx.dimsize, dtype, ctx.config.zarr_shard_target_bytes),
+            chunks=_static_2d_chunks(
+                ctx.dimsize, dtype, ctx.config.zarr_shard_target_bytes
+            ),
             fill_value=fill_value,
             shards=None,
             time_indexed=False,
@@ -318,14 +313,16 @@ def _coord_names_for(variables: list[Variable], time_coord_name: str) -> frozens
 
 def build_specs(config: MtgFciL1cConfig, product_type: str) -> list[ZarrGroupSpec]:
     """Project VARIABLES through *config* and return per-group ZarrGroupSpec list."""
-    from .schema import TIME_COORD_NAME, VARIABLES
+    from ._variables import TIME_COORD_NAME, VARIABLES
 
     if product_type not in CONSTANTS:
         raise ValueError(
             f"Unsupported product type: {product_type!r}. Expected one of {sorted(CONSTANTS)}"
         )
 
-    valid = VALID_RESOLUTIONS.get(product_type, VALID_RESOLUTIONS[next(iter(CONSTANTS))])
+    valid = VALID_RESOLUTIONS.get(
+        product_type, VALID_RESOLUTIONS[next(iter(CONSTANTS))]
+    )
     configured = config.get_resolutions(product_type)
     resolutions = [res for res in valid if res in configured]
 
@@ -350,7 +347,9 @@ def build_specs(config: MtgFciL1cConfig, product_type: str) -> list[ZarrGroupSpe
             n_channels=len(logical_channels),
             logical_channels=logical_channels,
         )
-        enabled_variables = [variable for variable in VARIABLES if variable_enabled(variable, config)]
+        enabled_variables = [
+            variable for variable in VARIABLES if variable_enabled(variable, config)
+        ]
         group_specs.append(
             ZarrGroupSpec(
                 group=group,

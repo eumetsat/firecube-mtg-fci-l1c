@@ -11,8 +11,10 @@ authors = [
     { name = "Anna-Lena Erdmann", email = "anna-lena.erdmann@eumetsat.int" }
 ]
 dependencies = [
-    # 0.1.4 is the current Firecube core baseline for the slot-index API
-    # (SlotAxis, SlotIndexModel, normalize_epoch_iso) this plugin imports.
+    # The plugin needs the post-0.1.4 core surface (extract_all_from_zip,
+    # static-owner suppression flags, zarr compare/validate additions).
+    # Until that core release is published, [tool.uv.sources] below resolves
+    # firecube from the main branch on GitHub.
     "firecube>=0.1.4",
     "xarray>=2026.4.0",
     "numpy>=2.4",
@@ -37,6 +39,11 @@ mtg_fci_l1c = "firecube_mtg_fci_l1c"
 
 [project.entry-points."firecube.plugin_cli"]
 mtg_fci_l1c = "firecube_mtg_fci_l1c.plugin_cli:cli"
+
+[tool.uv.sources]
+# Temporary: track core main until the next firecube release is published,
+# then delete this table and raise the version floor in [project.dependencies].
+firecube = { git = "https://github.com/eumetsat/firecube", branch = "main" }
 
 [build-system]
 requires = ["hatchling"]

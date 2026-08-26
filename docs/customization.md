@@ -7,10 +7,21 @@ Operator-facing plugin and production-script settings.
 - [Time-axis options (`time_epoch`, `time_slots`)](#time-axis-options)
 - [`scripts/fci-ingest.sh` environment variables](#scriptsfci-ingestsh-environment-variables)
 - [Chunk and shard layout](#chunk-and-shard-layout)
+- [Compression options](#compression-options)
 - [Geolocation grids workflow](#geolocation-grids-workflow)
-- [Fix FillValue (post-ingest)](#fix-fillvalue-post-ingest)
+- [Fix FillValue (legacy stores)](#fix-fillvalue-legacy-stores)
 
 ---
+
+## Firecube template options
+
+These options come from Firecube's template config, not the plugin layer.
+
+| Option | Default | Description |
+|---|---|---|
+| `zarr_sharding` | `true` | Enable Zarr v3 sharding of the 4-D data arrays |
+| `zarr_compression` | `true` | Compress arrays with `ZstdCodec(level=0)`. Set `false` for uncompressed output. |
+| `zarr_codecs` | `null` | Custom codec pipeline as a JSON list. Overrides `zarr_compression` when set. |
 
 ## Plugin `--option` flags
 
@@ -30,7 +41,6 @@ All are optional.
 | `pixel_time_dtype` | `float64` | `float64`, `float32`, `int32`, or `int64`; `float32` halves storage but loses sub-minute absolute-epoch precision |
 | `scratch_dir` | `null` | Base directory for temporary ZIP extraction (uses system temp when unset) |
 | `zarr_chunk_y` | `null` | Y-dimension chunk size for Zarr arrays (defaults to nc_part-aligned) |
-| `zarr_sharding` | `true` | Enable Zarr v3 sharding of the 4-D data arrays |
 | `zarr_shard_target_bytes` | `134217728` (128 MiB) | Target bytes per shard for the default policy |
 | `zarr_shard_overrides` | `null` | Explicit per-group `(time, y, x, channel)` shard shapes, e.g. `{"data_1km": [1, 2784, 11136, 1]}` |
 | `zarr_chunk_overrides` | `null` | Explicit per-group chunk shapes; takes precedence over `zarr_chunk_y` |
@@ -195,9 +205,54 @@ Full recipes for 500 m and 2 km, the resulting shard sizes (990 MB / 248 MB / 62
 for uint16), and the tradeoffs are in
 [Performance Tuning → Chunk and Shard Tuning](performance-tuning.md#chunk-and-shard-tuning).
 
-**Firecube-core options passed through unchanged**: `zarr_compression` (unverified
-on FCI, do not enable), `pipeline_batch_size`, `pipeline_workers` (must stay `1`
-for FCI; see [Performance Tuning: Concurrency](performance-tuning.md#concurrency-pipeline_workers1)).
+**Other Firecube-core options**: `pipeline_batch_size`, `pipeline_workers` (must stay `1`
+for FCI; see [Performance Tuning: Concurrency](performance-tuning.md#concurrency-pipeline_workers1)),
+and `extract_workers` (parallel ZIP extraction inside a batch, default `4`; independent
+of `pipeline_workers` and safe to raise on fast local disks).
+
+---
+
+## Compression options
+
+The plugin does not set explicit compression on individual arrays. Compression is
+an operator concern passed through the Firecube template config.
+
+### Default: Zstd level 0
+
+`zarr_compression=true` (the default) preserves the `ZstdCodec(level=0)` behavior.
+No action needed to keep the default.
+
+### Uncompressed output
+
+```bash
+firecube ingest mtg_fci_l1c \
+    --input-data /path/to/fci-zips \
+    --target file:///path/to/output.zarr \
+    --output-format zarr --write-mode staged \
+    --option zarr_compression=false
+```
+
+Uncompressed output is larger on disk but avoids codec overhead on read. Useful
+for analysis cubes where read speed matters more than storage cost.
+
+### Custom codec pipeline
+
+```bash
+firecube ingest mtg_fci_l1c \
+    --input-data /path/to/fci-zips \
+    --target file:///path/to/output.zarr \
+    --output-format zarr --write-mode staged \
+    --option zarr_codecs='[{"name": "blosc", "configuration": {"cname": "lz4", "clevel": 5}}]'
+```
+
+`zarr_codecs` accepts a JSON list of codec objects in Zarr v3 format. When set,
+it overrides `zarr_compression`. See [Performance Tuning: Codec choice](performance-tuning.md#codec-choice)
+for trade-offs between archive and analysis workloads.
+
+> **Warning:** changing `zarr_compression` or `zarr_codecs` between ingests to
+> the same store raises `SchemaDriftError`. Choose a codec configuration once,
+> before preallocation, and keep it consistent across all pods and re-ingest runs.
+> To switch codecs, re-preallocate from scratch.
 
 ---
 
@@ -270,16 +325,15 @@ Array specs (dtype, per-resolution sizes, NaN-at-limb semantics) are in
 
 ---
 
-## Fix FillValue (post-ingest)
+## Fix FillValue (legacy stores)
 
-By default, numeric arrays such as `counts` do not have a `_FillValue`
-attribute stamped in the Zarr metadata. xarray uses `_FillValue` to mask fill
-pixels to `NaN` on read. Without it, fill pixels appear as raw integer values.
-This is a known limitation tracked in
-[issue #2](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/2).
+Firecube now stamps the CF `_FillValue` attribute on numeric arrays at ingest
+time, so new stores need no extra step. Stores written before that behavior
+lack the attribute, and xarray then shows fill pixels as raw integer values
+instead of masking them to `NaN` on read.
 
-The `fix-fillvalue` command stamps the CF `_FillValue` attribute on numeric
-arrays in an existing store as a post-ingest workaround.
+The `fix-fillvalue` command stamps `_FillValue` on numeric arrays in such an
+existing store without re-running ingestion.
 
 **Run only after ingestion has completed.** The store must be offline (no
 active ingest pods writing to it).
@@ -299,4 +353,8 @@ firecube plugins mtg_fci_l1c fix-fillvalue --store <path> --yes-i-really-mean-it
 ```
 
 After running, xarray will mask fill pixels to `NaN` on read for all stamped
-arrays.
+arrays. The command is idempotent: arrays already stamped with the expected
+value are skipped, and a conflicting existing value stops the command without
+writing anything.
+
+---

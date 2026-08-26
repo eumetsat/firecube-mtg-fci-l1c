@@ -16,7 +16,7 @@ mixin pattern in firecube-core TODO §33), migrate this plugin's
 implementation.
 
 **Anchor:** `_byte_budgeted_4d_shard()` in
-`src/firecube_mtg_fci_l1c/_variable.py:117-133` is FCI-shaped but the "byte
+`src/firecube_mtg_fci_l1c/_schema.py:117-133` is FCI-shaped but the "byte
 budget → group whole chunks along Y up to target" policy generalises to any
 `DirectZarrIngestor` plugin writing large multi-dimensional data arrays.
 

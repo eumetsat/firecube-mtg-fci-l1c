@@ -314,11 +314,19 @@ def test_fix_fillvalue_end_to_end(tmp_path: Path, fdhsi_zip: Path) -> None:
 
     store_path = _run_ingest(fdhsi_zip.parent, tmp_path, options={})
 
-    counts_before = zarr.open_array(str(store_path / "data_1km/counts"), mode="r")
-    assert "_FillValue" not in dict(counts_before.attrs), (
-        "Baseline precondition failed: counts already carries _FillValue; "
-        "the RED test cannot demonstrate the fix."
+    # Current Firecube core stamps _FillValue at ingest time. This command
+    # exists for stores written before that behavior, so simulate a legacy
+    # store by removing the stamped attribute first.
+    counts_before = zarr.open_array(str(store_path / "data_1km/counts"), mode="r+")
+    assert dict(counts_before.attrs).get("_FillValue") == 65535, (
+        "Baseline precondition failed: ingest no longer stamps _FillValue on counts."
     )
+    for arr_name in ("counts", "pixel_quality", "spatial_ref"):
+        arr = zarr.open_array(str(store_path / f"data_1km/{arr_name}"), mode="r+")
+        if "_FillValue" in dict(arr.attrs):
+            del arr.attrs["_FillValue"]
+    counts_stripped = zarr.open_array(str(store_path / "data_1km/counts"), mode="r")
+    assert "_FillValue" not in dict(counts_stripped.attrs)
 
     runner = CliRunner()
     result = runner.invoke(

@@ -1,0 +1,8 @@
+{
+  "static_arrays": [
+    {"name": "latitude", "marker_present": true, "expected_values_match": true},
+    {"name": "longitude", "marker_present": true, "expected_values_match": true},
+    {"name": "x", "marker_present": true, "expected_values_match": true},
+    {"name": "y", "marker_present": true, "expected_values_match": true}
+  ]
+}
