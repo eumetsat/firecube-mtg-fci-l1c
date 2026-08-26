@@ -24,9 +24,11 @@ from __future__ import annotations
 import atexit
 import threading
 import tempfile
-import zipfile
+from collections.abc import Sequence
 from pathlib import Path
 from types import TracebackType
+
+from firecube.core.api import extract_all_from_zips
 
 
 _pending_cleanup_threads: list[threading.Thread] = []
@@ -48,16 +50,6 @@ def _await_pending_cleanups() -> None:
 atexit.register(_await_pending_cleanups)
 
 
-def _safe_extractall(zf: zipfile.ZipFile, dest: Path) -> None:
-    """Extract *zf* into *dest*, rejecting any member that escapes *dest*."""
-    dest_resolved = dest.resolve()
-    for member in zf.namelist():
-        target = (dest_resolved / member).resolve()
-        if target != dest_resolved and dest_resolved not in target.parents:
-            raise ValueError(f"Unsafe path in archive (zip-slip): {member!r}")
-    zf.extractall(dest_resolved)
-
-
 class BatchScratch:
     """Per-batch scratch directory with numbered ZIP extract dirs."""
 
@@ -75,6 +67,8 @@ class BatchScratch:
             prefix=f"{prefix}_{scratch_id}_",
         )
         self._scratch_root = Path(self._tmp.name)
+        # Serial by contract: extract_all_from_zips resolves destination
+        # directories on the calling thread before any extraction starts.
         self._extract_counter = 0
 
     @property
@@ -82,16 +76,48 @@ class BatchScratch:
         """Path to this batch's scratch root directory."""
         return self._scratch_root
 
-    def extract_zip(self, zip_path: Path) -> Path:
-        """Extract *zip_path* into a numbered subdirectory and return its path."""
+    def _next_extract_dir(self, zip_path: Path) -> Path:
+        """Allocate the next numbered extraction directory for *zip_path*."""
         self._extract_counter += 1
-        extract_dir = (
-            self._scratch_root / f"{Path(zip_path).stem}-{self._extract_counter}"
+        return self._scratch_root / f"{Path(zip_path).stem}-{self._extract_counter}"
+
+    def extract_zip(self, zip_path: Path) -> Path:
+        """Extract *zip_path* into a numbered subdirectory and return its path.
+
+        Raises ``ValueError`` when the archive is invalid or contains an
+        unsafe member name.
+        """
+        path = Path(zip_path)
+        extracted, failures = extract_all_from_zips([path], self._next_extract_dir)
+        if failures:
+            raise ValueError(failures[path])
+        return extracted[path]
+
+    def extract_zips_parallel(
+        self,
+        zip_paths: Sequence[Path],
+        *,
+        max_workers: int = 4,
+    ) -> tuple[dict[Path, Path], dict[Path, str]]:
+        """Extract several ZIPs concurrently into numbered subdirectories.
+
+        Thin wrapper over :func:`firecube.core.api.extract_all_from_zips`
+        supplying this batch's numbered directories; see that function for
+        the full contract (zip-slip guard, per-archive failure isolation).
+
+        Args:
+            zip_paths: Archives to extract.
+            max_workers: Upper bound on concurrent extractions.
+
+        Returns:
+            The core function's ``(extracted, failures)`` pair; every input
+            path appears in exactly one of the two mappings.
+        """
+        return extract_all_from_zips(
+            [Path(p) for p in zip_paths],
+            self._next_extract_dir,
+            workers=max_workers,
         )
-        extract_dir.mkdir(parents=True, exist_ok=True)
-        with zipfile.ZipFile(zip_path, "r") as zf:
-            _safe_extractall(zf, extract_dir)
-        return extract_dir
 
     def cleanup(self) -> None:
         """Remove the scratch root and all contents; safe to call repeatedly."""

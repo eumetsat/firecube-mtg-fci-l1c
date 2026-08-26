@@ -9,7 +9,7 @@ Operator-facing plugin and production-script settings.
 - [Chunk and shard layout](#chunk-and-shard-layout)
 - [Compression options](#compression-options)
 - [Geolocation grids workflow](#geolocation-grids-workflow)
-- [Fix FillValue (post-ingest)](#fix-fillvalue-post-ingest)
+- [Fix FillValue (legacy stores)](#fix-fillvalue-legacy-stores)
 
 ---
 
@@ -206,7 +206,9 @@ for uint16), and the tradeoffs are in
 [Performance Tuning → Chunk and Shard Tuning](performance-tuning.md#chunk-and-shard-tuning).
 
 **Other Firecube-core options**: `pipeline_batch_size`, `pipeline_workers` (must stay `1`
-for FCI; see [Performance Tuning: Concurrency](performance-tuning.md#concurrency-pipeline_workers1)).
+for FCI; see [Performance Tuning: Concurrency](performance-tuning.md#concurrency-pipeline_workers1)),
+and `extract_workers` (parallel ZIP extraction inside a batch, default `4`; independent
+of `pipeline_workers` and safe to raise on fast local disks).
 
 ---
 
@@ -323,16 +325,15 @@ Array specs (dtype, per-resolution sizes, NaN-at-limb semantics) are in
 
 ---
 
-## Fix FillValue (post-ingest)
+## Fix FillValue (legacy stores)
 
-By default, numeric arrays such as `counts` do not have a `_FillValue`
-attribute stamped in the Zarr metadata. xarray uses `_FillValue` to mask fill
-pixels to `NaN` on read. Without it, fill pixels appear as raw integer values.
-This is a known limitation tracked in
-[issue #2](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/2).
+Firecube now stamps the CF `_FillValue` attribute on numeric arrays at ingest
+time, so new stores need no extra step. Stores written before that behavior
+lack the attribute, and xarray then shows fill pixels as raw integer values
+instead of masking them to `NaN` on read.
 
-The `fix-fillvalue` command stamps the CF `_FillValue` attribute on numeric
-arrays in an existing store as a post-ingest workaround.
+The `fix-fillvalue` command stamps `_FillValue` on numeric arrays in such an
+existing store without re-running ingestion.
 
 **Run only after ingestion has completed.** The store must be offline (no
 active ingest pods writing to it).
@@ -352,4 +353,8 @@ firecube plugins mtg_fci_l1c fix-fillvalue --store <path> --yes-i-really-mean-it
 ```
 
 After running, xarray will mask fill pixels to `NaN` on read for all stamped
-arrays.
+arrays. The command is idempotent: arrays already stamped with the expected
+value are skipped, and a conflicting existing value stops the command without
+writing anything.
+
+---

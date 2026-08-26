@@ -115,7 +115,6 @@ def _run_ingest(
         output_format="zarr",
         storage=StorageContext(output=_make_local_storage_session(target_path)),
         options={
-            "pipeline_parallel": False,
             "force_reingest": True,
             "write_mode": "direct",
             # Fixtures use 2024-01-01 timestamps (pre-dating real FCI data); anchor
@@ -628,7 +627,6 @@ def test_reused_ingestor_emits_static_for_each_target(
             output_format="zarr",
             storage=StorageContext(output=_make_local_storage_session(target_path)),
             options={
-                "pipeline_parallel": False,
                 "force_reingest": True,
                 "write_mode": "direct",
                 "time_epoch": "2024-01-01",
@@ -895,7 +893,6 @@ def test_partial_failure_metrics_preserved(tmp_path: Path, small_fci_layout: lis
         output_format="zarr",
         storage=StorageContext(output=_make_local_storage_session(target_path)),
         options={
-            "pipeline_parallel": False,
             "force_reingest": True,
             "write_mode": "direct",
             "time_epoch": "2024-01-01",

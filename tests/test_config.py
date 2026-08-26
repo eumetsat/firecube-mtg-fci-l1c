@@ -52,11 +52,6 @@ def test_pixel_time_dtype_rejects_bogus():
         MtgFciL1cConfig(pixel_time_dtype="bogus")
 
 
-def test_batch_workers_rejected():
-    with pytest.raises(TypeError, match="batch_workers"):
-        MtgFciL1cConfig(batch_workers=1)  # pyright: ignore[reportCallIssue]
-
-
 def test_get_resolutions_filters_by_product_type():
     cfg = MtgFciL1cConfig(resolutions="1km,2km,500m")
     # 500m is not valid for FDHSI, so it is dropped.

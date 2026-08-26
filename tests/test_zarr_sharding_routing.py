@@ -183,13 +183,3 @@ def test_zarr_sharding_toggle_is_self_consistent_within_one_process() -> None:
     assert dynamic_false_again and all(
         spec.shards is None for spec in dynamic_false_again
     )
-
-
-def test_slice_meta_includes_emit_static_variables() -> None:
-    ingestor = _make_ingestor(emit_static_variables=False)
-    ctx: Any = SimpleNamespace()
-
-    meta = ingestor.slice_meta(ctx)
-
-    assert "emit_static_variables" in ingestor.slice_meta_keys()
-    assert meta["emit_static_variables"] is False

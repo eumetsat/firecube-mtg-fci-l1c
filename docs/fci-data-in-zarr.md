@@ -70,21 +70,13 @@ values without any extra configuration. This is tracked in
 
 ### FillValue
 
-`counts` and other numeric arrays do not have `_FillValue` set in Zarr
-metadata by default. xarray uses `_FillValue` to mask fill pixels to `NaN` on
-read; without it, fill pixels appear as raw integer values. This is a known
-limitation tracked in
-[issue #2](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/2).
+Firecube stamps the `_FillValue` attribute on `counts` and other numeric
+arrays at ingest time. xarray uses `_FillValue` to mask fill pixels to `NaN`
+on read, so masking works without extra configuration.
 
-To enable xarray masking, run the post-ingest workaround after ingestion
-completes:
-
-```bash
-firecube plugins mtg_fci_l1c fix-fillvalue --store <path> --yes-i-really-mean-it
-```
-
-See [Fix FillValue](customization.md#fix-fillvalue-post-ingest) for the full
-procedure including the dry-run step.
+Stores written before this behavior existed lack the attribute. Stamp it
+post-hoc with the [fix-fillvalue command](customization.md#fix-fillvalue-legacy-stores),
+or let a resumed or re-run ingest add it when the arrays are next touched.
 
 ## Radiometric calibration
 

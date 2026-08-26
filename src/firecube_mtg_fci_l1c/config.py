@@ -71,13 +71,6 @@ class MtgFciL1cConfig(BasePluginConfig):
     include_pixel_time: bool = True
     include_calibration: bool = True
     include_geolocation: bool = True
-    emit_static_variables: bool = True
-    """Emit static coordinate arrays (latitude, longitude, x, y, spatial_ref).
-
-    Set ``False`` on non-owner pods in a parallel fan-out to avoid redundant
-    static writes. The production helper (``scripts/fci-ingest.sh``) sets this
-    automatically; operators should not need to set it manually.
-    """
     fci_grids_file: str | None = None
     """Path to pre-generated .npz grids file.
 
@@ -212,13 +205,6 @@ class MtgFciL1cConfig(BasePluginConfig):
             raise ValueError(
                 "zarr_shard_target_bytes must be a positive integer, got "
                 f"{self.zarr_shard_target_bytes!r}"
-            )
-
-        if getattr(self, "batch_workers", None) is not None:
-            raise ValueError(
-                "The `batch_workers` plugin option was removed; DirectZarr streaming uses "
-                "pipeline-level parallelism via firecube's --batch-workers / --pipeline-workers. "
-                "Please remove this option from your config."
             )
 
         if self.pixel_time_dtype not in _VALID_PIXEL_TIME_DTYPES:

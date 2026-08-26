@@ -1,6 +1,6 @@
 {
   "fdhsi_defaults": {
-    "hash": "c5997e8f646ace824a2986b68fb8309457ffc00673799c6802cac32e36546455",
+    "hash": "2755bec28884a73cbb618c6c140e109db3431fd07015a630c3ce551e191e6c20",
     "structure": {
       "attrs": {},
       "groups": {
@@ -26,6 +26,7 @@
             },
             "counts": {
               "attrs": {
+                "_FillValue": 65535,
                 "ancillary_variables": "pixel_quality pixel_time",
                 "coordinates": "latitude longitude",
                 "grid_mapping": "spatial_ref",
@@ -119,6 +120,7 @@
             },
             "pixel_quality": {
               "attrs": {
+                "_FillValue": 0,
                 "coordinates": "latitude longitude",
                 "flag_masks": [
                   1,
@@ -208,6 +210,7 @@
             },
             "spatial_ref": {
               "attrs": {
+                "_FillValue": 0,
                 "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
                 "grid_mapping_name": "geostationary",
                 "inverse_flattening": 298.25722356301,
@@ -315,6 +318,7 @@
             },
             "counts": {
               "attrs": {
+                "_FillValue": 65535,
                 "ancillary_variables": "pixel_quality pixel_time",
                 "coordinates": "latitude longitude",
                 "grid_mapping": "spatial_ref",
@@ -408,6 +412,7 @@
             },
             "pixel_quality": {
               "attrs": {
+                "_FillValue": 0,
                 "coordinates": "latitude longitude",
                 "flag_masks": [
                   1,
@@ -497,6 +502,7 @@
             },
             "spatial_ref": {
               "attrs": {
+                "_FillValue": 0,
                 "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
                 "grid_mapping_name": "geostationary",
                 "inverse_flattening": 298.25722356301,
@@ -586,7 +592,7 @@
     }
   },
   "hrfi_defaults": {
-    "hash": "70eb5e24b05f73c7f0f3e106fdd8342a9fba1ca3131c2d24012ef6d9dde9ebec",
+    "hash": "12a8ce956905af078e1c8c7b573a244a93ae86e3d7e00822bd711bcc33904752",
     "structure": {
       "attrs": {},
       "groups": {
@@ -612,6 +618,7 @@
             },
             "counts": {
               "attrs": {
+                "_FillValue": 65535,
                 "ancillary_variables": "pixel_quality pixel_time",
                 "coordinates": "latitude longitude",
                 "grid_mapping": "spatial_ref",
@@ -705,6 +712,7 @@
             },
             "pixel_quality": {
               "attrs": {
+                "_FillValue": 0,
                 "coordinates": "latitude longitude",
                 "flag_masks": [
                   1,
@@ -794,6 +802,7 @@
             },
             "spatial_ref": {
               "attrs": {
+                "_FillValue": 0,
                 "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
                 "grid_mapping_name": "geostationary",
                 "inverse_flattening": 298.25722356301,
@@ -901,6 +910,7 @@
             },
             "counts": {
               "attrs": {
+                "_FillValue": 65535,
                 "ancillary_variables": "pixel_quality pixel_time",
                 "coordinates": "latitude longitude",
                 "grid_mapping": "spatial_ref",
@@ -994,6 +1004,7 @@
             },
             "pixel_quality": {
               "attrs": {
+                "_FillValue": 0,
                 "coordinates": "latitude longitude",
                 "flag_masks": [
                   1,
@@ -1083,6 +1094,7 @@
             },
             "spatial_ref": {
               "attrs": {
+                "_FillValue": 0,
                 "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
                 "grid_mapping_name": "geostationary",
                 "inverse_flattening": 298.25722356301,

@@ -266,6 +266,10 @@ class TestBuildWriteIntentsLogging:
             def extract_zip(self, zip_path):
                 return Path(f"/tmp/{Path(zip_path).stem}")
 
+            def extract_zips_parallel(self, zip_paths, *, max_workers=4):
+                del max_workers
+                return {Path(p): self.extract_zip(p) for p in zip_paths}, {}
+
         class FakeReader:
             def __init__(self, part_path):
                 self.part_path = part_path
@@ -457,6 +461,10 @@ class TestVariableDispatchRegressions:
 
             def extract_zip(self, zip_path):
                 return Path(f"/tmp/{Path(zip_path).stem}")
+
+            def extract_zips_parallel(self, zip_paths, *, max_workers=4):
+                del max_workers
+                return {Path(p): self.extract_zip(p) for p in zip_paths}, {}
 
         class FakeReader:
             def __init__(self, part_path):

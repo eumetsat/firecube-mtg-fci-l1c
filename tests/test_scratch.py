@@ -88,11 +88,59 @@ def test_base_dir_created_if_missing(tmp_path: Path):
         assert str(scratch.scratch_root).startswith(str(missing))
 
 
+def test_extract_zips_parallel_maps_every_archive(tmp_path: Path):
+    # >2 archives exercises the thread-pool path; each input must land in
+    # exactly one of the two result mappings, in a distinct directory.
+    zips = [
+        _make_zip(tmp_path / f"cycle-{i}.zip", {f"part-{i}.nc": bytes([i]) * 8})
+        for i in range(5)
+    ]
+    with BatchScratch(str(tmp_path / "scratch"), "run-batch_0000") as scratch:
+        extracted, failures = scratch.extract_zips_parallel(zips)
+
+        assert failures == {}
+        assert sorted(extracted) == sorted(zips)
+        dirs = list(extracted.values())
+        assert len(set(dirs)) == len(dirs), "extraction dirs must be unique"
+        for zip_path, extract_dir in extracted.items():
+            member = extract_dir / f"part-{zips.index(zip_path)}.nc"
+            assert member.is_file()
+
+
+def test_extract_zips_parallel_isolates_failures(tmp_path: Path):
+    # A corrupt archive and a zip-slip archive fail alone; good ones extract.
+    good = [_make_zip(tmp_path / f"good-{i}.zip", {"a.nc": b"ok"}) for i in range(2)]
+    corrupt = tmp_path / "corrupt.zip"
+    corrupt.write_bytes(b"this is not a zip archive")
+    evil = _make_zip(tmp_path / "evil.zip", {"../escape.nc": b"pwned"})
+
+    with BatchScratch(str(tmp_path / "scratch"), "run-batch_0000") as scratch:
+        extracted, failures = scratch.extract_zips_parallel([*good, corrupt, evil])
+
+        assert sorted(extracted) == sorted(good)
+        assert set(failures) == {corrupt, evil}
+        assert "Unsafe ZIP member path" in failures[evil]
+    assert not (tmp_path / "escape.nc").exists()
+
+
+def test_extract_zips_parallel_serial_small_batches(tmp_path: Path):
+    # Small batches yield the same result semantics as large ones.
+    one = _make_zip(tmp_path / "one.zip", {"a.nc": b"x"})
+    corrupt = tmp_path / "bad.zip"
+    corrupt.write_bytes(b"nope")
+    with BatchScratch(str(tmp_path / "scratch"), "run-batch_0000") as scratch:
+        extracted, failures = scratch.extract_zips_parallel([one, corrupt])
+
+        assert list(extracted) == [one]
+        assert (extracted[one] / "a.nc").read_bytes() == b"x"
+        assert list(failures) == [corrupt]
+
+
 def test_zip_slip_member_rejected(tmp_path: Path):
     # A member that escapes the extract dir must be refused, not written outside.
     evil = _make_zip(tmp_path / "evil.zip", {"../escape.nc": b"pwned"})
     with BatchScratch(str(tmp_path / "scratch"), "run-batch_0000") as scratch:
-        with pytest.raises(ValueError, match="zip-slip"):
+        with pytest.raises(ValueError, match="Unsafe ZIP member path"):
             scratch.extract_zip(evil)
     assert not (tmp_path / "escape.nc").exists()
 

@@ -347,9 +347,6 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         """Iterate VARIABLES with non-time dims; emit static WriteIntents."""
         from ._variables import VARIABLES, VariableContext, variable_enabled
 
-        if not config.emit_static_variables:
-            return []
-
         del product_type
         intents: list[WriteIntent] = []
         for plan in plans:
@@ -638,11 +635,27 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             resources.batch_scratch = core_scratch
             resources.chunk_owned_cache = chunk_owned_cache
 
-        for zip_path in batch.items:
-            zip_path = Path(zip_path) if not isinstance(zip_path, Path) else zip_path
+        # Extract the whole batch up front and in parallel; deferred payload
+        # dispatch reads nc_parts until batch cleanup, so peak scratch usage
+        # is unchanged, only the extraction wall time shrinks.
+        zip_paths = [
+            Path(item) if not isinstance(item, Path) else item for item in batch.items
+        ]
+        engine_config = getattr(self, "engine_config", None)
+        extract_workers = int(getattr(engine_config, "extract_workers", 4) or 4)
+        extracted_dirs, extract_failures = core_scratch.extract_zips_parallel(
+            zip_paths, max_workers=extract_workers
+        )
+
+        for zip_path in zip_paths:
+            failure = extract_failures.get(zip_path)
+            if failure is not None:
+                self._log.warning("Failed to extract %s: %s", zip_path, failure)
+                zip_errors.append(f"{zip_path.name}: {failure}")
+                files_failed += 1
+                continue
             try:
-                extract_dir = core_scratch.extract_zip(zip_path)
-                nc_parts = list_fci_nc_parts(extract_dir)
+                nc_parts = list_fci_nc_parts(extracted_dirs[zip_path])
 
                 if not nc_parts:
                     zip_errors.append(f"No nc_parts found in {zip_path.name}")
@@ -851,7 +864,6 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             "include_pixel_time",
             "include_calibration",
             "include_geolocation",
-            "emit_static_variables",
             "pixel_time_dtype",
             "scratch_dir",
             "zarr_chunk_y",
@@ -869,7 +881,6 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             "include_pixel_time": config.include_pixel_time,
             "include_calibration": config.include_calibration,
             "include_geolocation": config.include_geolocation,
-            "emit_static_variables": config.emit_static_variables,
             "pixel_time_dtype": config.pixel_time_dtype,
             "scratch_dir": config.scratch_dir,
             "zarr_chunk_y": config.zarr_chunk_y,
