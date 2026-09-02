@@ -176,6 +176,180 @@ def _effective_fill_value(variable: Variable, dtype: Any) -> Any:
     return variable.fill_value
 
 
+# Sentinel used in _ARRAY_SPEC_BUILDER keys so the dispatch mapping is
+# independent of the runtime ``time_coord_name`` parameter.
+_TIME_DIM_KEY = "__time__"
+
+
+def _normalize_dims_key(dims: tuple[str, ...], time_coord_name: str) -> tuple[str, ...]:
+    """Return a dispatch key with ``time_coord_name`` replaced by a sentinel."""
+    return tuple(_TIME_DIM_KEY if dim == time_coord_name else dim for dim in dims)
+
+
+@dataclasses.dataclass(frozen=True)
+class _ArraySpecInputs:
+    """Per-variable values every array-spec builder needs.
+
+    ``_build_array_spec`` resolves these once from a :class:`Variable`; the
+    builders read them from here rather than each taking the same six
+    positional parameters.
+    """
+
+    variable: Variable
+    dtype: Any
+    fill_value: Any
+    attrs: dict[str, Any] | None
+    dims: tuple[str, ...]
+
+
+def _build_array_time_yx_channel(
+    spec: _ArraySpecInputs, ctx: VariableContext
+) -> ZarrArraySpec:
+    """Build the ``(time, y, x, channel)`` per-pixel array spec."""
+    chunks = ctx.config.get_group_chunk_shape(ctx.group)
+    if len(chunks) != 4:
+        raise ValueError(f"Expected rank-4 chunks for {ctx.group}, got {chunks!r}")
+    chunks4 = (chunks[0], chunks[1], chunks[2], chunks[3])
+    shard_override = None
+    if ctx.config.zarr_shard_overrides is not None:
+        shard_override = ctx.config.zarr_shard_overrides.get(ctx.group)
+    if not ctx.config.template_config.zarr_sharding:
+        shards: tuple[int, ...] | None = None
+    elif shard_override is not None:
+        _validate_shard_override(
+            shard_override, chunks4, group=ctx.group, name=spec.variable.name
+        )
+        shards = shard_override
+    else:
+        shards = _byte_budgeted_4d_shard(
+            chunks4,
+            spec.dtype,
+            dimsize=ctx.dimsize,
+            target_bytes=ctx.config.zarr_shard_target_bytes,
+        )
+    return ZarrArraySpec(
+        name=spec.variable.name,
+        shape=(1, ctx.dimsize, ctx.dimsize, ctx.n_channels),
+        dtype=spec.dtype,
+        chunks=chunks4,
+        fill_value=spec.fill_value,
+        shards=shards,
+        dimension_names=spec.dims,
+        attrs=spec.attrs,
+    )
+
+
+def _build_array_time_channel(
+    spec: _ArraySpecInputs, ctx: VariableContext
+) -> ZarrArraySpec:
+    """Build the ``(time, channel)`` per-slot-per-channel array spec."""
+    return ZarrArraySpec(
+        name=spec.variable.name,
+        shape=(1, ctx.n_channels),
+        dtype=spec.dtype,
+        chunks=(1, ctx.n_channels),
+        fill_value=spec.fill_value,
+        dimension_names=spec.dims,
+        attrs=spec.attrs,
+    )
+
+
+def _build_array_time_only(
+    spec: _ArraySpecInputs, ctx: VariableContext
+) -> ZarrArraySpec:
+    """Build the ``(time,)`` time-indexed coordinate/scalar spec."""
+    del ctx
+    return ZarrArraySpec(
+        name=spec.variable.name,
+        shape=(1,),
+        dtype=spec.dtype,
+        chunks=None,
+        fill_value=spec.fill_value,
+        time_indexed=True,
+        dimension_names=spec.dims,
+        attrs=spec.attrs,
+    )
+
+
+def _build_array_yx(spec: _ArraySpecInputs, ctx: VariableContext) -> ZarrArraySpec:
+    """Build the ``(y, x)`` static-grid array spec (e.g. latitude/longitude)."""
+    return ZarrArraySpec(
+        name=spec.variable.name,
+        shape=(ctx.dimsize, ctx.dimsize),
+        dtype=spec.dtype,
+        chunks=_static_2d_chunks(
+            ctx.dimsize, spec.dtype, ctx.config.zarr_shard_target_bytes
+        ),
+        fill_value=spec.fill_value,
+        shards=None,
+        time_indexed=False,
+        dimension_names=spec.dims,
+        attrs=spec.attrs,
+    )
+
+
+def _build_array_channel(spec: _ArraySpecInputs, ctx: VariableContext) -> ZarrArraySpec:
+    """Build the ``(channel,)`` per-channel coordinate spec."""
+    return ZarrArraySpec(
+        name=spec.variable.name,
+        shape=(ctx.n_channels,),
+        dtype=spec.dtype,
+        chunks=(ctx.n_channels,),
+        fill_value=spec.fill_value,
+        time_indexed=False,
+        dimension_names=spec.dims,
+        attrs=spec.attrs,
+    )
+
+
+def _build_array_axis_1d(spec: _ArraySpecInputs, ctx: VariableContext) -> ZarrArraySpec:
+    """Build the ``(x,)`` or ``(y,)`` GEOS projection-angle coordinate spec."""
+    return ZarrArraySpec(
+        name=spec.variable.name,
+        shape=(ctx.dimsize,),
+        dtype=spec.dtype,
+        chunks=(ctx.dimsize,),
+        # ZarrArraySpec accepts None, preserving coord vars without _FillValue.
+        fill_value=spec.fill_value,
+        time_indexed=False,
+        dimension_names=spec.dims,
+        attrs=spec.attrs,
+    )
+
+
+def _build_array_scalar(spec: _ArraySpecInputs, ctx: VariableContext) -> ZarrArraySpec:
+    """Build the scalar ``()`` array spec (e.g. ``spatial_ref``)."""
+    del ctx
+    return ZarrArraySpec(
+        name=spec.variable.name,
+        shape=(),
+        dtype=spec.dtype,
+        chunks=None,
+        fill_value=spec.fill_value,
+        time_indexed=False,
+        dimension_names=(),
+        attrs=spec.attrs,
+    )
+
+
+# Dispatch table: dims signature -> builder. Keys use ``_TIME_DIM_KEY`` in
+# place of the runtime time-coord name so the mapping does not depend on
+# runtime state. The ``(x,)`` and ``(y,)`` signatures intentionally map to
+# the same builder (identical body in the original if-chain).
+_ARRAY_SPEC_BUILDER: Mapping[
+    tuple[str, ...], Callable[[_ArraySpecInputs, VariableContext], ZarrArraySpec]
+] = {
+    (_TIME_DIM_KEY, "y", "x", "channel"): _build_array_time_yx_channel,
+    (_TIME_DIM_KEY, "channel"): _build_array_time_channel,
+    (_TIME_DIM_KEY,): _build_array_time_only,
+    ("y", "x"): _build_array_yx,
+    ("channel",): _build_array_channel,
+    ("x",): _build_array_axis_1d,
+    ("y",): _build_array_axis_1d,
+    (): _build_array_scalar,
+}
+
+
 def _build_array_spec(
     variable: Variable, ctx: VariableContext, time_coord_name: str
 ) -> ZarrArraySpec:
@@ -190,116 +364,20 @@ def _build_array_spec(
                 attrs = dict(resolved)
             else:
                 attrs.update(resolved)
-    fill_value = _effective_fill_value(variable, dtype)
 
-    if dims == (time_coord_name, "y", "x", "channel"):
-        chunks = ctx.config.get_group_chunk_shape(ctx.group)
-        if len(chunks) != 4:
-            raise ValueError(f"Expected rank-4 chunks for {ctx.group}, got {chunks!r}")
-        chunks4 = (chunks[0], chunks[1], chunks[2], chunks[3])
-        shard_override = None
-        if ctx.config.zarr_shard_overrides is not None:
-            shard_override = ctx.config.zarr_shard_overrides.get(ctx.group)
-        if not ctx.config.template_config.zarr_sharding:
-            shards: tuple[int, ...] | None = None
-        elif shard_override is not None:
-            _validate_shard_override(
-                shard_override, chunks4, group=ctx.group, name=variable.name
-            )
-            shards = shard_override
-        else:
-            shards = _byte_budgeted_4d_shard(
-                chunks4,
-                dtype,
-                dimsize=ctx.dimsize,
-                target_bytes=ctx.config.zarr_shard_target_bytes,
-            )
-        return ZarrArraySpec(
-            name=variable.name,
-            shape=(1, ctx.dimsize, ctx.dimsize, ctx.n_channels),
+    builder = _ARRAY_SPEC_BUILDER.get(_normalize_dims_key(dims, time_coord_name))
+    if builder is None:
+        raise ValueError(f"Unsupported dims for {variable.name!r}: {dims!r}")
+    return builder(
+        _ArraySpecInputs(
+            variable=variable,
             dtype=dtype,
-            chunks=chunks4,
-            fill_value=fill_value,
-            shards=shards,
-            dimension_names=dims,
+            fill_value=_effective_fill_value(variable, dtype),
             attrs=attrs,
-        )
-
-    if dims == (time_coord_name, "channel"):
-        return ZarrArraySpec(
-            name=variable.name,
-            shape=(1, ctx.n_channels),
-            dtype=dtype,
-            chunks=(1, ctx.n_channels),
-            fill_value=fill_value,
-            dimension_names=dims,
-            attrs=attrs,
-        )
-
-    if dims == (time_coord_name,):
-        return ZarrArraySpec(
-            name=variable.name,
-            shape=(1,),
-            dtype=dtype,
-            chunks=(1,),
-            fill_value=fill_value,
-            dimension_names=dims,
-            attrs=attrs,
-        )
-
-    if dims == ("y", "x"):
-        return ZarrArraySpec(
-            name=variable.name,
-            shape=(ctx.dimsize, ctx.dimsize),
-            dtype=dtype,
-            chunks=_static_2d_chunks(
-                ctx.dimsize, dtype, ctx.config.zarr_shard_target_bytes
-            ),
-            fill_value=fill_value,
-            shards=None,
-            time_indexed=False,
-            dimension_names=dims,
-            attrs=attrs,
-        )
-
-    if dims == ("channel",):
-        return ZarrArraySpec(
-            name=variable.name,
-            shape=(ctx.n_channels,),
-            dtype=dtype,
-            chunks=(ctx.n_channels,),
-            fill_value=fill_value,
-            time_indexed=False,
-            dimension_names=dims,
-            attrs=attrs,
-        )
-
-    if dims in {("x",), ("y",)}:
-        return ZarrArraySpec(
-            name=variable.name,
-            shape=(ctx.dimsize,),
-            dtype=dtype,
-            chunks=(ctx.dimsize,),
-            # ZarrArraySpec accepts None, preserving coord vars without _FillValue.
-            fill_value=fill_value,
-            time_indexed=False,
-            dimension_names=dims,
-            attrs=attrs,
-        )
-
-    if dims == ():
-        return ZarrArraySpec(
-            name=variable.name,
-            shape=(),
-            dtype=dtype,
-            chunks=None,
-            fill_value=fill_value,
-            time_indexed=False,
-            dimension_names=(),
-            attrs=attrs,
-        )
-
-    raise ValueError(f"Unsupported dims for {variable.name!r}: {dims!r}")
+            dims=dims,
+        ),
+        ctx,
+    )
 
 
 def _coord_names_for(variables: list[Variable], time_coord_name: str) -> frozenset[str]:

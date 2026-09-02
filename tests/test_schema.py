@@ -23,6 +23,7 @@ import pytest
 
 from firecube_mtg_fci_l1c.config import MtgFciL1cConfig
 from firecube_mtg_fci_l1c._variables import (
+    TIME_COORD_NAME,
     VARIABLES,
     Variable,
     VariableContext,
@@ -408,6 +409,32 @@ def test_x_y_position_in_variables() -> None:
     y_idx = names.index("y")
     time_idx = names.index("time")
     assert lon_idx < x_idx < y_idx < time_idx, "x/y must be between longitude and time"
+
+
+@pytest.mark.unit
+def test_time_coord_spec_matches_cf_attrs() -> None:
+    specs = build_specs(MtgFciL1cConfig(), "FDHSI")
+    g = next(g for g in specs if g.group == "data_1km")
+    time_spec = next(a for a in g.arrays if a.name == TIME_COORD_NAME)
+    assert time_spec.chunks is None
+    assert time_spec.dimension_names == (TIME_COORD_NAME,)
+    assert time_spec.time_indexed is True
+    assert time_spec.attrs is not None
+    assert time_spec.attrs == {
+        "standard_name": "time",
+        "long_name": "observation time",
+        "axis": "T",
+    }
+
+
+@pytest.mark.unit
+def test_time_coord_spec_does_not_declare_units_or_calendar() -> None:
+    specs = build_specs(MtgFciL1cConfig(), "FDHSI")
+    g = next(g for g in specs if g.group == "data_1km")
+    time_spec = next(a for a in g.arrays if a.name == TIME_COORD_NAME)
+    attrs = time_spec.attrs or {}
+    assert "units" not in attrs
+    assert "calendar" not in attrs
 
 
 # ─────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 {
   "FDHSI__include_calibration=False_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "8209d80d48f29e424f03e70eeb030f6926ab900837605e6923af663e8eab0541",
+    "hash": "2053e99ff40c9a2b2d5578f94988f0c0e15b6b00e450a8842532b3000f144b8f",
     "normalized_spec": [
       {
         "arrays": [
@@ -92,9 +92,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -260,9 +258,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -341,7 +337,7 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "dfbe3483c586317f26118b170eb98e5146295fd3276e3a472a5ac814aae2c76b",
+    "hash": "160c36d9cd26e87980e36a35d6c7110a39a83d2f6e02d9b425f01ef948479d66",
     "normalized_spec": [
       {
         "arrays": [
@@ -471,9 +467,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -677,9 +671,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -758,7 +750,7 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "d26411e8225fb8900baa80f06b881aaf3ef6fa82737c414b51dd48c59cfb790d",
+    "hash": "ebff199687553ef0e5211579b878bf13c1fdde3b4faa99486213187a29272fa0",
     "normalized_spec": [
       {
         "arrays": [
@@ -897,9 +889,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -1112,9 +1102,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -1193,7 +1181,7 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "bc9da62ded92f677d865247eb0d582628e2623175d6cb9c983a13314564d99f8",
+    "hash": "d9238cbdcecaeee0a6b2c6090ca1a202c9242ab1b1ab66ccd62f2d3ee175b7f8",
     "normalized_spec": [
       {
         "arrays": [
@@ -1370,9 +1358,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -1623,9 +1609,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -1704,7 +1688,7 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "211892b3207970697edf03b166b22535a1680ed50c9dd395ec43eb42ddc95725",
+    "hash": "68592cdb907f86b54df9cc86d22f0bebe8f60494a9fd34df7065406b75ed3f23",
     "normalized_spec": [
       {
         "arrays": [
@@ -1847,9 +1831,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -2068,9 +2050,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -2151,7 +2131,7 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "e79f4e3f9313975a7a709938fca7f1a1e2defd12de6cbf810581536e5f4b2fcd",
+    "hash": "05a4a4af4ba9e26aceeec2141b200181d6a2fcc1d857f5e4b51bef99cbc7c10c",
     "normalized_spec": [
       {
         "arrays": [
@@ -2333,9 +2313,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -2593,9 +2571,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -2676,7 +2652,7 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "8d57688ea50014c64f252492ab6d8a7443f6e9dd1158e12ba9fbfee5aaf5c0b0",
+    "hash": "74c582747ae497f5eafcedeb963c19e6a6028d9edc405ecc2bcfa62180219071",
     "normalized_spec": [
       {
         "arrays": [
@@ -2867,9 +2843,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -3136,9 +3110,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -3219,7 +3191,7 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "30bcbe51faef28ab14baff8c019ef80604991e7b98ee08e33d618af5675c8829",
+    "hash": "736e257af65bf181eb7c2b707f5851a6b1090c9f17a3df9d36eee49b17334408",
     "normalized_spec": [
       {
         "arrays": [
@@ -3449,9 +3421,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -3757,9 +3727,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -3840,7 +3808,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "99ddd7b67722d2262ffbbfc87d01fbf2687d77b446c0045abda0b30d6b286644",
+    "hash": "63ab476c8b9f0a8182f61ea6e67e83431caabea4c7d977ad2a20a9329e03dd99",
     "normalized_spec": [
       {
         "arrays": [
@@ -3980,9 +3948,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -4196,9 +4162,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -4277,7 +4241,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "f9299959e190145a4bca0204fad731bc867304fbb9a1c9f1e6c2e6110d6dee92",
+    "hash": "3491f7df76b39991526154ded9d73b23d3001adfe27be3db85224b5e9ca6119b",
     "normalized_spec": [
       {
         "arrays": [
@@ -4455,9 +4419,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -4709,9 +4671,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -4790,7 +4750,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "eff44e1c306f5ad5056dca8763bac28168461a2ff967b8f41423369b82fde89b",
+    "hash": "8b7347ef60c83e51f1428b91b7783a3c2855ff55a3a98a3e59134e314ea10d8e",
     "normalized_spec": [
       {
         "arrays": [
@@ -4977,9 +4937,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -5240,9 +5198,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -5321,7 +5277,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "eabcc5801a473fcce01d81be3a26ddb11fca8f47aae2875f2e9bfc4fe2dc5e3a",
+    "hash": "8b54795e1723eea24e927fd2c6fe802ad42f13dd20122802ff42e8d3afaa53db",
     "normalized_spec": [
       {
         "arrays": [
@@ -5546,9 +5502,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -5847,9 +5801,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -5928,7 +5880,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "d7d9f16fbc3d6bfff5ec1368d57a44e9bd48fa389aec098782006fa1798ee571",
+    "hash": "b3c42ef1e1f25dd640998c7c5b729f1625729f5d30c698256d303cb208e5e157",
     "normalized_spec": [
       {
         "arrays": [
@@ -6119,9 +6071,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -6388,9 +6338,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -6471,7 +6419,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "ace66ae488d511e6dbc3840cc2df97c9078d7d2bef58b5b50d9dce5f17240308",
+    "hash": "5a0e01bdefdace500aa7e230581a1f0009b5963f4a2ef03e39fdfd67ea3000db",
     "normalized_spec": [
       {
         "arrays": [
@@ -6701,9 +6649,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -7009,9 +6955,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -7092,7 +7036,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "a3b7e0b8d7e430ab710387b3161f563343996356f62492429ab8ecc15cc33a23",
+    "hash": "245bc39fc99b7e9f72693bdc9e71910a8e5651c5243b1ed8a8d68d34ef3c1ba4",
     "normalized_spec": [
       {
         "arrays": [
@@ -7331,9 +7275,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -7648,9 +7590,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -7731,7 +7671,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "b13c2a7427b5092642762d362718c287c766b8a9f860bf6da1d46585f751d3e5",
+    "hash": "040dbb9a118fc5a4d2c028a785b1749910966c0312c0eaf2d32007e59a6b41b4",
     "normalized_spec": [
       {
         "arrays": [
@@ -8009,9 +7949,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -8365,9 +8303,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -8448,7 +8384,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "a8df470c6d8e9e607a1087a34d20f2b821c64301f24522729c2ea89ad4629b2b",
+    "hash": "6e7f8b0837e80cdecd7485698386a45bb4db8cf406a94baa79fb0c54f5835c65",
     "normalized_spec": [
       {
         "arrays": [
@@ -8540,9 +8476,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -8708,9 +8642,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -8789,7 +8721,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "bafdaa398e75ba8947deb7c7fa2612e332e068e9dbfeb89852b8750c60165f6b",
+    "hash": "a5307247e5783b0bf6f7a1fd0062054de2381eb2434a2e9589146afb15f41490",
     "normalized_spec": [
       {
         "arrays": [
@@ -8919,9 +8851,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -9125,9 +9055,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -9206,7 +9134,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "8b254450604fc33d6b4dc98e99afc53c1c744eec2be4ddec6859f9be880f4abb",
+    "hash": "feff296b5c1648aef48f0d196a7a0882a922398386dac40a14413cb856b59ac7",
     "normalized_spec": [
       {
         "arrays": [
@@ -9345,9 +9273,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -9560,9 +9486,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -9641,7 +9565,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "af9b6f813e111314059f875f2afd6b53b4c8d768304afcc284baac2557b94e94",
+    "hash": "1bbbf7b9bc490dc8c7341d2caebbfa7c01eae403668ee6c560c397a620f8c9a6",
     "normalized_spec": [
       {
         "arrays": [
@@ -9818,9 +9742,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -10071,9 +9993,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -10152,7 +10072,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "7c1ea3667732bff647072354467c0dfa1748c438a371dcee616eee6ecb58eabc",
+    "hash": "2c457a5c5f0035ac0b191c6e08bfed843d0710523d4c915ed04525219dc5c481",
     "normalized_spec": [
       {
         "arrays": [
@@ -10295,9 +10215,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -10516,9 +10434,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -10599,7 +10515,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "3387ad668d0fdc228e5b0ea72484c0fde6c97727dbc0a4862bd51636ee1529d9",
+    "hash": "a002432f8d09c5028be5c88475576d8d3085c70877c085b58621431661a304f5",
     "normalized_spec": [
       {
         "arrays": [
@@ -10781,9 +10697,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -11041,9 +10955,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -11124,7 +11036,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "323545022683ffb7fda42b89b184e5f45886114e9bf3d3ba27027fbb1c244cb2",
+    "hash": "59112d205f06c9afe5cc58613b623dfdb19312c972a75989dd62e7d2e6db9a35",
     "normalized_spec": [
       {
         "arrays": [
@@ -11315,9 +11227,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -11584,9 +11494,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -11667,7 +11575,7 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "461fe24cb9a17da6fbb8bb162a344f5c8055454c7d8035689dab72ef02ee4b6c",
+    "hash": "8a490f1d874138d7a08a451196babba011e35215427374fcf0864d31f19cb28e",
     "normalized_spec": [
       {
         "arrays": [
@@ -11897,9 +11805,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -12205,9 +12111,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -12288,7 +12192,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "2a79551878e3d5feb897ec360efb0aedc0abaf095b4a9aed7ea291d7beaa85b7",
+    "hash": "6f278bc69b2d58bdf793852f00c577f56c178d1686bb04054392259684fdb5b0",
     "normalized_spec": [
       {
         "arrays": [
@@ -12428,9 +12332,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -12644,9 +12546,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -12725,7 +12625,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "7bd4b62c23dba66c8d9b3a66c5001980e5d77e67f767c5a896b2d40e53da6ad4",
+    "hash": "20f950b3fc10de7b7f632e80690a76c97454749fd9abfbdeada94f63af2c4081",
     "normalized_spec": [
       {
         "arrays": [
@@ -12903,9 +12803,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -13157,9 +13055,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -13238,7 +13134,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "0697fdade9cc491c00741446f0e00462aa53ae67f9dd5482ba72841c34617f9b",
+    "hash": "0e4a0c46bb0679940c9daf00bb71d5edc189ee2beb985fcca559a1e29af07887",
     "normalized_spec": [
       {
         "arrays": [
@@ -13425,9 +13321,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -13688,9 +13582,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -13769,7 +13661,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "c05e4c79fa120bfc92f488d647806e5e1e28b59c2d65e11fa16d070cfa47ca91",
+    "hash": "9873a19bbb2a02818fd52bbd43c52b4fbd2bbc9d129e4cf801723f97a5476622",
     "normalized_spec": [
       {
         "arrays": [
@@ -13994,9 +13886,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -14295,9 +14185,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -14376,7 +14264,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "02d320c2e3a4a9406e049ab4372f7e029baf20dc9dac3774ef058576c2a195fa",
+    "hash": "cb2e775119f116ab674c85043a42c4c96622f01b97aa33cc70e0a17ebb28f712",
     "normalized_spec": [
       {
         "arrays": [
@@ -14567,9 +14455,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -14836,9 +14722,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -14919,7 +14803,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "7d43239ef4f8fb30f6a80061ccad899b3a450cfb072b2d1790abf5b8b4d4819a",
+    "hash": "a953379d51fbfbb21c2d708a3bb9eb58bb11a533c332bcb53646092ca81fb24b",
     "normalized_spec": [
       {
         "arrays": [
@@ -15149,9 +15033,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -15457,9 +15339,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -15540,7 +15420,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "3b31bf5483daf42bd8a639c602e0bacd88b17f4d00854267f26b23c3d5af4294",
+    "hash": "6cdf992c0652c93ce4ca580612e8e5330dcc1c85b3f4ee9e4d14d19389254456",
     "normalized_spec": [
       {
         "arrays": [
@@ -15779,9 +15659,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -16096,9 +15974,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -16179,7 +16055,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "e1ab1e52d77f5f454c9dfccd01e19eba459c8c77745a43180ffa0f8bb2aee808",
+    "hash": "b1c227603cea19fa996e263dd4ffecbed085b3962a0789e637543af9816e6f1b",
     "normalized_spec": [
       {
         "arrays": [
@@ -16457,9 +16333,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],
@@ -16813,9 +16687,7 @@
               "long_name": "observation time",
               "standard_name": "time"
             },
-            "chunks": [
-              1
-            ],
+            "chunks": null,
             "dimension_names": [
               "time"
             ],

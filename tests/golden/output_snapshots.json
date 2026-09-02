@@ -1,10 +1,13 @@
 {
   "fdhsi_defaults": {
-    "hash": "d2a227b9be38c446e4df4006fc48fb3fc55c67cd666985dd87c966c5d01c5a0a",
+    "hash": "d32d473df21428a9005297be3f985126c4b2b490bac9343b50fb5e1120be3748",
     "options": {},
     "product_type": "FDHSI",
     "structure": {
-      "attrs": {},
+      "attrs": {
+        "firecube_resolved_index": "{\"groups\":{\"data_1km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null},\"data_2km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null}},\"name\":\"eumetsat_repeat_cycle_v1\",\"schema_version\":\"v1\"}",
+        "firecube_resolved_index_identity_hash": "3b3405ce0b8961ef3e8ce76149cb37d3080ea0ae06dfe1c3f13729d90cb5bee9"
+      },
       "groups": {
         "data_1km": {
           "arrays": {
@@ -618,11 +621,14 @@
     }
   },
   "hrfi_defaults": {
-    "hash": "33ef8c23787ffe3b8d5ee7d019037f3b3d19783bfea65f289569b293835b07dd",
+    "hash": "c5c2202b80326ae578e839d3028e4dd43ab6ea5fc991cb457fff7da18fd58d4d",
     "options": {},
     "product_type": "HRFI",
     "structure": {
-      "attrs": {},
+      "attrs": {
+        "firecube_resolved_index": "{\"groups\":{\"data_1km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null},\"data_500m\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null}},\"name\":\"eumetsat_repeat_cycle_v1\",\"schema_version\":\"v1\"}",
+        "firecube_resolved_index_identity_hash": "67b1b55c814bfcabe72e61efa2c00834622b639a3ab1d1d7869139f637b66353"
+      },
       "groups": {
         "data_1km": {
           "arrays": {

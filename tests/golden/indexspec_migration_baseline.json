@@ -1,8 +1,11 @@
 {
   "fdhsi_defaults": {
-    "hash": "2755bec28884a73cbb618c6c140e109db3431fd07015a630c3ce551e191e6c20",
+    "hash": "b377dd0266916efd4f0f8a07c724f682b8a3abb25c62930ce8648021559c7e69",
     "structure": {
-      "attrs": {},
+      "attrs": {
+        "firecube_resolved_index": "{\"groups\":{\"data_1km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null},\"data_2km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null}},\"name\":\"eumetsat_repeat_cycle_v1\",\"schema_version\":\"v1\"}",
+        "firecube_resolved_index_identity_hash": "3b3405ce0b8961ef3e8ce76149cb37d3080ea0ae06dfe1c3f13729d90cb5bee9"
+      },
       "groups": {
         "data_1km": {
           "arrays": {
@@ -592,9 +595,12 @@
     }
   },
   "hrfi_defaults": {
-    "hash": "12a8ce956905af078e1c8c7b573a244a93ae86e3d7e00822bd711bcc33904752",
+    "hash": "6fcad77525fe3124eb83c28021a6d1fc1af2218251afbe797ebfa5a18064efe4",
     "structure": {
-      "attrs": {},
+      "attrs": {
+        "firecube_resolved_index": "{\"groups\":{\"data_1km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null},\"data_500m\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null}},\"name\":\"eumetsat_repeat_cycle_v1\",\"schema_version\":\"v1\"}",
+        "firecube_resolved_index_identity_hash": "67b1b55c814bfcabe72e61efa2c00834622b639a3ab1d1d7869139f637b66353"
+      },
       "groups": {
         "data_1km": {
           "arrays": {

@@ -7,12 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `_schema.py`: time coordinate spec now uses `chunks=None` (dense chunk resolution delegated to core `preallocate`) and declares CF standard_name, long_name, axis attributes. Golden snapshots regenerated.
+
+### Changed
+
+- Plugin simplification pass. Behaviour-preserving except where noted:
+  - `build_write_intents` split into `_intents_for_zip` / `_intents_for_plan` (182 -> 100 lines; maximum nesting 7 blocks -> 4).
+  - Write intents are now `IndexedWrite` keyed by `coordinate=`; core resolves the slot index and auto-emits the time-coordinate write. `_emit_timestamp_intents` and all `ts_index` plumbing removed.
+  - `index_spec()` no longer returns `None` in serial mode; it always declares the axis with `slot_count=None`. **This adds `firecube_resolved_index` and `firecube_resolved_index_identity_hash` to the store's root attrs on serial runs, which previously had none.** Parallel runs are unaffected. A serial ingest into a cube built with a configured extent will present `size: null` and fail identity verification; re-ingest to a new store in that case.
+  - `RegularTimeAxis(...)` replaced by the equivalent `TimeAxis.observed(...)` (identical index identity).
+  - Per-batch resources now use core's `BatchResourceRegistry`; the second `_retained_batch_scratches` registry and its cleanup path are gone.
+  - All nc_part reads (time-map, row-range, calibration, spatial) route through `SharedNcPartReader`; the time-map and row-range phases no longer open their own `NCPartReader` (~120 fewer file opens per ZIP).
+  - `_build_array_spec` is now a `dims -> builder` dispatch table over `_ArraySpecInputs` instead of a 125-line if-chain.
+  - `config.__post_init__` split into per-concern `_validate_*` methods.
+
 ### Removed
 
 - `FCI_PROJ_OFFSET_RAD` from `_constants.py` (internal, obsolete with the #8 fix).
+- `discover_source_files` override. Core's default handles FCI sources correctly and additionally passes `storage_config`, which the override omitted — so the override could not read remote (S3) sources, and returned zero files instead of raising `ConfigurationError` when the source directory was missing.
 
 ### Fixed
 
+- `_scratch.register_cleanup_thread` now prunes finished threads. One thread was registered per batch and never released, so the registry grew by one entry for every batch a process handled; only threads still running are retained now.
+- Batch resource teardown no longer runs while `_batch_resources_lock` is held. Closing a batch's readers closes ~40 NetCDF handles; holding the lock across that blocked concurrent `prepare_batch_data` calls and dispatch-time payload lookups.
+- `fix-fillvalue` documentation now describes the command as a repair tool for cubes written before core stamped `_FillValue` itself, rather than a workaround for current behaviour. Current core emits the attribute during ingest; the command remains for older stores.
 - [#8](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/8) `x`/`y` projection coordinates were shifted west/south by 1.00 px (1 km), 0.75 px (2 km) and 1.50 px (500 m); they now land on the pixel centres of `latitude`/`longitude` and match the L1C files' own `x`/`y`. Data and lat/lon were never affected. Existing stores keep the old values (static arrays are write-once, re-ingest raises `SchemaDriftError`): ingest into a new store.
 - `compute_latlon` docstring: grids are in FCI native order (row 0 = south, col 0 = west), not north-to-south.
 

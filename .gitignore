@@ -12,7 +12,10 @@ venv/
 env/
 
 # Build
+dist
 dist/
 build/
 *.egg-info/
 htmlcov/
+site
+site/
