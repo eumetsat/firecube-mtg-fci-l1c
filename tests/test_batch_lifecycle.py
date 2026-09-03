@@ -14,7 +14,6 @@
 
 from __future__ import annotations
 
-import threading
 from types import SimpleNamespace
 from typing import Any, cast
 from unittest.mock import MagicMock
@@ -45,24 +44,22 @@ def test_cleanup_batch_data_removes_registered_resources_on_success() -> None:
     ingestor = _make_ingestor()
     batch = _make_batch()
     ctx = _make_ctx()
-    cleanup_called = threading.Event()
 
     ingestor.prepare_batch_data(batch, ctx)
     resources = _resources_for(ingestor, batch.batch_id)
+    resources.chunk_owned_cache = MagicMock()
     resources.shared_reader = MagicMock()
-    resources.batch_scratch = MagicMock(side_effect=None)
-    resources.batch_scratch.cleanup.side_effect = cleanup_called.set
-    ingestor._retained_batch_scratches.extend(
-        [resources.shared_reader, resources.batch_scratch]
-    )
+    resources.batch_scratch = MagicMock()
+    ingestor._batch_registry.register(batch.batch_id, resources.chunk_owned_cache)
+    ingestor._batch_registry.register(batch.batch_id, resources.shared_reader)
+    ingestor._batch_registry.register(batch.batch_id, resources.batch_scratch)
 
     ingestor.cleanup_batch_data(batch, ctx)
 
-    assert cleanup_called.wait(1)
     assert ingestor._batch_resources == {}
-    assert ingestor._retained_batch_scratches == []
+    resources.chunk_owned_cache.close.assert_called_once_with()
     resources.shared_reader.close.assert_called_once_with()
-    resources.batch_scratch.cleanup.assert_called_once_with()
+    resources.batch_scratch.close.assert_called_once_with()
 
 
 def test_cleanup_batch_data_is_idempotent() -> None:
@@ -81,20 +78,19 @@ def test_cleanup_batch_data_runs_after_decode_failure() -> None:
     ingestor = _make_ingestor()
     batch = _make_batch()
     ctx = _make_ctx()
-    cleanup_called = threading.Event()
 
     ingestor.prepare_batch_data(batch, ctx)
     resources = _resources_for(ingestor, batch.batch_id)
     resources.shared_reader = MagicMock()
     resources.shared_reader.close.side_effect = RuntimeError("decode cleanup failed")
     resources.batch_scratch = MagicMock()
-    resources.batch_scratch.cleanup.side_effect = cleanup_called.set
+    ingestor._batch_registry.register(batch.batch_id, resources.shared_reader)
+    ingestor._batch_registry.register(batch.batch_id, resources.batch_scratch)
 
     ingestor.cleanup_batch_data(batch, ctx)
 
     resources.shared_reader.close.assert_called_once_with()
-    assert cleanup_called.wait(1)
-    resources.batch_scratch.cleanup.assert_called_once_with()
+    resources.batch_scratch.close.assert_called_once_with()
     assert ingestor._batch_resources == {}
 
 
@@ -102,19 +98,18 @@ def test_cleanup_batch_data_runs_after_writer_failure() -> None:
     ingestor = _make_ingestor()
     batch = _make_batch()
     ctx = _make_ctx()
-    cleanup_called = threading.Event()
 
     ingestor.prepare_batch_data(batch, ctx)
     resources = _resources_for(ingestor, batch.batch_id)
     resources.shared_reader = MagicMock()
     resources.batch_scratch = MagicMock()
-    resources.batch_scratch.cleanup.side_effect = cleanup_called.set
+    ingestor._batch_registry.register(batch.batch_id, resources.shared_reader)
+    ingestor._batch_registry.register(batch.batch_id, resources.batch_scratch)
 
     ingestor.cleanup_batch_data(batch, ctx)
 
     resources.shared_reader.close.assert_called_once_with()
-    assert cleanup_called.wait(1)
-    resources.batch_scratch.cleanup.assert_called_once_with()
+    resources.batch_scratch.close.assert_called_once_with()
     assert ingestor._batch_resources == {}
 
 
@@ -144,3 +139,20 @@ def test_second_pipeline_invocation_starts_without_stale_readers() -> None:
     ingestor.prepare_batch_data(second_batch, ctx)
 
     assert set(ingestor._batch_resources) == {"second-batch"}
+
+
+def test_orphaned_teardown_continues_after_a_raising_resource() -> None:
+    ingestor = _make_ingestor()
+
+    failing = MagicMock()
+    failing.close.side_effect = RuntimeError("scratch removal failed")
+    healthy = MagicMock()
+    ingestor._batch_registry.register("batch-orphan-1", failing)
+    ingestor._batch_registry.register("batch-orphan-2", healthy)
+    ingestor._batch_resources["batch-orphan-1"] = BatchResources()
+
+    ingestor._teardown_orphaned_batch_resources()
+
+    failing.close.assert_called_once_with()
+    healthy.close.assert_called_once_with()
+    assert ingestor._batch_resources == {}

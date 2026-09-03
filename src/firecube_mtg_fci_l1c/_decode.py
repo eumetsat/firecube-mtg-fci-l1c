@@ -342,6 +342,22 @@ class SharedNcPartReader:
         reader = self._get_reader(item)
         return reader.read_calibration(nc_channel)
 
+    def has_time_map(self, item: Path) -> bool:
+        """Return whether the nc_part carries a root-level time map."""
+        return self._get_reader(Path(item)).has_time_map()
+
+    def reader_for(self, item: Path) -> NCPartReader:
+        """Return the shared per-batch reader for ``item``.
+
+        The returned reader's file handle is owned by this
+        :class:`SharedNcPartReader`; callers must not close it.
+        """
+        return self._get_reader(Path(item))
+
+    def read_row_range(self, item: Path, resolution: str) -> tuple[int, int]:
+        """Read the row range for ``resolution``; raises ``KeyError`` if absent."""
+        return self._get_reader(Path(item)).read_row_range(resolution)
+
     def close(self) -> None:
         """Close all cached file handles and empty the cache.
 
@@ -402,7 +418,7 @@ class _SourceKey:
 @dataclasses.dataclass(frozen=True)
 class _AssembledKey:
     group: str
-    ts_index: int
+    slot_key: Any
     channel: str
     y_range: tuple[int, int]
     variable_set: frozenset[str]
@@ -428,7 +444,7 @@ class ChunkOwnedAssembler:
         index2time: dict[int, float] | None,
         pixel_time_dtype: np.dtype,
         group: str,
-        ts_index: int,
+        slot_key: Any,
         y_range: tuple[int, int],
         variable_set: frozenset[str],
         part_row_ranges: dict[Path, tuple[int, int]] | None = None,
@@ -443,7 +459,7 @@ class ChunkOwnedAssembler:
         index2time_ref = _IdentityRef(index2time)
         assembled_key = _AssembledKey(
             group=group,
-            ts_index=ts_index,
+            slot_key=slot_key,
             channel=nc_channel,
             y_range=y_range,
             variable_set=variable_set,

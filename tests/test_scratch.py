@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+import threading
+import time
 import zipfile
 from pathlib import Path
 
@@ -74,6 +76,19 @@ def test_cleanup_on_context_exit(tmp_path: Path):
         scratch.extract_zip(zip_path)
         assert root.exists()
     assert not root.exists()  # removed on exit
+
+
+def test_close_hands_removal_to_a_daemon_thread(tmp_path: Path):
+    scratch = BatchScratch(str(tmp_path / "scratch"), "run-batch_0000")
+    root = scratch.scratch_root
+    assert root.exists()
+
+    scratch.close()
+
+    deadline = time.monotonic() + 5
+    while root.exists() and time.monotonic() < deadline:
+        time.sleep(0.05)
+    assert not root.exists()
 
 
 def test_scratch_id_in_root_name(tmp_path: Path):
@@ -165,3 +180,57 @@ def test_shared_reader_closes_when_exception_raised_mid_batch(tmp_path: Path):
     assert cached_reader._ds is None
     assert shared._readers == {}
     assert not root.exists()
+
+
+def test_register_cleanup_thread_prunes_finished_threads():
+    # One thread is registered per batch; without pruning the registry would
+    # grow by one entry for every batch the process ever handles.
+    from firecube_mtg_fci_l1c import _scratch
+
+    with _scratch._pending_lock:
+        _scratch._pending_cleanup_threads.clear()
+
+    for _ in range(5):
+        thread = threading.Thread(target=lambda: None)
+        thread.start()
+        thread.join()  # finished before the next registration prunes it
+        _scratch.register_cleanup_thread(thread)
+
+    with _scratch._pending_lock:
+        pending = list(_scratch._pending_cleanup_threads)
+
+    # Only the most recent registration survives; the four completed threads
+    # ahead of it were pruned rather than accumulating.
+    assert len(pending) == 1
+
+    _scratch._await_pending_cleanups()
+    with _scratch._pending_lock:
+        assert _scratch._pending_cleanup_threads == []
+
+
+def test_register_cleanup_thread_keeps_running_threads():
+    # Pruning must not drop a thread that is still doing work.
+    from firecube_mtg_fci_l1c import _scratch
+
+    with _scratch._pending_lock:
+        _scratch._pending_cleanup_threads.clear()
+
+    release = threading.Event()
+    slow = threading.Thread(target=release.wait)
+    slow.start()
+    _scratch.register_cleanup_thread(slow)
+
+    finished = threading.Thread(target=lambda: None)
+    finished.start()
+    finished.join()
+    _scratch.register_cleanup_thread(finished)
+
+    try:
+        with _scratch._pending_lock:
+            pending = list(_scratch._pending_cleanup_threads)
+        assert slow in pending
+    finally:
+        release.set()
+        slow.join(timeout=5)
+
+    _scratch._await_pending_cleanups()

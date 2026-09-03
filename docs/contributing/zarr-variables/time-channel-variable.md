@@ -86,27 +86,36 @@ class VariableContext:
 **3. `src/firecube_mtg_fci_l1c/ingestor.py`**: in `build_write_intents`, add an aggregation block that sums across nc_parts per channel (mirror the existing `calibration_table` block, but SUM not first-wins), then pass it to `_emit_time_channel_intents`:
 
 ```python
-# After the calibration_table block, inside the per-plan loop:
+# After the calibration_table block, inside `_intents_for_plan`:
 noise_warning_table: dict[str, int] = {}
 for part_idx, part_path in enumerate(nc_parts):
     if part_idx not in row_ranges:
         continue
-    with NCPartReader(part_path) as reader:
-        for ch in plan.nc_channels:
-            count = reader.read_noise_warning_count(ch)
-            if count is not None:
-                noise_warning_table[ch] = noise_warning_table.get(ch, 0) + count
+    for ch in plan.nc_channels:
+        count = shared_reader.reader_for(part_path).read_noise_warning_count(ch)
+        if count is not None:
+            noise_warning_table[ch] = noise_warning_table.get(ch, 0) + count
 
 # Pass to the emitter:
 intents.extend(
     self._emit_time_channel_intents(
-        config, product_type, res, logical_channels, ts_index,
+        config, product_type, res, logical_channels, timestamp,
         calibration_table,
         nc_channels=nc_channels,
         noise_warning_table=noise_warning_table or None,
     )
 )
 ```
+
+Two things to copy from the surrounding code rather than invent:
+
+- Read through `shared_reader`, never `NCPartReader(part_path)` directly. The
+  shared reader keeps one open handle per nc_part for the whole batch; opening
+  your own reintroduces a file open per phase. Use `reader_for()` for a raw
+  reader, or add a passthrough on `SharedNcPartReader` if your access pattern
+  deserves a named method (as `read_row_range` and `decode_channel` do).
+- Pass `timestamp`, not a slot index. Core resolves the coordinate to a slot
+  when it compiles the `IndexedWrite`; the plugin no longer computes one.
 
 Update `_emit_time_channel_intents` to accept and forward the new field when constructing `VariableContext`.
 

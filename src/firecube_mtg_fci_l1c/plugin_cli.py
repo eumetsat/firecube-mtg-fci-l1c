@@ -222,11 +222,14 @@ def grids_info(grids_file: Path) -> None:
 def fix_fillvalue(store: Path, yes_i_really_mean_it: bool) -> None:
     """Stamp missing ``_FillValue`` user attributes on FCI Zarr arrays.
 
-    Post-ingest workaround for the Zarr 3 behaviour where a user
-    ``_FillValue`` attribute is not emitted when arrays are created with
-    ``fill_value=<x>``, which then breaks xarray tooling that reads
-    ``_FillValue`` via ``mask_and_scale=True``. Run only after ingestion
-    has completed.
+    Repair tool for cubes written before Firecube core stamped ``_FillValue``
+    itself. Current core versions emit the attribute during ingest (see
+    ``firecube.core.zarr.region_writer._fill_value_attr_value``), so freshly
+    written cubes do not need this command; it exists so that older cubes,
+    whose arrays carry ``fill_value=<x>`` but no ``_FillValue`` attribute,
+    stay readable by xarray tooling using ``mask_and_scale=True``.
+
+    Run only after ingestion has completed.
 
     By default the command runs in dry-run mode and prints the planned
     changes. Re-run with ``--yes-i-really-mean-it`` to apply them.

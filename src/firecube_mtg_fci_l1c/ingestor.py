@@ -26,7 +26,7 @@ from __future__ import annotations
 import dataclasses
 import logging
 import threading
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Sequence
 from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, cast
@@ -45,12 +45,12 @@ from firecube.ingestor.api import (  # pyright: ignore[reportMissingImports]  # 
     register_ingestor,
 )
 from firecube.core.api import (  # pyright: ignore[reportMissingImports]  # type: ignore[import-untyped]
+    BatchResourceRegistry,
     IndexSpec,
+    IndexedWrite,
     ItemInfo,
-    RegularTimeAxis,
-    discover_input_files,
+    TimeAxis,
     normalize_epoch_iso,
-    resolve_index_spec,
 )
 
 from ._constants import (
@@ -72,14 +72,12 @@ from ._decode import (
     AssemblyPreconditionError,
     ChannelSlicePayload,
     ChunkOwnedAssembler,
-    NCPartReader,
     SharedNcPartReader,
     TimeMapAccumulator,
     list_fci_nc_parts,
 )
 from .config import MtgFciL1cConfig
 from ._variables import TIME_COORD_NAME, build_all_specs
-from ._scratch import register_cleanup_thread
 
 log = logging.getLogger("firecube.ingestor.mtg_fci_l1c")
 
@@ -106,7 +104,7 @@ def _assemble_and_extract(
     index2time: dict[int, float] | None,
     pixel_time_dtype: np.dtype,
     group: str,
-    ts_index: int,
+    timestamp: Any,
     y_range: tuple[int, int],
     variable_set: frozenset[str],
     part_row_ranges: dict[Path, tuple[int, int]],
@@ -132,7 +130,7 @@ def _assemble_and_extract(
         index2time,
         pixel_time_dtype,
         group,
-        ts_index,
+        timestamp,
         y_range,
         variable_set,
         part_row_ranges,
@@ -204,28 +202,24 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
 
     # Bump this if the declared time-axis definition (epoch, cadence, mode) changes.
     INDEX_MODEL: ClassVar[str] = "eumetsat_repeat_cycle_v1"
-    _retained_batch_scratches: list[Any]
-    _retained_batch_scratches_lock: threading.Lock
 
     def index_spec(self, ctx: PluginContext) -> IndexSpec | None:
         """Declare the repeat-cycle index model for each resolution group.
 
-        Returns ``None`` when no fixed extent is configured (serial mode);
-        the engine's parallel gate then refuses slot-range flags loudly.
-        Invalid ``time_slots`` / ``time_end`` values raise instead of being
+        Always returns the declared axis; ``slot_count`` is ``None`` when no
+        fixed extent is configured (serial mode). The engine's parallel gate
+        refuses slot-range flags loudly for unbounded axes. Invalid
+        ``time_slots`` / ``time_end`` values raise instead of being
         silently swallowed.
         """
-        if self._configured_total_slots() is None:
-            return None
         return self._build_index_spec(ctx)
 
     def _build_index_spec(self, ctx: PluginContext) -> IndexSpec:
         """Build the declared time-axis spec; ``slot_count`` may be ``None``.
 
-        Single source of truth for the axis definition. ``index_spec()``
-        gates this on a configured extent for the engine's parallel path;
-        ``_resolve_declared_index()`` resolves it as-is so serial ingestion
-        maps timestamps to slots through the same engine arithmetic.
+        Single source of truth for the axis definition; the engine resolves
+        it for both serial and parallel ingestion, so slot positions always
+        come from one axis definition.
         """
         config: MtgFciL1cConfig = self.plugin_config  # type: ignore[assignment]
         product_type = self._detect_product_type(ctx)
@@ -233,28 +227,15 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         resolutions = config.get_resolutions(product_type)
         cadence_s = REPEAT_CYCLE_MINUTES * 60
         epoch_iso = normalize_epoch_iso(f"{config.time_epoch}T00:00:00Z")
-        axis = RegularTimeAxis(
+        axis = TimeAxis.observed(
             coordinate=TIME_COORD_NAME,
             epoch=epoch_iso,
             cadence_s=cadence_s,
-            mode="floor",
             slot_count=self._configured_total_slots(),
         )
         return IndexSpec(
             name=self.INDEX_MODEL,
             groups={f"data_{res}": axis for res in resolutions},
-        )
-
-    def _resolve_declared_index(self, ctx: PluginContext):
-        """Resolve the declared axis locally, with or without a fixed extent.
-
-        The engine-owned ``resolved_index(ctx)`` requires ``index_spec()`` to
-        be non-None, which excludes serial runs without a horizon. This
-        helper resolves the same declaration unconditionally so slot
-        positions always come from one axis definition.
-        """
-        return resolve_index_spec(
-            self._build_index_spec(ctx), time_dim_name=self.time_dim_name
         )
 
     def inspect_item(self, item: Any, ctx: PluginContext) -> ItemInfo | None:
@@ -420,59 +401,17 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
 
         return _load
 
-    def _emit_timestamp_intents(
-        self,
-        config: MtgFciL1cConfig,
-        product_type: str,
-        res: str,
-        logical_channels: list[str],
-        ts_index: int,
-        timestamp: Any,
-    ) -> list[WriteIntent]:
-        """Iterate VARIABLES with dims==('time',); emit timestamp WriteIntents."""
-        from ._variables import VARIABLES, VariableContext, variable_enabled
-
-        group = f"data_{res}"
-        dimsize = dimsize_for(product_type, res)
-        ctx = VariableContext(
-            group=group,
-            product_type=product_type,
-            config=config,
-            dimsize=dimsize,
-            n_channels=len(logical_channels),
-            logical_channels=tuple(logical_channels),
-            timestamp=timestamp,
-        )
-
-        intents: list[WriteIntent] = []
-        for variable in VARIABLES:
-            if variable.dims != (TIME_COORD_NAME,):
-                continue
-            if not variable_enabled(variable, config):
-                continue
-            intents.append(
-                WriteIntent(
-                    group=ctx.group,
-                    array=variable.name,
-                    ts_index=ts_index,
-                    data=None,
-                    kind="timestamp",
-                    timestamp_val=timestamp,
-                )
-            )
-        return intents
-
     def _emit_time_channel_intents(
         self,
         config: MtgFciL1cConfig,
         product_type: str,
         res: str,
         logical_channels: list[str],
-        ts_index: int,
+        timestamp: Any,
         calibration_table: dict[str, tuple[float, float]],
         nc_channels: list[str] | None = None,
-    ) -> list[WriteIntent]:
-        """Iterate VARIABLES with dims==('time','channel'); emit 1d WriteIntents."""
+    ) -> list[IndexedWrite]:
+        """Iterate VARIABLES with dims==('time','channel'); emit slot writes."""
         from ._variables import VARIABLES, VariableContext, variable_enabled
 
         group = f"data_{res}"
@@ -488,7 +427,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             nc_channels=tuple(nc_channels or ()),
         )
 
-        intents: list[WriteIntent] = []
+        intents: list[IndexedWrite] = []
         for variable in VARIABLES:
             if variable.dims != (TIME_COORD_NAME, "channel"):
                 continue
@@ -500,12 +439,11 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             if data is None:
                 continue
             intents.append(
-                WriteIntent(
+                IndexedWrite.slot(
                     group=group,
                     array=variable.name,
-                    ts_index=ts_index,
+                    coordinate=timestamp,
                     data=data,
-                    kind="1d",
                 )
             )
         return intents
@@ -514,16 +452,16 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         self,
         batch_id: str,
         plan: GroupPlan,
-        ts_index: int,
+        timestamp: Any,
         nc_part_ranges: list[tuple[Path, tuple[int, int]]],
         index2time: dict[int, float] | None,
         pixel_time_dtype: np.dtype,
         config: MtgFciL1cConfig,
-    ) -> list[WriteIntent]:
+    ) -> list[IndexedWrite]:
         """Emit one lazy spatial projection per variable, channel, and chunk."""
         from ._variables import VARIABLES, VariableContext, variable_enabled
 
-        intents: list[WriteIntent] = []
+        intents: list[IndexedWrite] = []
         chunk_y = config.get_group_chunk_shape(plan.group)[1]
         chunk_ranges = _output_chunk_ranges(plan.dimsize, chunk_y)
         for ch_idx, nc_channel in enumerate(plan.nc_channels):
@@ -580,10 +518,10 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                 ctx = dataclasses.replace(base_ctx, y_slice=y_slice)
                 for variable_name, variable_source in variable_sources:
                     intents.append(
-                        WriteIntent(
+                        IndexedWrite.region(
                             group=plan.group,
                             array=variable_name,
-                            ts_index=ts_index,
+                            coordinate=timestamp,
                             data=partial(
                                 _assemble_and_extract,
                                 batch_id,
@@ -594,14 +532,13 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                                 index2time,
                                 pixel_time_dtype,
                                 plan.group,
-                                ts_index,
+                                timestamp,
                                 y_range,
                                 variable_set,
                                 part_row_ranges,
                                 variable_source,
                                 ctx,
                             ),
-                            kind="region",
                             y_slice=y_slice,
                             channel_index=ch_idx,
                         )
@@ -610,7 +547,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
 
     def build_write_intents(
         self, batch: PipelineBatch, ctx: PluginContext
-    ) -> list[WriteIntent]:
+    ) -> list[WriteIntent | IndexedWrite]:
         """Extract ZIP contents and emit write intents via phase emitters."""
         from ._scratch import BatchScratch
 
@@ -621,9 +558,8 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         batch.metadata["product_type"] = product_type
 
         plans = resolve_group_plans(config, product_type)
-        declared_index = self._resolve_declared_index(ctx)
 
-        intents: list[WriteIntent] = []
+        intents: list[WriteIntent | IndexedWrite] = []
         files_processed = 0
         files_failed = 0
         zip_errors: list[str] = []
@@ -639,18 +575,13 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
 
         intents.extend(self._emit_static_intents(config, product_type, plans))
 
+        # Reader and scratch are registered (not `with`-scoped) so cached
+        # file handles stay open until core dispatches the deferred callable
+        # payloads; teardown happens in cleanup_batch_data, or at the next
+        # on_pipeline_start for batches whose cleanup never ran.
         core_scratch = BatchScratch(scratch_dir, scratch_id)
-        with self._retained_batch_scratches_lock:
-            self._retained_batch_scratches.append(core_scratch)
-
-        # Reader is retained (not `with`-scoped) so its cached file handles
-        # stay open until core dispatches the deferred callable payloads.
-        # `_cleanup_retained_batch_scratches` closes it at the next
-        # `on_pipeline_start`, symmetric with `BatchScratch` lifetime.
         shared_reader = SharedNcPartReader()
         chunk_owned_cache = ChunkOwnedAssembler(shared_reader)
-        with self._retained_batch_scratches_lock:
-            self._retained_batch_scratches.append(shared_reader)
         with self._batch_resources_lock:
             resources = self._batch_resources.setdefault(
                 batch.batch_id, BatchResources()
@@ -658,6 +589,12 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             resources.shared_reader = shared_reader
             resources.batch_scratch = core_scratch
             resources.chunk_owned_cache = chunk_owned_cache
+            # Registration order is teardown close order: the assembler
+            # before the reader it wraps, the scratch last because its
+            # close() hands removal off to a daemon thread.
+            self._batch_registry.register(batch.batch_id, chunk_owned_cache)
+            self._batch_registry.register(batch.batch_id, shared_reader)
+            self._batch_registry.register(batch.batch_id, core_scratch)
 
         # Extract the whole batch up front and in parallel; deferred payload
         # dispatch reads nc_parts until batch cleanup, so peak scratch usage
@@ -679,104 +616,21 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                 files_failed += 1
                 continue
             try:
-                nc_parts = list_fci_nc_parts(extracted_dirs[zip_path])
-
-                if not nc_parts:
-                    zip_errors.append(f"No nc_parts found in {zip_path.name}")
+                zip_error = self._intents_for_zip(
+                    zip_path=zip_path,
+                    zip_dir=extracted_dirs[zip_path],
+                    plans=plans,
+                    shared_reader=shared_reader,
+                    config=config,
+                    product_type=product_type,
+                    batch_id=batch.batch_id,
+                    intents=intents,
+                )
+                if zip_error is None:
+                    files_processed += 1
+                else:
+                    zip_errors.append(zip_error)
                     files_failed += 1
-                    continue
-
-                timestamp = cast(Any, extract_timestamp_from_path(zip_path))
-                if timestamp is None:
-                    zip_errors.append(
-                        f"Could not extract timestamp from {zip_path.name}"
-                    )
-                    files_failed += 1
-                    continue
-
-                index2time: dict[int, float] | None = None
-                if config.include_pixel_time:
-                    time_accum = TimeMapAccumulator()
-                    for part_path in nc_parts:
-                        with NCPartReader(part_path) as reader:
-                            if reader.has_time_map():
-                                time_accum.accumulate(reader)
-                    index2time = time_accum.build_index2time()
-
-                for plan in plans:
-                    res = plan.resolution
-                    group = plan.group
-                    logical_channels = list(plan.logical_channels)
-                    nc_channels = list(plan.nc_channels)
-                    ts_index = declared_index.position(group, timestamp)
-
-                    row_ranges: dict[int, tuple[int, int]] = {}
-                    for part_idx, part_path in enumerate(nc_parts):
-                        with NCPartReader(part_path) as reader:
-                            try:
-                                row_ranges[part_idx] = reader.read_row_range(res)
-                            except KeyError:
-                                continue
-
-                    if not row_ranges:
-                        continue
-
-                    calibration_table: dict[str, tuple[float, float]] = {}
-                    if config.include_calibration:
-                        for part_idx, part_path in enumerate(nc_parts):
-                            if part_idx not in row_ranges:
-                                continue
-                            for ch in plan.nc_channels:
-                                if ch in calibration_table:
-                                    continue
-                                cal = shared_reader.decode_channel(part_path, ch)
-                                if cal is not None:
-                                    calibration_table[ch] = cal
-
-                    pixel_time_dtype = np.dtype(
-                        np.float32
-                        if config.pixel_time_dtype == "float32"
-                        else np.float64
-                    )
-
-                    intents.extend(
-                        self._emit_timestamp_intents(
-                            config,
-                            product_type,
-                            res,
-                            logical_channels,
-                            ts_index,
-                            timestamp,
-                        )
-                    )
-                    intents.extend(
-                        self._emit_time_channel_intents(
-                            config,
-                            product_type,
-                            res,
-                            logical_channels,
-                            ts_index,
-                            calibration_table,
-                            nc_channels,
-                        )
-                    )
-                    nc_part_ranges = [
-                        (nc_parts[part_idx], row_ranges[part_idx])
-                        for part_idx in sorted(row_ranges)
-                    ]
-                    intents.extend(
-                        self._emit_spatial_intents(
-                            batch.batch_id,
-                            plan,
-                            ts_index,
-                            nc_part_ranges,
-                            index2time,
-                            pixel_time_dtype,
-                            config,
-                        )
-                    )
-
-                files_processed += 1
             except Exception as exc:  # noqa: BLE001 - preserve legacy continue-on-error behavior
                 self._log.warning("Failed to process %s: %s", zip_path, exc)
                 self._log.exception("nc_part processing failed for %s", zip_path)
@@ -791,6 +645,126 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
 
         return intents
 
+    def _intents_for_zip(
+        self,
+        *,
+        zip_path: Path,
+        zip_dir: Path,
+        plans: list[GroupPlan],
+        shared_reader: SharedNcPartReader,
+        config: MtgFciL1cConfig,
+        product_type: str,
+        batch_id: str,
+        intents: list[WriteIntent | IndexedWrite],
+    ) -> str | None:
+        """Decode one extracted ZIP and extend ``intents`` per resolution group.
+
+        Intents are appended incrementally so a mid-ZIP failure preserves
+        what was already emitted (legacy continue-on-error behavior).
+        Returns ``None`` on success, or an error string when the ZIP cannot
+        be decoded at all.
+        """
+        nc_parts = list_fci_nc_parts(zip_dir)
+        if not nc_parts:
+            return f"No nc_parts found in {zip_path.name}"
+
+        timestamp = cast(Any, extract_timestamp_from_path(zip_path))
+        if timestamp is None:
+            return f"Could not extract timestamp from {zip_path.name}"
+
+        index2time: dict[int, float] | None = None
+        if config.include_pixel_time:
+            time_accum = TimeMapAccumulator()
+            for part_path in nc_parts:
+                if shared_reader.has_time_map(part_path):
+                    time_accum.accumulate(shared_reader.reader_for(part_path))
+            index2time = time_accum.build_index2time()
+
+        for plan in plans:
+            self._intents_for_plan(
+                plan=plan,
+                nc_parts=nc_parts,
+                timestamp=timestamp,
+                index2time=index2time,
+                shared_reader=shared_reader,
+                config=config,
+                product_type=product_type,
+                batch_id=batch_id,
+                intents=intents,
+            )
+        return None
+
+    def _intents_for_plan(
+        self,
+        *,
+        plan: GroupPlan,
+        nc_parts: list[Path],
+        timestamp: Any,
+        index2time: dict[int, float] | None,
+        shared_reader: SharedNcPartReader,
+        config: MtgFciL1cConfig,
+        product_type: str,
+        batch_id: str,
+        intents: list[WriteIntent | IndexedWrite],
+    ) -> None:
+        """Emit per-channel and spatial intents for one group."""
+        res = plan.resolution
+        logical_channels = list(plan.logical_channels)
+        nc_channels = list(plan.nc_channels)
+
+        row_ranges: dict[int, tuple[int, int]] = {}
+        for part_idx, part_path in enumerate(nc_parts):
+            try:
+                row_ranges[part_idx] = shared_reader.read_row_range(part_path, res)
+            except KeyError:
+                continue
+
+        if not row_ranges:
+            return
+
+        calibration_table: dict[str, tuple[float, float]] = {}
+        if config.include_calibration:
+            for part_idx, part_path in enumerate(nc_parts):
+                if part_idx not in row_ranges:
+                    continue
+                for ch in plan.nc_channels:
+                    if ch in calibration_table:
+                        continue
+                    cal = shared_reader.decode_channel(part_path, ch)
+                    if cal is not None:
+                        calibration_table[ch] = cal
+
+        pixel_time_dtype = np.dtype(
+            np.float32 if config.pixel_time_dtype == "float32" else np.float64
+        )
+
+        intents.extend(
+            self._emit_time_channel_intents(
+                config,
+                product_type,
+                res,
+                logical_channels,
+                timestamp,
+                calibration_table,
+                nc_channels,
+            )
+        )
+        nc_part_ranges = [
+            (nc_parts[part_idx], row_ranges[part_idx])
+            for part_idx in sorted(row_ranges)
+        ]
+        intents.extend(
+            self._emit_spatial_intents(
+                batch_id,
+                plan,
+                timestamp,
+                nc_part_ranges,
+                index2time,
+                pixel_time_dtype,
+                config,
+            )
+        )
+
     def prepare_batch_data(
         self, batch: PipelineBatch, ctx: PluginContext
     ) -> dict[str, Any] | None:
@@ -804,47 +778,20 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         """Clean up per-batch caches, reader handles, and scratch directories."""
         del ctx
         with self._batch_resources_lock:
-            resources = self._batch_resources.pop(batch.batch_id, None)
+            # Pop first: dispatch-time payload lookups must fail loudly once
+            # teardown starts.
+            self._batch_resources.pop(batch.batch_id, None)
 
-        if resources is None:
-            return
-
-        retained_ids = {
-            id(item)
-            for item in (resources.shared_reader, resources.batch_scratch)
-            if item is not None
-        }
-        if retained_ids:
-            with self._retained_batch_scratches_lock:
-                self._retained_batch_scratches[:] = [
-                    item
-                    for item in self._retained_batch_scratches
-                    if id(item) not in retained_ids
-                ]
-
-        if resources.chunk_owned_cache is not None:
-            try:
-                resources.chunk_owned_cache.close()
-            except Exception:  # noqa: BLE001 - cleanup must be best-effort
-                pass
-
-        if resources.shared_reader is not None:
-            try:
-                resources.shared_reader.close()
-            except Exception:  # noqa: BLE001 - cleanup must continue
-                self._log.warning(
-                    "SharedNcPartReader.close() raised during cleanup; continuing"
-                )
-
-        if resources.batch_scratch is not None:
-            scratch = resources.batch_scratch
-            cleanup_thread = threading.Thread(
-                target=scratch.cleanup,
-                daemon=True,
-                name="batch-scratch-cleanup",
+        # Close outside the lock. Teardown closes ~40 NetCDF handles per batch;
+        # holding `_batch_resources_lock` across that would block every
+        # concurrent `prepare_batch_data` and dispatch-time payload lookup for
+        # the duration. The registry does its own bookkeeping.
+        try:
+            self._batch_registry.teardown(batch.batch_id)
+        except Exception:  # noqa: BLE001 - cleanup must be best-effort
+            self._log.warning(
+                "Batch resource teardown raised; continuing", exc_info=True
             )
-            cleanup_thread.start()
-            register_cleanup_thread(cleanup_thread)
 
     def on_pipeline_start(self, ctx: PluginContext, state: PipelineRunState) -> None:
         """Reset run-local guards for a new pipeline invocation."""
@@ -852,7 +799,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
 
         with self._static_lock:
             self._static_coords_written.clear()
-        self._cleanup_retained_batch_scratches()
+        self._teardown_orphaned_batch_resources()
 
     def __init__(self, *, name: str | None = None, chunk_manager=None):
         """Initialize geolocation and run-local static-coordinate guards."""
@@ -863,20 +810,21 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         self._static_lock = threading.Lock()
         self._batch_resources: dict[str, BatchResources] = {}
         self._batch_resources_lock = threading.Lock()
-        self._retained_batch_scratches: list[Any] = []
-        self._retained_batch_scratches_lock = threading.Lock()
+        self._batch_registry = BatchResourceRegistry()
 
-    def _cleanup_retained_batch_scratches(self) -> None:
-        """Release scratch dirs and reader handles retained for deferred payloads."""
-        while True:
-            with self._retained_batch_scratches_lock:
-                if not self._retained_batch_scratches:
-                    return
-                item = self._retained_batch_scratches.pop()
-            if isinstance(item, SharedNcPartReader):
-                item.close()
-            else:
-                item.cleanup()
+    def _teardown_orphaned_batch_resources(self) -> None:
+        """Tear down resources of batches whose cleanup never ran (crash paths)."""
+        with self._batch_resources_lock:
+            self._batch_resources.clear()
+
+        # Closed outside the lock, for the same reason as `cleanup_batch_data`.
+        try:
+            self._batch_registry.teardown_all()
+        except Exception:  # noqa: BLE001 - startup cleanup must not abort the run
+            self._log.warning(
+                "Orphaned batch resource teardown raised; continuing",
+                exc_info=True,
+            )
 
     def slice_meta_keys(self) -> list[str]:
         """Keys that define a logical ingest slice for resume safety."""
@@ -933,19 +881,6 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         if product_type is None:
             product_type = self._detect_product_type(ctx)
         return [p.group for p in resolve_group_plans(config, product_type)]
-
-    def discover_source_files(self, ctx: PluginContext) -> Iterable[Any]:
-        """Discover ZIP source files from the source directory."""
-        source_dir = Path(ctx.source) if hasattr(ctx, "source") else None
-        if source_dir and source_dir.exists():
-            includes = None
-            if getattr(self, "engine_config", None) is not None:
-                includes = getattr(self.engine_config, "include_patterns", None)
-            files = discover_input_files(
-                source_dir, preferred_globs=includes, recursive=True
-            )
-            return files
-        return iter(())
 
     def _aggregate_metrics(
         self, ctx: RuntimeIngestContext, state: PipelineRunState

@@ -36,15 +36,35 @@ _pending_lock = threading.Lock()
 
 
 def register_cleanup_thread(thread: threading.Thread) -> None:
+    """Track a started cleanup thread so interpreter exit can wait for it.
+
+    Finished threads are pruned on every call. One thread is registered per
+    batch, so without pruning the list would grow by one entry for every
+    batch the process ever handles. Joining an already-finished thread is a
+    no-op, so dropping it loses nothing; callers must register only threads
+    they have already started, or the prune would discard them unstarted.
+    """
     with _pending_lock:
+        _pending_cleanup_threads[:] = [
+            pending for pending in _pending_cleanup_threads if pending.is_alive()
+        ]
         _pending_cleanup_threads.append(thread)
 
 
 def _await_pending_cleanups() -> None:
+    """Join outstanding scratch-removal threads at interpreter exit.
+
+    Threads are copied under the lock and joined outside it, so a slow
+    removal cannot block concurrent registration for its full timeout.
+    """
     with _pending_lock:
         threads = list(_pending_cleanup_threads)
     for thread in threads:
         thread.join(timeout=30)
+    with _pending_lock:
+        _pending_cleanup_threads[:] = [
+            pending for pending in _pending_cleanup_threads if pending.is_alive()
+        ]
 
 
 atexit.register(_await_pending_cleanups)
@@ -122,6 +142,21 @@ class BatchScratch:
     def cleanup(self) -> None:
         """Remove the scratch root and all contents; safe to call repeatedly."""
         self._tmp.cleanup()
+
+    def close(self) -> None:
+        """``close()`` alias for resource registries; removal runs on a daemon thread.
+
+        Scratch removal can be slow for large batches, so the hand-off keeps
+        the calling teardown path synchronous-fast; the thread is registered
+        for interpreter-exit joining.
+        """
+        cleanup_thread = threading.Thread(
+            target=self.cleanup,
+            daemon=True,
+            name="batch-scratch-cleanup",
+        )
+        cleanup_thread.start()
+        register_cleanup_thread(cleanup_thread)
 
     def __enter__(self) -> BatchScratch:
         return self

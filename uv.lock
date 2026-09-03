@@ -562,10 +562,11 @@ wheels = [
 
 [[package]]
 name = "firecube"
-version = "0.1.4.post1"
-source = { git = "https://github.com/eumetsat/firecube?branch=main#624b73bd424410a8d0df3525c703d835895896c0" }
+version = "0.1.5"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore", extra = ["crt"] },
+    { name = "click" },
     { name = "dask", extra = ["array"] },
     { name = "duckdb" },
     { name = "fsspec" },
@@ -583,10 +584,14 @@ dependencies = [
     { name = "xarray" },
     { name = "zarr" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/0a/fd/6872f1776ddf64ad12993874dd1fd491bb2a851386b86921378db7d25ad4/firecube-0.1.5.tar.gz", hash = "sha256:b9f23356ca59ea305e0ef309f44961a97bdd8f8b83284ce3c4a6fe558000517d", size = 1534523, upload-time = "2026-09-03T11:29:18.042Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bb/5a/3dd98b60d5da1df49e8dc6c713574c950b7eb2ba8fba698e8686fdb378fa/firecube-0.1.5-py3-none-any.whl", hash = "sha256:78f3d11ddc0b28009baaaecd5f1cd9bea64a55946b34b092e5bba6594eeb91bb", size = 591188, upload-time = "2026-09-03T11:29:16.589Z" },
+]
 
 [[package]]
 name = "firecube-mtg-fci-l1c"
-version = "0.1.5"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "firecube" },
@@ -614,7 +619,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "firecube", git = "https://github.com/eumetsat/firecube?branch=main" },
+    { name = "firecube", specifier = ">=0.1.5" },
     { name = "h5netcdf", specifier = ">=1.8" },
     { name = "mypy", marker = "extra == 'dev'" },
     { name = "numpy", specifier = ">=2.4" },

@@ -139,15 +139,17 @@ class TestDeclaredAxisExtent:
         resolved = _resolved(ing)
         assert all(resolved.size(g) == 10 for g in resolved.groups)
 
-    def test_no_extent_stays_serial_but_still_resolves_positions(self):
-        # Without time_end/time_slots the plugin declares no engine-visible
-        # index (the parallel gate refuses slot-range flags loudly), yet
-        # serial ingestion still maps timestamps through the same declared
-        # axis, resolved without a fixed horizon.
+    def test_no_extent_declares_unbounded_axis_and_still_resolves_positions(self):
+        # Without time_end/time_slots the plugin declares an unbounded axis
+        # (slot_count=None); the engine's parallel gate refuses slot-range
+        # flags loudly for unbounded axes, and serial ingestion maps
+        # timestamps through the same declared axis.
         ing = _ingestor(product_type="FDHSI", time_epoch="2026-03-15")
-        assert ing.index_spec(_ctx()) is None
+        spec = ing.index_spec(_ctx())
+        assert spec is not None
+        assert all(axis.slot_count is None for axis in spec.groups.values())
         resolved = resolve_index_spec(
-            ing._build_index_spec(_ctx()), time_dim_name=MtgFciL1cIngestor.time_dim_name
+            spec, time_dim_name=MtgFciL1cIngestor.time_dim_name
         )
         assert resolved.position("data_1km", _dt("20260315120000")) == 72
 

@@ -270,6 +270,9 @@ class TestBuildWriteIntentsLogging:
                 del max_workers
                 return {Path(p): self.extract_zip(p) for p in zip_paths}, {}
 
+            def close(self):
+                return None
+
         class FakeReader:
             def __init__(self, part_path):
                 self.part_path = part_path
@@ -292,7 +295,6 @@ class TestBuildWriteIntentsLogging:
         monkeypatch.setattr(
             ingestor_mod, "list_fci_nc_parts", lambda _dir: [Path("/tmp/nc_part.nc")]
         )
-        monkeypatch.setattr(ingestor_mod, "NCPartReader", FakeReader)
         monkeypatch.setattr(
             ingestor_mod,
             "extract_timestamp_from_path",
@@ -466,6 +468,9 @@ class TestVariableDispatchRegressions:
                 del max_workers
                 return {Path(p): self.extract_zip(p) for p in zip_paths}, {}
 
+            def close(self):
+                return None
+
         class FakeReader:
             def __init__(self, part_path):
                 self.part_path = Path(part_path)
@@ -509,7 +514,6 @@ class TestVariableDispatchRegressions:
             "list_fci_nc_parts",
             lambda _dir: [Path("/tmp/part-a.nc"), Path("/tmp/part-b.nc")],
         )
-        monkeypatch.setattr(ingestor_mod, "NCPartReader", FakeReader)
         # SharedNcPartReader instantiates NCPartReader from _decode, so the
         # fake also has to replace that binding for calibration reads to hit it.
         import firecube_mtg_fci_l1c._decode as streaming_mod
