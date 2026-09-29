@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Radiance conversion constants as static `(channel,)` variables in every group (issue #14): `radiance_unit_conversion_coefficient`, `radiance_to_bt_conversion_coefficient_{wavenumber,a,b}`, `radiance_to_bt_conversion_constant_{c1,c2}`, `channel_effective_solar_irradiance`. float32, `NaN` where a constant does not apply to a channel. Written once per store; enabled with `include_calibration`. Stores created earlier gain them on their next ingest in `direct` write mode. Golden snapshots regenerated.
 - `_schema.py`: time coordinate spec now uses `chunks=None` (dense chunk resolution delegated to core `preallocate`) and declares CF standard_name, long_name, axis attributes. Golden snapshots regenerated.
 
 ### Changed

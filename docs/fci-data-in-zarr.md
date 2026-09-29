@@ -32,6 +32,7 @@ Every group contains:
 | `slope`, `offset` | `(time, channel)` | negligible | radiometric calibration (see [formula](#radiometric-calibration)) |
 | `time` | `(time,)` | negligible | slot timestamp coordinate, anchored by `time_epoch`; stored as `datetime64[s]` |
 | `channel_name` | `(channel,)` | negligible | logical channel names such as `vis_06` and `ir_105` |
+| radiance conversion constants | `(channel,)` | negligible | seven static per-channel constants for brightness temperature and reflectance (see [below](#brightness-temperature-and-reflectance)) |
 | `x`, `y` | `(x,)`, `(y,)` | negligible | GEOS projection coordinates. Default units: metres (east-positive x, north-positive y). Use `--option projection_units=radian` for radian output. See [Projection units](customization.md#projection-units). |
 | `latitude`, `longitude` | `(y, x)` | `float32`, 1.9 GB / 475 MB / 120 MB per array at 500 m / 1 km / 2 km | static, computed once per group; `NaN` beyond Earth's limb |
 | `spatial_ref` | `()` | negligible | CF grid-mapping container with geostationary projection metadata |
@@ -86,6 +87,52 @@ radiance = counts * slope + offset  # mW m-2 sr-1 (cm-1)-1
 
 `slope` and `offset` are recorded per acquisition: one value per `(time, channel)`,
 not per pixel.
+
+## Brightness temperature and reflectance
+
+Each group stores the per-channel constants from the FCI L1C files as
+`(channel,)` variables. They do not change over time, so they have no `time`
+dimension and are written once when the store is first ingested. `NaN` marks
+a constant that does not apply to a channel.
+
+| Variable | Units | Set for |
+|---|---|---|
+| `radiance_unit_conversion_coefficient` | W mW-1 cm-1 um-1 | all channels |
+| `radiance_to_bt_conversion_coefficient_wavenumber` | cm-1 | IR/WV channels |
+| `radiance_to_bt_conversion_coefficient_a` | 1 | IR/WV channels |
+| `radiance_to_bt_conversion_coefficient_b` | K | IR/WV channels |
+| `radiance_to_bt_conversion_constant_c1` | mW m-2 sr-1 (cm-1)-4 | IR/WV channels |
+| `radiance_to_bt_conversion_constant_c2` | cm K | IR/WV channels |
+| `channel_effective_solar_irradiance` | mW m-2 (cm-1)-1, at 1 AU | VIS/NIR channels and `ir_38` |
+
+They are written when calibration is enabled (the default,
+`include_calibration=true`).
+
+```python
+import numpy as np
+import xarray as xr
+
+ds = xr.open_zarr(store, group="data_2km")
+ds = ds.assign_coords(channel=ds.channel_name.astype(str))
+
+radiance = ds.counts * ds.slope + ds.offset  # mW m-2 sr-1 (cm-1)-1
+
+# Brightness temperature (K), IR/WV channels
+nu = ds.radiance_to_bt_conversion_coefficient_wavenumber
+a = ds.radiance_to_bt_conversion_coefficient_a
+b = ds.radiance_to_bt_conversion_coefficient_b
+c1 = ds.radiance_to_bt_conversion_constant_c1
+c2 = ds.radiance_to_bt_conversion_constant_c2
+bt = (c2 * nu / np.log(1.0 + c1 * nu**3 / radiance) - b) / a
+
+# Radiance in W m-2 sr-1 um-1
+radiance_um = radiance * ds.radiance_unit_conversion_coefficient
+```
+
+Reflectance for VIS/NIR channels is
+`pi * radiance * d**2 / (channel_effective_solar_irradiance * cos(sza))`,
+where `d` is the Sun–Earth distance in AU and `sza` is the solar zenith
+angle. Neither is stored yet.
 
 ## Projection
 

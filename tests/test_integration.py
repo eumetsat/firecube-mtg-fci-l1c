@@ -316,6 +316,78 @@ def test_channel_name_static_replay_is_idempotent(tmp_path: Path, fdhsi_zip: Pat
 
 @pytest.mark.integration
 @pytest.mark.plugin
+def test_conversion_constants_written_once_per_channel_without_time_axis(
+    tmp_path: Path, fdhsi_zip: Path
+):
+    """Constants are (channel,) arrays that a resumed ingest leaves unchanged."""
+    src = fdhsi_zip.parent
+    options = {"include_geolocation": False}
+    out = _run_ingest(src, tmp_path, options=options)
+
+    root = zarr.open_group(str(out), mode="r")
+    # small_fci_layout: data_1km = [vis_04, vis_06], data_2km = [ir_38].
+    wavenumber = cast(Any, root["data_2km"])[
+        "radiance_to_bt_conversion_coefficient_wavenumber"
+    ]
+    solar_1km = cast(Any, root["data_1km"])["channel_effective_solar_irradiance"]
+    bt_a_1km = cast(Any, root["data_1km"])["radiance_to_bt_conversion_coefficient_a"]
+    assert wavenumber.metadata.dimension_names == ("channel",)
+    np.testing.assert_array_equal(
+        wavenumber[:], np.array([2644.3291015625], dtype=np.float32)
+    )
+    np.testing.assert_array_equal(
+        solar_1km[:],
+        np.array([38.09846115112305, 65.727783203125], dtype=np.float32),
+    )
+    assert np.isnan(bt_a_1km[:]).all()
+
+    _run_ingest(
+        src,
+        tmp_path,
+        options={**options, "resume_existing": True, "force_reingest": False},
+    )
+    root = zarr.open_group(str(out), mode="r")
+    np.testing.assert_array_equal(
+        cast(Any, root["data_2km"])["radiance_to_bt_conversion_coefficient_wavenumber"][
+            :
+        ],
+        np.array([2644.3291015625], dtype=np.float32),
+    )
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+def test_store_without_conversion_constants_gains_them_on_next_direct_ingest(
+    tmp_path: Path, fdhsi_zip: Path
+):
+    import shutil
+
+    from firecube_mtg_fci_l1c._constants import FCI_CONVERSION_CONSTANT_NAMES
+
+    src = fdhsi_zip.parent
+    options = {"include_geolocation": False}
+    out = _run_ingest(src, tmp_path, options=options)
+
+    # Given: a store created before the constants were declared.
+    for group in ("data_1km", "data_2km"):
+        for name in FCI_CONVERSION_CONSTANT_NAMES:
+            shutil.rmtree(Path(out) / group / name)
+
+    _run_ingest(
+        src,
+        tmp_path,
+        options={**options, "resume_existing": True, "force_reingest": False},
+    )
+
+    root = zarr.open_group(str(out), mode="r")
+    np.testing.assert_array_equal(
+        cast(Any, root["data_2km"])["radiance_to_bt_conversion_constant_c1"][:],
+        np.array([1.1910429748240858e-05], dtype=np.float32),
+    )
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
 def test_fdhsi_2km_content_written_correctly(tmp_path: Path, fdhsi_zip: Path):
     out = _run_ingest(
         fdhsi_zip.parent, tmp_path, options={"include_geolocation": False}
