@@ -10,10 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - IR 3.8 dual-gain calibration (issue #16): `warm_slope` and `warm_offset` `(time, channel)` variables from the `warm_scale_factor`/`warm_add_offset` attributes of `effective_radiance`. They convert `ir_38` counts above 4095, exist only in groups that contain `ir_38` (FDHSI `data_2km`, HRFI `data_1km`), and are `NaN` for the other channels there. Enabled with `include_calibration`. Golden snapshots regenerated.
+- [#13](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/13) `flat_store` option (default `false`): with exactly one effective resolution, the variables are written at the store root instead of `data_<res>/`, so `xr.open_zarr(store)` works without `group=`. More than one effective resolution fails with a configuration error before anything is written. Chunk and shard override keys stay `data_<res>`. See [Customization](docs/customization.md#flat-store-layout).
+- [#13](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/13) `scripts/fci-ingest.sh`: `FLAT_STORE=1` adds `--option flat_store=true` to preallocation and every pod.
+- [#13](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/13) `fix-fillvalue` works on flat stores; it detects the layout from the store and refuses empty, non-FCI, or mixed stores.
 - `_schema.py`: time coordinate spec now uses `chunks=None` (dense chunk resolution delegated to core `preallocate`) and declares CF standard_name, long_name, axis attributes. Golden snapshots regenerated.
 
 ### Changed
 
+- The lockfile and CI now use firecube 0.1.7; the supported floor stays `firecube>=0.1.5`.
+- [#13](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/13) `fix-fillvalue` now exits with an error on a store that holds no FCI arrays or groups, or that mixes root arrays with `data_<res>/` groups; it used to report such stores as "missing" and exit 0.
+- A `resolutions` or `channels` selection that leaves no resolution to write is rejected with a configuration error naming both options, instead of failing inside Firecube.
 - Plugin simplification pass. Behaviour-preserving except where noted:
   - `build_write_intents` split into `_intents_for_zip` / `_intents_for_plan` (182 -> 100 lines; maximum nesting 7 blocks -> 4).
   - Write intents are now `IndexedWrite` keyed by `coordinate=`; core resolves the slot index and auto-emits the time-coordinate write. `_emit_timestamp_intents` and all `ts_index` plumbing removed.
@@ -31,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The time-axis index now honours the `channels` filter: a channel selection that leaves a resolution without channels no longer declares that resolution's group.
 - `_scratch.register_cleanup_thread` now prunes finished threads. One thread was registered per batch and never released, so the registry grew by one entry for every batch a process handled; only threads still running are retained now.
 - Batch resource teardown no longer runs while `_batch_resources_lock` is held. Closing a batch's readers closes ~40 NetCDF handles; holding the lock across that blocked concurrent `prepare_batch_data` calls and dispatch-time payload lookups.
 - `fix-fillvalue` documentation now describes the command as a repair tool for cubes written before core stamped `_FillValue` itself, rather than a workaround for current behaviour. Current core emits the attribute during ingest; the command remains for older stores.

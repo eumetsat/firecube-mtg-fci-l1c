@@ -41,10 +41,15 @@ MAX_CHUNK_Y_PER_RESOLUTION: dict[str, int] = {
     "2km": 278,  # 2 × 139
 }
 
-# Every ``data_<res>`` group that could be sharded, across all product types.
-_VALID_SHARD_GROUPS: frozenset[str] = frozenset(
-    f"data_{res}" for resolutions in VALID_RESOLUTIONS.values() for res in resolutions
-)
+# Override key (``data_<res>``) -> resolution, across all product types.
+_RESOLUTION_BY_OVERRIDE_KEY: dict[str, str] = {
+    f"data_{res}": res
+    for resolutions in VALID_RESOLUTIONS.values()
+    for res in resolutions
+}
+
+# Every ``data_<res>`` override key accepted by the chunk/shard override options.
+_VALID_SHARD_GROUPS: frozenset[str] = frozenset(_RESOLUTION_BY_OVERRIDE_KEY)
 
 _VALID_PIXEL_TIME_DTYPES: frozenset[str] = frozenset(
     {"float64", "float32", "int32", "int64"}
@@ -71,6 +76,15 @@ class MtgFciL1cConfig(BasePluginConfig):
     include_pixel_time: bool = True
     include_calibration: bool = True
     include_geolocation: bool = True
+    flat_store: bool = False
+    """Write variables at the store root instead of a ``data_<res>/`` group.
+
+    Requires exactly one effective resolution (narrow with ``resolutions`` or
+    ``channels``); otherwise schema declaration raises ``ConfigurationError``.
+    ``zarr_chunk_overrides`` and ``zarr_shard_overrides`` stay keyed by
+    ``data_<res>`` in both layouts.
+    """
+
     fci_grids_file: str | None = None
     """Path to pre-generated .npz grids file.
 
@@ -311,7 +325,7 @@ class MtgFciL1cConfig(BasePluginConfig):
                     f"zarr_chunk_overrides[{group!r}] channel dim must be 1 "
                     f"(FCI writes channels independently), got {chunk_shape!r}"
                 )
-            res = group.replace("data_", "")
+            res = _RESOLUTION_BY_OVERRIDE_KEY[group]
             max_y = MAX_CHUNK_Y_PER_RESOLUTION.get(res)
             if max_y is not None and chunk_shape[1] > max_y:
                 raise ValueError(
@@ -374,57 +388,76 @@ class MtgFciL1cConfig(BasePluginConfig):
 
         return matched
 
-    def get_group_chunk_shape(self, group: str) -> tuple[int, ...]:
-        """Return streaming-optimized chunk shape for a group.
+    def effective_resolutions(self, product_type: str) -> tuple[str, ...]:
+        """Return the resolutions that will actually be written for *product_type*.
+
+        Applies the ``resolutions`` filter and then drops resolutions for which
+        the ``channels`` filter leaves no channel. Ordered as in
+        ``VALID_RESOLUTIONS[product_type]``, independent of the order the
+        operator wrote the options in.
+        """
+        valid = VALID_RESOLUTIONS.get(product_type, ["1km", "2km"])
+        configured = self.get_resolutions(product_type)
+        resolutions = [res for res in valid if res in configured]
+        channel_selection = self.get_channels(product_type)
+        if channel_selection is not None:
+            resolutions = [res for res in resolutions if channel_selection.get(res)]
+        return tuple(resolutions)
+
+    def get_group_chunk_shape(self, resolution: str) -> tuple[int, ...]:
+        """Return the streaming-optimized 4-D data chunk shape for a resolution.
 
         Precedence (highest wins):
-          1. ``zarr_chunk_overrides[group]`` — explicit per-group rank-4 override
+          1. ``zarr_chunk_overrides["data_<res>"]`` — explicit per-resolution
+             rank-4 override
           2. ``zarr_chunk_y`` — Y-axis-only override applied across all groups
           3. Resolution-aware nc_part-aligned default from CHUNK_DEFAULTS_BY_RESOLUTION
         """
-        if self.zarr_chunk_overrides is not None and group in self.zarr_chunk_overrides:
-            override = self.zarr_chunk_overrides[group]
+        override_key = f"data_{resolution}"
+        if (
+            self.zarr_chunk_overrides is not None
+            and override_key in self.zarr_chunk_overrides
+        ):
+            override = self.zarr_chunk_overrides[override_key]
             # Phase 2 dimsize cross-check (dimsize unknown at __post_init__ time)
-            res = group.replace("data_", "")
-            if res == "500m":
+            if resolution == "500m":
                 dimsize = 22272
-            elif res == "1km":
+            elif resolution == "1km":
                 dimsize = 11136
-            elif res == "2km":
+            elif resolution == "2km":
                 dimsize = 5568
             else:
-                raise ValueError(f"Unknown resolution group: {group!r}")
+                raise ValueError(f"Unknown resolution: {resolution!r}")
             if override[1] > dimsize:
                 raise ValueError(
-                    f"zarr_chunk_overrides[{group!r}] y dim {override[1]} "
-                    f"exceeds dimsize {dimsize} for {res!r}"
+                    f"zarr_chunk_overrides[{override_key!r}] y dim {override[1]} "
+                    f"exceeds dimsize {dimsize} for {resolution!r}"
                 )
             if override[2] > dimsize:
                 raise ValueError(
-                    f"zarr_chunk_overrides[{group!r}] x dim {override[2]} "
-                    f"exceeds dimsize {dimsize} for {res!r}"
+                    f"zarr_chunk_overrides[{override_key!r}] x dim {override[2]} "
+                    f"exceeds dimsize {dimsize} for {resolution!r}"
                 )
             return tuple(override)
-        res = group.replace("data_", "")
-        if res == "500m":
+        if resolution == "500m":
             y_chunk = (
                 self.zarr_chunk_y
                 if self.zarr_chunk_y is not None
-                else CHUNK_DEFAULTS_BY_RESOLUTION.get(res, 278)
+                else CHUNK_DEFAULTS_BY_RESOLUTION.get(resolution, 278)
             )
             return (1, y_chunk, 22272, 1)
-        if res == "1km":
+        if resolution == "1km":
             y_chunk = (
                 self.zarr_chunk_y
                 if self.zarr_chunk_y is not None
-                else CHUNK_DEFAULTS_BY_RESOLUTION.get(res, 278)
+                else CHUNK_DEFAULTS_BY_RESOLUTION.get(resolution, 278)
             )
             return (1, y_chunk, 11136, 1)
-        if res == "2km":
+        if resolution == "2km":
             y_chunk = (
                 self.zarr_chunk_y
                 if self.zarr_chunk_y is not None
-                else CHUNK_DEFAULTS_BY_RESOLUTION.get(res, 278)
+                else CHUNK_DEFAULTS_BY_RESOLUTION.get(resolution, 278)
             )
             return (1, y_chunk, 5568, 1)
-        raise ValueError(f"Unknown resolution group: {group}")
+        raise ValueError(f"Unknown resolution: {resolution!r}")

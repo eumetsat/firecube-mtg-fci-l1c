@@ -32,6 +32,10 @@
 # fixes the preallocated store shape. The WINDOW (FROM/TO or SLOT_START/SLOT_END)
 # is only what THIS run ingests. Grow the window later without re-preallocating.
 #
+# FLAT_STORE=1 writes the arrays at the store root instead of data_<res>/. It
+# needs exactly one effective resolution (e.g. RESOLUTIONS=1km); the plugin
+# rejects more, and Firecube rejects switching the layout of an existing store.
+#
 # LOGS: every run writes to /root/logs/fci-ingest-<timestamp>-<pid>/ —
 # run.log is the full terminal transcript (review with `less -R` instead of
 # scrolling screen/tmux), pod_<start>_<end>.log is each pod's firecube output,
@@ -75,6 +79,7 @@ FORCE_REINGEST="${FORCE_REINGEST:-1}"                # 1 = overwrite + idempoten
 EXTRACT_WORKERS="${EXTRACT_WORKERS:-}"               # parallel ZIP extraction per pod (engine default: 4)
 EXTRA_OPTIONS="${EXTRA_OPTIONS:-}"                   # extra "--option k=v ..." appended to every invocation
 RESOLUTIONS="${RESOLUTIONS:-}"                        # optional subset, e.g. "1km" or "500m,1km"
+FLAT_STORE="${FLAT_STORE:-}"                          # 1|true|yes|on = arrays at store root (one resolution only)
 FIRECUBE="${FIRECUBE:-firecube}"
 ASSUME_YES="${ASSUME_YES:-0}"
 
@@ -138,6 +143,12 @@ COMMON_OPTS=(--option "product_type=$PRODUCT_TYPE" --option "time_epoch=$TIME_EP
 [[ -n "$RESOLUTIONS" ]] && COMMON_OPTS+=(--option "resolutions=$RESOLUTIONS")
 [[ -n "$GRIDS_FILE"  ]] && COMMON_OPTS+=(--option "fci_grids_file=$GRIDS_FILE")
 [[ -n "$EXTRACT_WORKERS" ]] && COMMON_OPTS+=(--option "extract_workers=$EXTRACT_WORKERS")
+FLAT_STORE_ENABLED=0
+case "${FLAT_STORE,,}" in
+  1|true|yes|on) FLAT_STORE_ENABLED=1; COMMON_OPTS+=(--option "flat_store=true") ;;
+  ""|0|false|no|off) ;;
+  *) echo "ERROR: FLAT_STORE='$FLAT_STORE' is not a boolean (use 1/true/yes/on or 0/false/no/off)." >&2; exit 2 ;;
+esac
 # deliberate word-splitting: EXTRA_OPTIONS is a flat "--option k=v ..." string
 # shellcheck disable=SC2206
 [[ -n "$EXTRA_OPTIONS" ]] && COMMON_OPTS+=($EXTRA_OPTIONS)
@@ -231,20 +242,20 @@ PY
 }
 
 # Fallback when zarr slots is unavailable: split the window locally and derive
-# the group names from the resolution list.
+# the group names from the resolution list (flat layout: the root group "").
 plan_from_local_ranges() {
-  python3 - "$SLOT_START" "$SLOT_END" "$SLOTS_PER_POD" "$GRIDS_RES" "$LOGDIR/fanout-plan.tsv" <<'PY'
+  python3 - "$SLOT_START" "$SLOT_END" "$SLOTS_PER_POD" "$GRIDS_RES" "$LOGDIR/fanout-plan.tsv" "$FLAT_STORE_ENABLED" <<'PY'
 import sys
 
 s, e, step = map(int, sys.argv[1:4])
-resolutions = sys.argv[4].split(",")
+resolutions = [""] if sys.argv[6] == "1" else sys.argv[4].split(",")
 output_path = sys.argv[5]
 ranges = [(a, min(a + step, e)) for a in range(s, e, step)]
 with open(output_path, "w", encoding="utf-8") as stream:
     for index, (slot_start, slot_end) in enumerate(ranges):
         stream.write(f"{index}\t{slot_start}\t{slot_end}\n")
 print(ranges[0][0] if ranges else 0)
-print(",".join(f"data_{res.strip()}" for res in resolutions))
+print(",".join(f"data_{res.strip()}" if res else "" for res in resolutions))
 print(len(ranges))
 PY
 }
@@ -257,11 +268,13 @@ if FANOUT_PLAN_JSON=$("$FIRECUBE" zarr slots "$PLUGIN" \
     "${COMMON_OPTS[@]}" \
     --format json 2> "$LOGDIR/firecube-zarr-slots.err"); then
   echo ">> fan-out plan from firecube zarr slots"
+  PLAN_SOURCE=slots
   printf '%s' "$FANOUT_PLAN_JSON" > "$LOGDIR/fanout-plan.json"
   PLAN_INFO="$(plan_from_slots_json)"
 else
   echo ">> firecube zarr slots unavailable or failed; falling back to local range generation"
   sed 's/^/   /' "$LOGDIR/firecube-zarr-slots.err" || true
+  PLAN_SOURCE=fallback
   PLAN_INFO="$(plan_from_local_ranges)"
 fi
 
@@ -310,31 +323,68 @@ if [[ "$nfail" -eq 0 ]]; then
   # and import startup on the serial tail after the last pod.
   DRIFT_PY="$(dirname "$FIRECUBE")/python3"
   [[ -x "$DRIFT_PY" ]] || DRIFT_PY=python3
-  if "$DRIFT_PY" - "$TARGET" "$PLAN_GROUPS" <<'PY' 2> "$LOGDIR/drift-check.err"
+  # The layout is read from the store; the plan is only cross-checked when it
+  # came from `firecube zarr slots` (the fallback plan cannot see `channels`).
+  if ! "$DRIFT_PY" - "$TARGET" "$PLAN_GROUPS" "$PLAN_SOURCE" <<'DRIFT_CHECK' 2> "$LOGDIR/drift-check.err"
 import sys
 
 import zarr
 
-target, groups_csv = sys.argv[1:3]
-root = zarr.open_group(target.removeprefix("file://"), mode="r")
-missing = []
-for group_name in [g for g in groups_csv.split(",") if g]:
-    group = root[group_name]
-    for array_name in ("latitude", "longitude", "x", "y"):
-        if array_name in group and "firecube_static_written" not in group[array_name].attrs:
-            missing.append(f"{group_name}/{array_name}")
-if missing:
-    print(
-        "DRIFT-CHECK FAIL: missing firecube_static_written on: " + ", ".join(missing),
-        file=sys.stderr,
-    )
+STATIC_ARRAYS = ("latitude", "longitude", "x", "y")
+ALWAYS_DECLARED = ("x", "y")
+MARKER = "firecube_static_written"
+
+
+def fail(message):
+    print(f"DRIFT-CHECK FAIL: {message}", file=sys.stderr)
     sys.exit(1)
-PY
+
+
+def label(group_name):
+    return group_name or "/ (root)"
+
+
+target, plan_groups, plan_source = sys.argv[1:4]
+root = zarr.open_group(target.removeprefix("file://"), mode="r")
+flat = any(name in STATIC_ARRAYS for name in root.array_keys())
+data_groups = sorted(name for name in root.group_keys() if name.startswith("data_"))
+if flat and data_groups:
+    fail(f"mixed layout at {target}: static arrays at root and groups {', '.join(data_groups)}")
+if not flat and not data_groups:
+    fail(f"no FCI layout found at {target}")
+locations = [""] if flat else data_groups
+
+if plan_source == "slots":
+    planned = set(plan_groups.split(","))
+    if planned != set(locations):
+        fail(
+            f"store groups [{', '.join(map(label, sorted(locations)))}] differ from "
+            f"planned groups [{', '.join(map(label, sorted(planned)))}]"
+        )
+    cross_check = "store groups match the zarr slots plan"
+else:
+    cross_check = "plan cross-check skipped (fallback plan)"
+
+problems = []
+for group_name in locations:
+    group = root[group_name] if group_name else root
+    present = set(group.array_keys())
+    for array_name in STATIC_ARRAYS:
+        path = f"{group_name}/{array_name}"
+        if array_name not in present:
+            if array_name in ALWAYS_DECLARED:
+                problems.append(f"{path} (absent)")
+        elif MARKER not in group[array_name].attrs:
+            problems.append(path)
+if problems:
+    fail(f"missing {MARKER} on: {', '.join(problems)}")
+layout = "flat" if flat else "grouped"
+print(f"DRIFT-CHECK OK: {layout} layout, static markers present in "
+      f"{', '.join(map(label, locations))}; {cross_check}")
+DRIFT_CHECK
   then
-    echo "DRIFT-CHECK OK: static markers present"
-  else
     cat "$LOGDIR/drift-check.err" >&2
-    echo "ERROR: static arrays incomplete; re-run the owner slot range [$STATIC_OWNER_START,...)" >&2
+    echo "ERROR: drift check failed; for missing markers re-run the owner slot range [$STATIC_OWNER_START,...)" >&2
     exit 1
   fi
   echo ">> all $npods pod(s) OK. Window [$SLOT_START,$SLOT_END) ingested."

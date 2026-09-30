@@ -3,6 +3,7 @@
 Operator-facing plugin and production-script settings.
 
 - [Plugin `--option` flags](#plugin---option-flags)
+- [Flat store layout](#flat-store-layout)
 - [Projection units](#projection-units)
 - [Time-axis options (`time_epoch`, `time_slots`)](#time-axis-options)
 - [`scripts/fci-ingest.sh` environment variables](#scriptsfci-ingestsh-environment-variables)
@@ -31,6 +32,7 @@ All are optional.
 | Option | Default | Description |
 |---|---|---|
 | `resolutions` | auto per product | Comma-separated list, e.g. `1km` or `500m,1km` |
+| `flat_store` | `false` | Write the variables at the store root instead of `data_<res>/`. Needs exactly one resolution; see [Flat store layout](#flat-store-layout) |
 | `channels` | all channels for selected resolutions | Comma-separated logical channel names, e.g. `vis_06,ir_105` |
 | `product_type` | auto-detect | Override: `FDHSI` or `HRFI` |
 | `include_pixel_quality` | `true` | Include the 8-bit warning flag array |
@@ -64,6 +66,60 @@ firecube ingest mtg_fci_l1c \
     --output-format zarr --write-mode staged \
     --option channels=vis_06,ir_105
 ```
+
+---
+
+## Flat store layout
+
+By default each resolution goes into its own `data_<res>/` group. When a store
+holds one resolution only, `flat_store=true` writes the variables at the store
+root instead, so xarray opens the store without a `group=` argument. Supported
+grids: FDHSI 1 km, FDHSI 2 km, HRFI 500 m, and HRFI 1 km.
+
+```bash
+firecube ingest mtg_fci_l1c \
+    --input-data /path/to/fci-zips \
+    --target file:///path/to/fci-1km.zarr \
+    --output-format zarr --write-mode staged \
+    --option resolutions=1km \
+    --option flat_store=true
+```
+
+```
+fci-1km.zarr/
+├── counts/  pixel_quality/  pixel_time/  slope/  offset/
+├── latitude/  longitude/  x/  y/  time/  channel_name/  spatial_ref/
+└── zarr.json
+```
+
+```python
+import xarray as xr
+
+ds = xr.open_zarr("/path/to/fci-1km.zarr")  # no group= needed
+print(ds["counts"].sizes)
+```
+
+Rules:
+
+- **Exactly one effective resolution.** Select it with `resolutions`, or with a
+  `channels` list whose channels all share one resolution. Otherwise
+  `firecube ingest` and `firecube zarr preallocate` stop with a configuration
+  error before writing anything, for example
+  `flat_store=true requires exactly one effective resolution for FDHSI, got ['1km', '2km']`.
+- **One layout and one grid per store.** Pass the same `flat_store`,
+  `product_type`, and `resolutions` to preallocation and every ingest of a
+  store. Firecube refuses to switch an existing store between grouped and flat,
+  or to write another resolution or product type into a flat store, before any
+  array data is written; the error reads
+  `plugin declares incompatible resolved index` and lists the differing groups.
+  Stores are not converted in place: ingest into a new store.
+- **Override keys keep the group name.** `zarr_chunk_overrides` and
+  `zarr_shard_overrides` stay keyed by `data_<res>` (for example `data_1km`) in
+  both layouts.
+
+To keep both FDHSI resolutions flat, write one store per resolution, for example
+`fci-1km.zarr` with `resolutions=1km` and `fci-2km.zarr` with `resolutions=2km`.
+`scripts/fci-ingest.sh` sets the option with `FLAT_STORE=1`.
 
 ---
 
@@ -121,6 +177,7 @@ All pods writing to the same store **must** use identical `time_epoch` and
 | `PRODUCT_NAME` | derived from `TARGET` basename | Logical store name |
 | `PRODUCT_TYPE` | `FDHSI` | `FDHSI` or `HRFI` |
 | `RESOLUTIONS` | all for `PRODUCT_TYPE` | Optional subset, e.g. `1km` or `500m,1km` |
+| `FLAT_STORE` | unset | `1`, `true`, `yes`, or `on` (any case) adds `--option flat_store=true`; needs a single-resolution `RESOLUTIONS`. See [Flat store layout](#flat-store-layout) |
 | `PLUGIN` | `mtg_fci_l1c` | Firecube plugin name passed to `firecube ingest` and `firecube zarr preallocate` |
 | `FIRECUBE` | `firecube` | Firecube executable path or wrapper command |
 
@@ -333,7 +390,9 @@ lack the attribute, and xarray then shows fill pixels as raw integer values
 instead of masking them to `NaN` on read.
 
 The `fix-fillvalue` command stamps `_FillValue` on numeric arrays in such an
-existing store without re-running ingestion.
+existing store without re-running ingestion. It works on grouped and
+[flat](#flat-store-layout) stores, detects the layout from the store, and
+refuses a store that is empty, is not an FCI store, or mixes both layouts.
 
 **Run only after ingestion has completed.** The store must be offline (no
 active ingest pods writing to it).
