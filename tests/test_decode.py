@@ -792,6 +792,7 @@ def test_variable_projections_do_not_mutate_cached_payload(tmp_path: Path):
 
         ctx = VariableContext(
             group="data_1km",
+            resolution="1km",
             product_type="FDHSI",
             config=MtgFciL1cConfig(),
             dimsize=2,

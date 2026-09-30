@@ -61,6 +61,25 @@ def _coerce_fill_for_attrs(value: object, dtype: object) -> object:
     return value
 
 
+def _detect_store_layout(
+    root: Any, variable_names: set[str], grouped_names: set[str]
+) -> str:
+    """Classify a store as ``"flat"``, ``"grouped"``, ``"mixed"`` or ``"unknown"``.
+
+    Flat means root arrays named after plugin schema variables; grouped means
+    ``data_<res>`` groups. A store is never classified by absence alone.
+    """
+    has_flat = bool(set(root.array_keys()) & variable_names)
+    has_grouped = bool(set(root.group_keys()) & grouped_names)
+    if has_flat and has_grouped:
+        return "mixed"
+    if has_flat:
+        return "flat"
+    if has_grouped:
+        return "grouped"
+    return "unknown"
+
+
 @cli.group(context_settings={"help_option_names": ["-h", "--help"]})
 def geo() -> None:
     """Commands for generating and inspecting FCI geolocation grids."""
@@ -231,25 +250,65 @@ def fix_fillvalue(store: Path, yes_i_really_mean_it: bool) -> None:
 
     Run only after ingestion has completed.
 
+    Works on both store layouts: arrays inside ``data_<res>`` groups, or a
+    flat single-resolution store with the arrays at the root. The layout is
+    read from the store; a store holding neither, or both, is refused.
+
     By default the command runs in dry-run mode and prints the planned
     changes. Re-run with ``--yes-i-really-mean-it`` to apply them.
     """
     import numpy as np
     import zarr
 
-    from .config import MtgFciL1cConfig
+    from ._constants import VALID_RESOLUTIONS
+    from ._group_plan import group_name as build_group_name
     from ._variables import build_specs
+    from .config import MtgFciL1cConfig
 
+    grouped_names = {
+        build_group_name(res, False)
+        for resolutions in VALID_RESOLUTIONS.values()
+        for res in resolutions
+    }
+    variable_names: set[str] = set()
     eligible_arrays: dict[str, set[str]] = {}
-    for pt in ("FDHSI", "HRFI"):
+    for pt in VALID_RESOLUTIONS:
         for group_spec in build_specs(MtgFciL1cConfig(), pt):
             names = eligible_arrays.setdefault(group_spec.group, set())
             for arr_spec in group_spec.arrays:
+                variable_names.add(arr_spec.name)
                 if arr_spec.fill_value is None:
                     continue
                 names.add(arr_spec.name)
 
-    root: Any = zarr.open_group(str(store), mode="r+" if yes_i_really_mean_it else "r")
+    root: Any = zarr.open_group(str(store), mode="r")
+    layout = _detect_store_layout(root, variable_names, grouped_names)
+    if layout in ("mixed", "unknown"):
+        click.echo(f"Store: {store}")
+        if layout == "mixed":
+            click.echo(
+                "ERROR: store holds both plugin arrays at the root and "
+                f"data_<res> groups ({', '.join(sorted(grouped_names))}); "
+                "cannot tell which layout to fix."
+            )
+        else:
+            click.echo(
+                "ERROR: store holds neither plugin arrays at the root nor "
+                f"data_<res> groups ({', '.join(sorted(grouped_names))}); "
+                "it does not look like an MTG FCI L1C store."
+            )
+        click.echo("No writes performed.")
+        raise click.exceptions.Exit(code=1)
+
+    if layout == "flat":
+        # A flat store holds one resolution of one product type, and the
+        # store does not say which. Only names eligible in every group are
+        # eligible at the root, so a name is never stamped on the strength
+        # of a resolution the store may not hold.
+        eligible_arrays = {"": set.intersection(*eligible_arrays.values())}
+
+    if yes_i_really_mean_it:
+        root = zarr.open_group(str(store), mode="r+")
 
     patched: list[tuple[str, str, object]] = []
     skipped_idempotent: list[tuple[str, str]] = []
@@ -258,11 +317,14 @@ def fix_fillvalue(store: Path, yes_i_really_mean_it: bool) -> None:
     apply_plan: list[tuple[Any, object]] = []
 
     for group_name, expected_names in sorted(eligible_arrays.items()):
-        if group_name not in root:
+        if group_name == "":
+            group = root
+        elif group_name not in root:
             for arr_name in sorted(expected_names):
                 missing.append((group_name, arr_name))
             continue
-        group = root[group_name]
+        else:
+            group = root[group_name]
         for arr_name in sorted(expected_names):
             if arr_name not in group:
                 missing.append((group_name, arr_name))

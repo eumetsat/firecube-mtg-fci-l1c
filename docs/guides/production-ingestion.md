@@ -11,7 +11,7 @@ Full env-var reference for the script is in
 
 ## Prerequisites
 
-- Firecube ≥ 0.1.4 with the `mtg_fci_l1c` plugin installed.
+- Firecube ≥ 0.1.5 with the `mtg_fci_l1c` plugin installed.
 - Read access to FCI L1C `.zip` files at `INPUT` (local path, `file://` URI,
   or `s3://` prefix). The same `INPUT` is passed to every pod.
 - For local `TARGET`: any writable local filesystem.
@@ -131,6 +131,8 @@ those steps and adds fan-out, logging, and idempotent re-runs.
 | `--option time_epoch=...` | `TIME_EPOCH` |
 | `--option time_slots=...` | `TIME_SLOTS` |
 | `--option fci_grids_file=...` | `GRIDS_FILE` |
+| `--option resolutions=...` | `RESOLUTIONS` |
+| `--option flat_store=true` | `FLAT_STORE=1` (see [Flat store layout](../customization.md#flat-store-layout)) |
 | `--slot-start`, `--slot-end` | `SLOT_START`, `SLOT_END` |
 | number of parallel processes | `PARALLELISM` |
 

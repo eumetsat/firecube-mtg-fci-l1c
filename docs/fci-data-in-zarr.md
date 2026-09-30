@@ -20,9 +20,34 @@ output.zarr/
 
 Channel names are also stored per group in the `channel_name[c]` array.
 
+```python
+import xarray as xr
+
+ds = xr.open_zarr("output.zarr", group="data_1km")
+```
+
+### Flat layout
+
+A store ingested with `--option flat_store=true` holds a single resolution
+(one row of the table above) and has no `data_<res>/` group. The variables sit
+at the store root:
+
+```
+fci-1km.zarr/
+├── counts/  pixel_quality/  pixel_time/  slope/  offset/
+└── latitude/  longitude/  x/  y/  time/  channel_name/  spatial_ref/
+```
+
+```python
+ds = xr.open_zarr("fci-1km.zarr")
+```
+
+Options, rules, and examples are in
+[Customization → Flat store layout](customization.md#flat-store-layout).
+
 ## Variables
 
-Every group contains:
+Every resolution group, or the root of a flat store, contains:
 
 | Variable | Shape | Storage | Notes |
 |---|---|---|---|

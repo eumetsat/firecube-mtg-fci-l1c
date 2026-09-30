@@ -41,10 +41,13 @@ from firecube_mtg_fci_l1c._variables import (  # noqa: E402
 _MTG_SATELLITE_HEIGHT_M: float = 35786400.0
 
 
-def _build_ctx(group: str, dimsize: int, config: MtgFciL1cConfig) -> VariableContext:
+def _build_ctx(
+    resolution: str, dimsize: int, config: MtgFciL1cConfig
+) -> VariableContext:
     """Construct a minimal static-phase ``VariableContext`` for x/y sources."""
     return VariableContext(
-        group=group,
+        group=f"data_{resolution}",
+        resolution=resolution,
         product_type="FDHSI",
         config=config,
         dimsize=dimsize,
@@ -55,24 +58,24 @@ def _build_ctx(group: str, dimsize: int, config: MtgFciL1cConfig) -> VariableCon
 
 @pytest.mark.unit
 @pytest.mark.parametrize(
-    ("group", "dimsize"),
+    ("resolution", "dimsize"),
     [
-        ("data_500m", 22272),
-        ("data_1km", 11136),
-        ("data_2km", 5568),
+        ("500m", 22272),
+        ("1km", 11136),
+        ("2km", 5568),
     ],
 )
 def test_meter_mode_x_monotonically_increasing_all_resolutions(
-    group: str, dimsize: int
+    resolution: str, dimsize: int
 ) -> None:
-    """After the fix, ``x`` is east-positive (monotonically increasing)."""
-    ctx = _build_ctx(group, dimsize, MtgFciL1cConfig())
+    """``x`` is east-positive (monotonically increasing)."""
+    ctx = _build_ctx(resolution, dimsize, MtgFciL1cConfig())
     x_arr = _projection_x_source(ctx)
-    assert x_arr is not None, f"_projection_x_source returned None for {group}"
+    assert x_arr is not None, f"_projection_x_source returned None for {resolution}"
     assert x_arr.shape == (dimsize,)
     diffs = np.diff(x_arr)
     assert np.all(diffs > 0), (
-        f"x must be monotonically increasing (east-positive) for {group}; "
+        f"x must be monotonically increasing (east-positive) for {resolution}; "
         f"first diff={diffs[0]!r}, last diff={diffs[-1]!r}"
     )
 
@@ -88,7 +91,7 @@ def test_pyproj_lon_correlates_positively_with_x() -> None:
     order, which is mandatory for this comparison.
     """
     dimsize = 11136
-    ctx = _build_ctx("data_1km", dimsize, MtgFciL1cConfig())
+    ctx = _build_ctx("1km", dimsize, MtgFciL1cConfig())
     x = _projection_x_source(ctx)
     y = _projection_y_source(ctx)
     assert x is not None and y is not None
@@ -117,10 +120,10 @@ def test_pyproj_lon_correlates_positively_with_x() -> None:
 def test_radian_mode_after_scaling_matches_meter_mode() -> None:
     """Radian-mode x, scaled by satellite height, must equal meter-mode x."""
     dimsize = 11136
-    x_meter = _projection_x_source(_build_ctx("data_1km", dimsize, MtgFciL1cConfig()))
+    x_meter = _projection_x_source(_build_ctx("1km", dimsize, MtgFciL1cConfig()))
     x_rad = _projection_x_source(
         _build_ctx(
-            "data_1km",
+            "1km",
             dimsize,
             MtgFciL1cConfig(projection_units="radian"),
         )
@@ -134,14 +137,16 @@ def test_radian_mode_after_scaling_matches_meter_mode() -> None:
 
 @pytest.mark.unit
 @pytest.mark.parametrize(
-    ("group", "dimsize"),
+    ("resolution", "dimsize"),
     [
-        ("data_500m", 22272),
-        ("data_1km", 11136),
-        ("data_2km", 5568),
+        ("500m", 22272),
+        ("1km", 11136),
+        ("2km", 5568),
     ],
 )
-def test_centre_pixels_straddle_nadir_all_resolutions(group: str, dimsize: int) -> None:
+def test_centre_pixels_straddle_nadir_all_resolutions(
+    resolution: str, dimsize: int
+) -> None:
     """Issue #8: index 0 must be pixel centre ``-(dimsize/2 - 0.5)`` steps from nadir.
 
     The FCI fixed grid has an even number of pixels per axis, so nadir lies on
@@ -151,8 +156,8 @@ def test_centre_pixels_straddle_nadir_all_resolutions(group: str, dimsize: int) 
     """
     from firecube_mtg_fci_l1c._constants import FCI_PROJ_SCALE_RAD_PER_INDEX
 
-    scale = FCI_PROJ_SCALE_RAD_PER_INDEX[group.removeprefix("data_")]
-    ctx = _build_ctx(group, dimsize, MtgFciL1cConfig(projection_units="radian"))
+    scale = FCI_PROJ_SCALE_RAD_PER_INDEX[resolution]
+    ctx = _build_ctx(resolution, dimsize, MtgFciL1cConfig(projection_units="radian"))
     for arr in (_projection_x_source(ctx), _projection_y_source(ctx)):
         assert arr is not None
         half = dimsize // 2
@@ -163,22 +168,22 @@ def test_centre_pixels_straddle_nadir_all_resolutions(group: str, dimsize: int) 
 
 @pytest.mark.unit
 @pytest.mark.parametrize(
-    ("group", "resolution_m", "dimsize"),
+    ("resolution", "resolution_m", "dimsize"),
     [
-        ("data_1km", 1000, 11136),
-        ("data_2km", 2000, 5568),
+        ("1km", 1000, 11136),
+        ("2km", 2000, 5568),
     ],
 )
 def test_x_y_land_on_latlon_pixel_centres(
-    group: str, resolution_m: int, dimsize: int
+    resolution: str, resolution_m: int, dimsize: int
 ) -> None:
     """Issue #8: ``x[col]``/``y[row]`` must be the geos coordinates of the pixel
     whose ``latitude``/``longitude`` the plugin writes for ``(row, col)``.
 
     Projects a sample of ``compute_latlon`` pixels through the plugin's own
     ``spatial_ref`` WKT with pyproj and compares against ``x``/``y`` in pixel
-    units. Before the fix this was off by a constant -1.00 px (1 km) and
-    -0.75 px (2 km) on both axes. 500 m is covered by the centre-pixel test
+    units. A wrong pixel-centre convention shows up as a constant offset of
+    -1.00 px (1 km) or -0.75 px (2 km) on both axes. 500 m is covered by the centre-pixel test
     above; its full grid is too heavy for a unit test.
     """
     from firecube_mtg_fci_l1c._constants import (
@@ -187,7 +192,7 @@ def test_x_y_land_on_latlon_pixel_centres(
     )
     from firecube_mtg_fci_l1c.geolocation.projection import compute_latlon
 
-    ctx = _build_ctx(group, dimsize, MtgFciL1cConfig())
+    ctx = _build_ctx(resolution, dimsize, MtgFciL1cConfig())
     x = _projection_x_source(ctx)
     y = _projection_y_source(ctx)
     assert x is not None and y is not None
@@ -204,10 +209,7 @@ def test_x_y_land_on_latlon_pixel_centres(
     ok = np.isfinite(gx) & np.isfinite(gy)
     assert ok.sum() > 100
 
-    px_m = (
-        FCI_PROJ_SCALE_RAD_PER_INDEX[group.removeprefix("data_")]
-        * MTG_PERSPECTIVE_POINT_HEIGHT_M
-    )
+    px_m = FCI_PROJ_SCALE_RAD_PER_INDEX[resolution] * MTG_PERSPECTIVE_POINT_HEIGHT_M
     dx = (x[cols] - gx)[ok] / px_m
     dy = (y[rows] - gy)[ok] / px_m
     # float32 lat/lon limits agreement to ~1e-2 px; a 1-based/offset error is >= 0.25 px.

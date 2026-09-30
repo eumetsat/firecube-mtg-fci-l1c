@@ -73,6 +73,7 @@ def test_variable_with_source_func_pickles() -> None:
 def test_variable_context_optional_fields() -> None:
     ctx = VariableContext(
         group="data_1km",
+        resolution="1km",
         product_type="FDHSI",
         config=MtgFciL1cConfig(),
         dimsize=11136,
@@ -86,6 +87,7 @@ def test_variable_context_optional_fields() -> None:
 def test_variable_context_with_runtime_fields() -> None:
     ctx = VariableContext(
         group="data_1km",
+        resolution="1km",
         product_type="FDHSI",
         config=MtgFciL1cConfig(),
         dimsize=11136,
@@ -284,6 +286,7 @@ def test_projection_units_metre_is_alias_for_meter() -> None:
 
     ctx_meter = _VC(
         group="data_1km",
+        resolution="1km",
         product_type="FDHSI",
         config=MtgFciL1cConfig(projection_units="meter"),
         dimsize=11136,
@@ -292,6 +295,7 @@ def test_projection_units_metre_is_alias_for_meter() -> None:
     )
     ctx_metre = _VC(
         group="data_1km",
+        resolution="1km",
         product_type="FDHSI",
         config=MtgFciL1cConfig(projection_units="metre"),
         dimsize=11136,
@@ -321,6 +325,7 @@ def test_x_y_source_values_1km_radian_mode() -> None:
 
     ctx = _VC(
         group="data_1km",
+        resolution="1km",
         product_type="FDHSI",
         config=MtgFciL1cConfig(projection_units="radian"),
         dimsize=11136,
@@ -356,6 +361,7 @@ def test_x_y_source_values_meter_mode_1km() -> None:
 
     ctx = _VC(
         group="data_1km",
+        resolution="1km",
         product_type="FDHSI",
         config=MtgFciL1cConfig(),
         dimsize=11136,
@@ -383,9 +389,11 @@ def test_x_y_source_values_meter_mode_500m_and_2km() -> None:
         _projection_y_source,
     )
 
-    for group, dimsize in [("data_500m", 22272), ("data_2km", 5568)]:
+    for resolution, dimsize in [("500m", 22272), ("2km", 5568)]:
+        group = f"data_{resolution}"
         ctx = _VC(
             group=group,
+            resolution=resolution,
             product_type="FDHSI",
             config=MtgFciL1cConfig(),
             dimsize=dimsize,
@@ -517,13 +525,13 @@ def test_coordinates_attr_absent_when_geolocation_off() -> None:
 
 
 # ─────────────────────────────────────────────────────────────
-# Group 9: Regression guards (rename / removal protection)
+# Group 9: Persisted variable names and units
 # ─────────────────────────────────────────────────────────────
 
 
 @pytest.mark.unit
 def test_slope_offset_names_and_units_unchanged() -> None:
-    """Regression guard: slope/offset must NOT be renamed to scale_factor/add_offset."""
+    """slope/offset keep their names; they are not CF scale_factor/add_offset."""
     names = [v.name for v in VARIABLES]
     assert "slope" in names, "slope was removed or renamed!"
     assert "offset" in names, "offset was removed or renamed!"
@@ -609,12 +617,12 @@ def test_chunk_override_y_exceeds_dimsize_raises() -> None:
 
 @pytest.mark.unit
 def test_default_chunk_shape_unchanged_when_no_override() -> None:
-    """Regression: defaults are identical to v0.3.0."""
+    """Without overrides, 1 km counts chunk one netCDF part of rows, full width, one channel."""
     cfg = MtgFciL1cConfig()
     specs = build_specs(cfg, "FDHSI")
     g = next(g for g in specs if g.group == "data_1km")
     counts = next(a for a in g.arrays if a.name == "counts")
-    assert counts.chunks == (1, 278, 11136, 1)  # v0.3.0 default
+    assert counts.chunks == (1, 278, 11136, 1)
 
 
 @pytest.mark.unit

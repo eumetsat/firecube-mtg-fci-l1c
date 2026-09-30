@@ -67,7 +67,12 @@ from ._data import (
     validate_no_mixed_products,
 )
 from .geolocation import LatLonProvider
-from ._group_plan import GroupPlan, resolve_group_plans
+from ._group_plan import (
+    GroupPlan,
+    group_name,
+    validate_effective_resolutions,
+    resolve_group_plans,
+)
 from ._decode import (
     AssemblyPreconditionError,
     ChannelSlicePayload,
@@ -212,9 +217,12 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         ``time_slots`` / ``time_end`` values raise instead of being
         silently swallowed.
         """
-        return self._build_index_spec(ctx)
+        config: MtgFciL1cConfig = self.plugin_config  # type: ignore[assignment]
+        product_type = self._detect_product_type(ctx)
+        validate_effective_resolutions(config, product_type)
+        return self._build_index_spec(product_type)
 
-    def _build_index_spec(self, ctx: PluginContext) -> IndexSpec:
+    def _build_index_spec(self, product_type: str) -> IndexSpec:
         """Build the declared time-axis spec; ``slot_count`` may be ``None``.
 
         Single source of truth for the axis definition; the engine resolves
@@ -222,9 +230,8 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         come from one axis definition.
         """
         config: MtgFciL1cConfig = self.plugin_config  # type: ignore[assignment]
-        product_type = self._detect_product_type(ctx)
-        # Use get_resolutions() so the IndexSpec matches zarr_schema() exactly.
-        resolutions = config.get_resolutions(product_type)
+        # Same resolution set as zarr_schema(), so every IndexSpec group exists.
+        resolutions = config.effective_resolutions(product_type)
         cadence_s = REPEAT_CYCLE_MINUTES * 60
         epoch_iso = normalize_epoch_iso(f"{config.time_epoch}T00:00:00Z")
         axis = TimeAxis.observed(
@@ -233,9 +240,15 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             cadence_s=cadence_s,
             slot_count=self._configured_total_slots(),
         )
+        name = self.INDEX_MODEL
+        if config.flat_store:
+            # Flat stores of different grids share the root group and axis, so the
+            # grid goes into the index identity to keep them from being appended to
+            # each other.
+            name = "_".join([name, product_type.lower(), *resolutions])
         return IndexSpec(
-            name=self.INDEX_MODEL,
-            groups={f"data_{res}": axis for res in resolutions},
+            name=name,
+            groups={group_name(res, config.flat_store): axis for res in resolutions},
         )
 
     def inspect_item(self, item: Any, ctx: PluginContext) -> ItemInfo | None:
@@ -281,7 +294,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
     def zarr_schema(self, ctx: PluginContext) -> list[ZarrGroupSpec]:
         """Declare the Zarr store layout per resolution.
 
-        The layout itself lives in :mod:`firecube_mtg_fci_l1c.schema` (the
+        The layout itself lives in :mod:`firecube_mtg_fci_l1c._variables` (the
         single place to add variables or attributes). This hook resolves the
         product type and delegates the declarative build there.
         """
@@ -299,6 +312,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                 f"Unsupported product type: {product_type!r}. "
                 f"Expected one of {sorted(CONSTANTS)}"
             )
+        validate_effective_resolutions(config, product_type)
         return build_all_specs(config, product_type)
 
     def _detect_product_type(self, ctx: PluginContext) -> str:
@@ -334,6 +348,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         for plan in plans:
             ctx = VariableContext(
                 group=plan.group,
+                resolution=plan.resolution,
                 product_type=plan.product_type,
                 config=config,
                 dimsize=plan.dimsize,
@@ -414,10 +429,11 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         """Iterate VARIABLES with dims==('time','channel'); emit slot writes."""
         from ._variables import VARIABLES, VariableContext, variable_enabled
 
-        group = f"data_{res}"
+        group = group_name(res, config.flat_store)
         dimsize = dimsize_for(product_type, res)
         ctx = VariableContext(
             group=group,
+            resolution=res,
             product_type=product_type,
             config=config,
             dimsize=dimsize,
@@ -462,11 +478,12 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         from ._variables import VARIABLES, VariableContext, variable_enabled
 
         intents: list[IndexedWrite] = []
-        chunk_y = config.get_group_chunk_shape(plan.group)[1]
+        chunk_y = config.get_group_chunk_shape(plan.resolution)[1]
         chunk_ranges = _output_chunk_ranges(plan.dimsize, chunk_y)
         for ch_idx, nc_channel in enumerate(plan.nc_channels):
             base_ctx = VariableContext(
                 group=plan.group,
+                resolution=plan.resolution,
                 product_type=plan.product_type,
                 config=config,
                 dimsize=plan.dimsize,

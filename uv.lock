@@ -7,14 +7,14 @@ resolution-markers = [
     "python_full_version >= '3.15' and sys_platform == 'emscripten'",
     "python_full_version >= '3.15' and sys_platform != 'emscripten' and sys_platform != 'win32'",
     "python_full_version == '3.14.*' and platform_machine == 'ARM64' and sys_platform == 'win32'",
-    "python_full_version == '3.13.*' and platform_machine == 'ARM64' and sys_platform == 'win32'",
-    "python_full_version < '3.13' and platform_machine == 'ARM64' and sys_platform == 'win32'",
     "python_full_version == '3.14.*' and platform_machine != 'ARM64' and sys_platform == 'win32'",
     "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
     "python_full_version == '3.14.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version == '3.13.*' and platform_machine == 'ARM64' and sys_platform == 'win32'",
     "python_full_version == '3.13.*' and platform_machine != 'ARM64' and sys_platform == 'win32'",
     "python_full_version == '3.13.*' and sys_platform == 'emscripten'",
     "python_full_version == '3.13.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.13' and platform_machine == 'ARM64' and sys_platform == 'win32'",
     "python_full_version < '3.13' and platform_machine != 'ARM64' and sys_platform == 'win32'",
     "python_full_version < '3.13' and sys_platform == 'emscripten'",
     "python_full_version < '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32'",
@@ -562,7 +562,7 @@ wheels = [
 
 [[package]]
 name = "firecube"
-version = "0.1.5"
+version = "0.1.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore", extra = ["crt"] },
@@ -576,6 +576,7 @@ dependencies = [
     { name = "numpy" },
     { name = "opentelemetry-exporter-otlp" },
     { name = "opentelemetry-sdk" },
+    { name = "packaging" },
     { name = "pandas" },
     { name = "prometheus-client" },
     { name = "psutil" },
@@ -584,9 +585,9 @@ dependencies = [
     { name = "xarray" },
     { name = "zarr" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0a/fd/6872f1776ddf64ad12993874dd1fd491bb2a851386b86921378db7d25ad4/firecube-0.1.5.tar.gz", hash = "sha256:b9f23356ca59ea305e0ef309f44961a97bdd8f8b83284ce3c4a6fe558000517d", size = 1534523, upload-time = "2026-09-03T11:29:18.042Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d2/f1/3c544d75039850058aa86b0e352317ae9616f8e41d32ebe0abef43ce5ffb/firecube-0.1.7.tar.gz", hash = "sha256:98b7ce141ffa1759586936ac7a15e3903d3de3bf5eeeb913ced0545758486fc1", size = 2552251, upload-time = "2026-09-19T10:01:22.529Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/5a/3dd98b60d5da1df49e8dc6c713574c950b7eb2ba8fba698e8686fdb378fa/firecube-0.1.5-py3-none-any.whl", hash = "sha256:78f3d11ddc0b28009baaaecd5f1cd9bea64a55946b34b092e5bba6594eeb91bb", size = 591188, upload-time = "2026-09-03T11:29:16.589Z" },
+    { url = "https://files.pythonhosted.org/packages/f1/ee/4a1d19e814481916ad077f9cc854ed1a0a678a5a7cc2031be2ff9db92d10/firecube-0.1.7-py3-none-any.whl", hash = "sha256:292b22c9e20caddbaaf41907c3e7bb3d228e161debdefdc96992beaa24d78c75", size = 675684, upload-time = "2026-09-19T10:01:20.735Z" },
 ]
 
 [[package]]
