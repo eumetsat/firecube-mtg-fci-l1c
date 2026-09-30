@@ -137,8 +137,8 @@ def test_variable_enabled_missing_attr_defaults_true() -> None:
 
 
 def test_variables_count() -> None:
-    assert len(VARIABLES) == 12, (
-        f"Expected 12, got {len(VARIABLES)}: {[v.name for v in VARIABLES]}"
+    assert len(VARIABLES) == 14, (
+        f"Expected 14, got {len(VARIABLES)}: {[v.name for v in VARIABLES]}"
     )
 
 
@@ -694,3 +694,56 @@ def test_chunk_overrides_dict_of_lists_accepted() -> None:
         if a.name == "counts"
     )
     assert tuple(counts.chunks) == (1, 556, 11136, 1)
+
+
+@pytest.mark.unit
+def test_warm_calibration_only_for_ir38_nan_elsewhere() -> None:
+    from firecube_mtg_fci_l1c._decode import ChannelCalibration
+
+    # HRFI 1 km group: logical ir_38/ir_105 read from ir_38_hr/ir_105_hr.
+    # The files set warm_* to 0.0 on ir_105; the store must show NaN.
+    ctx = VariableContext(
+        group="data_1km",
+        resolution="1km",
+        product_type="HRFI",
+        config=MtgFciL1cConfig(),
+        dimsize=11136,
+        n_channels=2,
+        logical_channels=("ir_105", "ir_38"),
+        nc_channels=("ir_105_hr", "ir_38_hr"),
+        calibration_table={
+            "ir_105_hr": ChannelCalibration(0.0528, -10.77, 0.0, 0.0),
+            "ir_38_hr": ChannelCalibration(0.00122, -0.2498, 0.0242, -94.42),
+        },
+    )
+    by_name = {v.name: v for v in VARIABLES}
+    warm_slope = by_name["warm_slope"].source(ctx)  # type: ignore[misc]
+    warm_offset = by_name["warm_offset"].source(ctx)  # type: ignore[misc]
+
+    np.testing.assert_array_equal(warm_slope, np.array([np.nan, 0.0242]))
+    np.testing.assert_array_equal(warm_offset, np.array([np.nan, -94.42]))
+    assert by_name["warm_slope"].dims == (TIME_COORD_NAME, "channel")
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("product_type", "channels", "expected_groups"),
+    [
+        ("FDHSI", None, {"data_2km"}),
+        ("HRFI", None, {"data_1km"}),
+        ("FDHSI", "vis_06,ir_105", set()),
+        ("FDHSI", "vis_06,ir_38", {"data_2km"}),
+    ],
+)
+def test_warm_calibration_declared_only_in_groups_with_ir38(
+    product_type: str, channels: str | None, expected_groups: set[str]
+) -> None:
+    specs = build_specs(MtgFciL1cConfig(channels=channels), product_type)
+
+    for name in ("warm_slope", "warm_offset"):
+        groups = {g.group for g in specs if name in {a.name for a in g.arrays}}
+        assert groups == expected_groups, name
+    # slope/offset stay in every group.
+    for group_spec in specs:
+        names = {a.name for a in group_spec.arrays}
+        assert {"slope", "offset"} <= names, group_spec.group

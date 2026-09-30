@@ -54,7 +54,13 @@ def _make_local_storage_session(target_path: Path) -> StorageSession:
     return StorageSession(binding)
 
 
-def _write_nc_part_netcdf(path: Path, nc_channels: list[str], dimsize: int) -> None:
+def _write_nc_part_netcdf(
+    path: Path,
+    nc_channels: list[str],
+    dimsize: int,
+    radiance_attrs: dict[str, dict[str, float]] | None = None,
+    counts: dict[str, np.ndarray] | None = None,
+) -> None:
     with h5netcdf.File(path, "w") as ds:
         ds.attrs["time_coverage_start"] = "20240101000000"
 
@@ -73,10 +79,14 @@ def _write_nc_part_netcdf(path: Path, nc_channels: list[str], dimsize: int) -> N
             radiance = measured.create_variable(
                 "effective_radiance",
                 ("y", "x"),
-                data=np.full((dimsize, dimsize), i + 1, dtype=np.uint16),
+                data=(counts or {}).get(
+                    channel, np.full((dimsize, dimsize), i + 1, dtype=np.uint16)
+                ),
             )
             radiance.attrs["scale_factor"] = float(i + 1)
             radiance.attrs["add_offset"] = float(i)
+            for name, value in (radiance_attrs or {}).get(channel, {}).items():
+                radiance.attrs[name] = np.float32(value)
 
             measured.create_variable("start_position_row", (), data=np.int32(1))
             measured.create_variable("end_position_row", (), data=np.int32(dimsize))
@@ -93,10 +103,21 @@ def _write_nc_part_netcdf(path: Path, nc_channels: list[str], dimsize: int) -> N
 
 
 def _make_zip_with_nc_part(
-    zip_path: Path, product_type: str, nc_channels: list[str], dimsize: int
+    zip_path: Path,
+    product_type: str,
+    nc_channels: list[str],
+    dimsize: int,
+    radiance_attrs: dict[str, dict[str, float]] | None = None,
+    counts: dict[str, np.ndarray] | None = None,
 ) -> Path:
     tmp_nc = zip_path.with_suffix(".nc")
-    _write_nc_part_netcdf(tmp_nc, nc_channels=nc_channels, dimsize=dimsize)
+    _write_nc_part_netcdf(
+        tmp_nc,
+        nc_channels=nc_channels,
+        dimsize=dimsize,
+        radiance_attrs=radiance_attrs,
+        counts=counts,
+    )
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_STORED) as zf:
         zf.write(tmp_nc, arcname=f"{get_nc_part_prefix(product_type)}0001.nc")
     tmp_nc.unlink()
@@ -312,6 +333,70 @@ def test_channel_name_static_replay_is_idempotent(tmp_path: Path, fdhsi_zip: Pat
     root = zarr.open_group(str(out), mode="r")
     data_1km = cast(Any, root["data_1km"])
     np.testing.assert_array_equal(np.asarray(data_1km["channel_name"][:]), first)
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+def test_warm_calibration_written_per_slot_for_ir38_dual_gain(
+    tmp_path: Path, small_fci_layout: list[int]
+):
+    """warm_slope/warm_offset are (time, channel) and follow each product."""
+    src = tmp_path / "src"
+    src.mkdir()
+    # ir_38 counts include the warm range (> 4095), as for hot pixels.
+    ir38_counts = np.full((4, 4), 2000, dtype=np.uint16)
+    ir38_counts[1, 2] = 4290
+    # Second product mimics a reprocessing with changed warm coefficients.
+    warm = {
+        "20240101000000": (0.02422214113175869, -94.42408752441406),
+        "20240101001000": (0.025, -95.0),
+    }
+    for stamp, (warm_scale, warm_offset) in warm.items():
+        _make_zip_with_nc_part(
+            src / f"W_XX-FCI-1C-RRAD-FDHSI-FD-{stamp}-END.zip",
+            PRODUCT_TYPE_FDHSI,
+            ["vis_04", "vis_06", "ir_38"],
+            dimsize=4,
+            radiance_attrs={
+                "vis_04": {"warm_scale_factor": 0.0, "warm_add_offset": 0.0},
+                "vis_06": {"warm_scale_factor": 0.0, "warm_add_offset": 0.0},
+                "ir_38": {
+                    "warm_scale_factor": warm_scale,
+                    "warm_add_offset": warm_offset,
+                },
+            },
+            counts={"ir_38": ir38_counts},
+        )
+
+    out = _run_ingest(src, tmp_path, options={"include_geolocation": False})
+
+    root = zarr.open_group(str(out), mode="r")
+    data_2km = cast(Any, root["data_2km"])
+    data_1km = cast(Any, root["data_1km"])
+    assert data_2km["warm_slope"].metadata.dimension_names == ("time", "channel")
+    assert data_2km["warm_offset"].metadata.dimension_names == ("time", "channel")
+    np.testing.assert_array_equal(
+        data_2km["warm_slope"][:],
+        np.array([[0.02422214113175869], [0.02500000037252903]]),
+    )
+    np.testing.assert_array_equal(
+        data_2km["warm_offset"][:], np.array([[-94.42408752441406], [-95.0]])
+    )
+    # FDHSI 1 km holds no IR 3.8, so the group has no warm arrays at all.
+    assert "warm_slope" not in data_1km
+    assert "warm_offset" not in data_1km
+
+    # Counts above 4095 are stored unchanged and calibrate with the warm pair.
+    counts = data_2km["counts"][0, :, :, 0]
+    assert counts.max() == 4290
+    warm_pixel = np.flatnonzero(counts.ravel() == 4290)
+    assert warm_pixel.size == 1
+    radiance = np.where(
+        counts > 4095,
+        counts * data_2km["warm_slope"][0, 0] + data_2km["warm_offset"][0, 0],
+        counts * data_2km["slope"][0, 0] + data_2km["offset"][0, 0],
+    )
+    assert radiance.ravel()[warm_pixel[0]] == pytest.approx(9.4895, abs=1e-3)
 
 
 @pytest.mark.integration

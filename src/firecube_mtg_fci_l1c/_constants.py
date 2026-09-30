@@ -159,6 +159,11 @@ FCI_PROJ_SCALE_RAD_PER_INDEX: dict[str, float] = {
 MTG_PERSPECTIVE_POINT_HEIGHT_M: float = 35786400.0
 FCI_PROJ_SWEEP_AXIS: str = "y"
 
+# Logical channels with dual-gain (cold/warm) calibration. Only these carry
+# meaningful warm_scale_factor/warm_add_offset; the L1C files set them to 0.0
+# for every other channel.
+DUAL_GAIN_CHANNELS: frozenset[str] = frozenset({"ir_38"})
+
 
 @lru_cache(maxsize=None)
 def logical_channel_resolution_map(product_type: str) -> dict[str, str]:

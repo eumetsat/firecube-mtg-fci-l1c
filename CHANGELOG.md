@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- IR 3.8 dual-gain calibration (issue #16): `warm_slope` and `warm_offset` `(time, channel)` variables from the `warm_scale_factor`/`warm_add_offset` attributes of `effective_radiance`. They convert `ir_38` counts above 4095, exist only in groups that contain `ir_38` (FDHSI `data_2km`, HRFI `data_1km`), and are `NaN` for the other channels there. Enabled with `include_calibration`. Golden snapshots regenerated.
 - [#13](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/13) `flat_store` option (default `false`): with exactly one effective resolution, the variables are written at the store root instead of `data_<res>/`, so `xr.open_zarr(store)` works without `group=`. More than one effective resolution fails with a configuration error before anything is written. Chunk and shard override keys stay `data_<res>`. See [Customization](docs/customization.md#flat-store-layout).
 - [#13](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/13) `scripts/fci-ingest.sh`: `FLAT_STORE=1` adds `--option flat_store=true` to preallocation and every pod.
 - [#13](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/13) `fix-fillvalue` works on flat stores; it detects the layout from the store and refuses empty, non-FCI, or mixed stores.

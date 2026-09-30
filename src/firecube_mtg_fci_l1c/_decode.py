@@ -24,7 +24,7 @@ import re
 import threading
 from collections import OrderedDict
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 import h5netcdf  # pyright: ignore[reportMissingImports]
 import numpy as np  # pyright: ignore[reportMissingImports]
@@ -35,6 +35,29 @@ _PART_NUMBER_RE = re.compile(r"(\d+)\.nc$", re.IGNORECASE)
 _BOUNDED_UNSIGNED_DTYPES = frozenset(
     {np.dtype("uint8"), np.dtype("uint16"), np.dtype("uint32")}
 )
+
+
+class ChannelCalibration(NamedTuple):
+    """Radiometric calibration of one channel in one nc_part.
+
+    ``slope``/``offset`` convert counts within ``valid_cold_range``
+    (0-4095). ``warm_slope``/``warm_offset`` convert the IR 3.8 counts above
+    4095 (dual-gain calibration). They hold the source attributes as read
+    (0.0 for channels without a warm range, NaN when absent); the schema
+    keeps them for ``DUAL_GAIN_CHANNELS`` only.
+    """
+
+    slope: float
+    offset: float
+    warm_slope: float = float("nan")
+    warm_offset: float = float("nan")
+
+
+def _scalar_attr(attrs: Any, name: str) -> float:
+    """Return a scalar netCDF attribute as float, or NaN if absent."""
+    if name not in attrs:
+        return float("nan")
+    return float(np.asarray(attrs[name]).item())
 
 
 def _read_variable_array(variable: Any) -> np.ndarray:
@@ -174,8 +197,14 @@ class NCPartReader:
             for index, time in zip(index_values, time_values, strict=True)
         }
 
-    def read_calibration(self, channel: str) -> tuple[float, float] | None:
-        """Return ``(scale_factor, add_offset)`` for a channel, if present."""
+    def read_calibration(self, channel: str) -> ChannelCalibration | None:
+        """Return the channel's calibration from ``effective_radiance`` attrs.
+
+        Maps ``scale_factor``/``add_offset`` to ``slope``/``offset`` and
+        ``warm_scale_factor``/``warm_add_offset`` to ``warm_slope``/
+        ``warm_offset``. Returns ``None`` if the channel or its
+        ``scale_factor``/``add_offset`` are absent.
+        """
         ds = self._open()
         if "data" not in ds.groups or channel not in ds["data"].groups:
             return None
@@ -193,9 +222,11 @@ class NCPartReader:
         if "scale_factor" not in attrs or "add_offset" not in attrs:
             return None
 
-        return (
-            float(np.asarray(attrs["scale_factor"]).item()),
-            float(np.asarray(attrs["add_offset"]).item()),
+        return ChannelCalibration(
+            slope=_scalar_attr(attrs, "scale_factor"),
+            offset=_scalar_attr(attrs, "add_offset"),
+            warm_slope=_scalar_attr(attrs, "warm_scale_factor"),
+            warm_offset=_scalar_attr(attrs, "warm_add_offset"),
         )
 
     def close(self) -> None:
@@ -330,8 +361,8 @@ class SharedNcPartReader:
         self,
         item: Path,
         nc_channel: str,
-    ) -> tuple[float, float] | None:
-        """Decode per-channel ``(scale_factor, add_offset)`` calibration.
+    ) -> ChannelCalibration | None:
+        """Decode per-channel calibration (cold and warm slope/offset).
 
         Matches the eager-decode surface of the ``calibration_table`` build
         in :meth:`MtgFciL1cIngestor.build_write_intents` (feeding

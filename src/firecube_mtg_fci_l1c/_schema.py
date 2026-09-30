@@ -19,7 +19,7 @@ from __future__ import annotations
 import dataclasses
 import math
 from collections.abc import Callable, Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np  # pyright: ignore[reportMissingImports]
 from firecube.ingestor.api import (  # pyright: ignore[reportMissingImports]
@@ -30,6 +30,9 @@ from firecube.ingestor.api import (  # pyright: ignore[reportMissingImports]
 from ._constants import CONSTANTS
 from ._group_plan import group_name
 from .config import MtgFciL1cConfig
+
+if TYPE_CHECKING:
+    from ._decode import ChannelCalibration
 
 
 TIME_COORD_NAME = "time"
@@ -56,7 +59,7 @@ class VariableContext:
     y_slice: slice | None = None
     timestamp: Any = None
     geo_provider: Any = None
-    calibration_table: dict[str, tuple[float, float]] | None = None
+    calibration_table: dict[str, ChannelCalibration] | None = None
     channel_payload: Any = None  # ChannelSlicePayload; Any avoids circular import
     nc_channels: tuple[str, ...] = ()
 
@@ -80,10 +83,27 @@ class Variable:
     enabled_by: str | None = None
     # Must be a module-level callable (no lambdas) if used from process workers.
     attrs_resolver: Callable[[MtgFciL1cConfig], Mapping[str, Any]] | None = None
+    # Declare the array only in groups holding at least one of these logical
+    # channels. None means every group.
+    only_for_channels: frozenset[str] | None = None
 
 
-def variable_enabled(variable: Variable, config: MtgFciL1cConfig) -> bool:
-    """Return True if *variable* is enabled under *config*."""
+def variable_enabled(
+    variable: Variable,
+    config: MtgFciL1cConfig,
+    logical_channels: tuple[str, ...] | None = None,
+) -> bool:
+    """Return True if *variable* is enabled under *config*.
+
+    When *logical_channels* (the group's channels) is given, a variable with
+    ``only_for_channels`` is enabled only if the group holds one of them.
+    """
+    if (
+        logical_channels is not None
+        and variable.only_for_channels is not None
+        and variable.only_for_channels.isdisjoint(logical_channels)
+    ):
+        return False
     if variable.enabled_by is None:
         return True
     return bool(getattr(config, variable.enabled_by, True))
@@ -421,7 +441,9 @@ def build_specs(config: MtgFciL1cConfig, product_type: str) -> list[ZarrGroupSpe
             logical_channels=logical_channels,
         )
         enabled_variables = [
-            variable for variable in VARIABLES if variable_enabled(variable, config)
+            variable
+            for variable in VARIABLES
+            if variable_enabled(variable, config, logical_channels)
         ]
         group_specs.append(
             ZarrGroupSpec(

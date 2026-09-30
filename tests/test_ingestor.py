@@ -25,6 +25,7 @@ import numpy as np
 import pytest
 
 from firecube.core.api import IndexSpec, ItemInfo, RegularTimeAxis
+from firecube_mtg_fci_l1c._decode import ChannelCalibration
 
 
 class TestMtgFciL1cIngestorImport:
@@ -519,9 +520,9 @@ class TestVariableDispatch:
 
             def read_calibration(self, channel):
                 if self.part_path.name == "part-a.nc" and channel == "vis_04":
-                    return (1.0, 10.0)
+                    return ChannelCalibration(1.0, 10.0)
                 if self.part_path.name == "part-b.nc" and channel == "vis_06":
-                    return (2.0, 20.0)
+                    return ChannelCalibration(2.0, 20.0)
                 return None
 
             def read_channel_data(self, _channel):
