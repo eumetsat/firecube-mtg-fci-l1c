@@ -42,11 +42,10 @@ _FCI_PROJ_SCALE: dict[str, float] = {
 
 def _projection_angle_source(ctx: VariableContext) -> np.ndarray | None:
     """Scan angle of each pixel centre; identical for x and y (square, symmetric grid)."""
-    res = ctx.group.removeprefix("data_")
-    if res not in _FCI_PROJ_SCALE:
+    if ctx.resolution not in _FCI_PROJ_SCALE:
         return None
     centre = ctx.dimsize / 2 - 0.5          # index of nadir (between the two central pixels)
-    return (np.arange(ctx.dimsize, dtype=np.float64) - centre) * _FCI_PROJ_SCALE[res]
+    return (np.arange(ctx.dimsize, dtype=np.float64) - centre) * _FCI_PROJ_SCALE[ctx.resolution]
 
 
 Variable(

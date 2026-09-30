@@ -37,10 +37,11 @@ The source function receives a `VariableContext`. Different fields are populated
 
 | Phase | Populated fields |
 |---|---|
-| Static | `group`, `product_type`, `config`, `dimsize`, `n_channels`, `logical_channels`, `geo_provider` |
-| Timestamp | `group`, `product_type`, `config`, `dimsize`, `n_channels`, `logical_channels`, `timestamp` |
-| Time-channel | `group`, `product_type`, `config`, `dimsize`, `n_channels`, `logical_channels`, `nc_channels`, `calibration_table` |
-| Spatial | `group`, `product_type`, `config`, `dimsize`, `n_channels`, `logical_channels`, `nc_channels`, `y_slice`, `channel_payload` |
+| Static | `group`, `resolution`, `product_type`, `config`, `dimsize`, `n_channels`, `logical_channels`, `geo_provider` |
+| Time-channel | `group`, `resolution`, `product_type`, `config`, `dimsize`, `n_channels`, `logical_channels`, `nc_channels`, `calibration_table` |
+| Spatial | `group`, `resolution`, `product_type`, `config`, `dimsize`, `n_channels`, `logical_channels`, `nc_channels`, `y_slice`, `channel_payload` |
+
+Use `resolution` (such as `"1km"`), not `group`, to pick per-resolution values: `group` is `""` when the store is written with `flat_store=true`.
 
 **Source functions are pure projections**: they never perform I/O. All NetCDF reads happen in the ingestor's `build_write_intents` (which pre-loads `ChannelSlicePayload`s and aggregates `calibration_table`s). Source functions only project from the pre-loaded data carried on the context.
 

@@ -8,7 +8,7 @@ tuning Zarr storage layout, or deploying multi-pod parallel ingestion.
 
 ## Prerequisites
 
-- Firecube ≥ 0.1.4 with `mtg_fci_l1c` installed.
+- Firecube ≥ 0.1.5 with `mtg_fci_l1c` installed.
 - A Zarr store target: `file:///` for local storage or `s3://` for object storage.
 - For parallel ingestion: all pods must have read access to the same input ZIP
   files, and the Zarr store must be preallocated before the first pod starts.
@@ -116,6 +116,10 @@ firecube ingest mtg_fci_l1c \
   --option zarr_chunk_overrides='{"data_1km":[1,2784,11136,1]}' \
   --option zarr_shard_overrides='{"data_1km":[1,11136,11136,1]}'
 ```
+
+Override keys are always `data_<res>`, also for a store written with
+`flat_store=true` where the arrays sit at the root; see
+[Flat store layout](customization.md#flat-store-layout).
 
 ### Resulting shard byte size (uint16 data arrays)
 

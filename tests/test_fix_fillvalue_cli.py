@@ -20,23 +20,22 @@ created with ``fill_value=<x>``, which breaks xarray tooling that reads
 ``_FillValue`` via ``mask_and_scale=True``. The ``fix-fillvalue`` CLI walks
 a preallocated store and stamps ``_FillValue`` on the variables that
 declare a non-None fill in the plugin schema.
-
-These tests are the RED phase of TDD: they will fail until the CLI
-subcommand is implemented in :mod:`firecube_mtg_fci_l1c.plugin_cli`.
 """
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pytest
+import xarray as xr
 import zarr
 from click.testing import CliRunner
 
+from _store_files import store_files
 from firecube_mtg_fci_l1c.plugin_cli import cli
+from test_integration import _run_ingest
 
 
 def _build_synthetic_store(
@@ -309,17 +308,13 @@ def test_fix_fillvalue_conflict_writes_no_partial_state(tmp_path: Path) -> None:
 @pytest.mark.integration
 @pytest.mark.plugin
 def test_fix_fillvalue_end_to_end(tmp_path: Path, fdhsi_zip: Path) -> None:
-    sys.path.insert(0, str(Path(__file__).parent))
-    from test_integration import _run_ingest  # noqa: PLC0415
-
     store_path = _run_ingest(fdhsi_zip.parent, tmp_path, options={})
 
-    # Current Firecube core stamps _FillValue at ingest time. This command
-    # exists for stores written before that behavior, so simulate a legacy
-    # store by removing the stamped attribute first.
+    # Ingest stamps _FillValue on counts. Strip it from the arrays the command
+    # covers so the command has something to stamp.
     counts_before = zarr.open_array(str(store_path / "data_1km/counts"), mode="r+")
     assert dict(counts_before.attrs).get("_FillValue") == 65535, (
-        "Baseline precondition failed: ingest no longer stamps _FillValue on counts."
+        "Precondition failed: ingest does not stamp _FillValue on counts."
     )
     for arr_name in ("counts", "pixel_quality", "spatial_ref"):
         arr = zarr.open_array(str(store_path / f"data_1km/{arr_name}"), mode="r+")
@@ -335,8 +330,6 @@ def test_fix_fillvalue_end_to_end(tmp_path: Path, fdhsi_zip: Path) -> None:
     )
     assert result.exit_code == 0, result.output
 
-    import xarray as xr  # noqa: PLC0415
-
     ds: Any = xr.open_zarr(
         str(store_path / "data_1km"),
         consolidated=False,
@@ -346,3 +339,120 @@ def test_fix_fillvalue_end_to_end(tmp_path: Path, fdhsi_zip: Path) -> None:
         assert ds.counts.encoding.get("_FillValue") == 65535
     finally:
         ds.close()
+
+
+def _flat_store_without_fillvalue_attrs(
+    zip_path: Path, workspace: Path, resolution: str
+) -> Path:
+    """Ingest *zip_path* into a flat store and strip every ``_FillValue`` attr
+    so the command has something to stamp.
+    """
+    store_path = _run_ingest(
+        zip_path.parent,
+        workspace,
+        options={"resolutions": resolution, "flat_store": True},
+    )
+    root = zarr.open_group(str(store_path), mode="r+")
+    assert not list(root.group_keys()), "flat ingest should create no groups"
+    for name in root.array_keys():
+        attrs = root[name].attrs
+        if "_FillValue" in dict(attrs):
+            del attrs["_FillValue"]
+    return store_path
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+def test_fix_fillvalue_dry_run_then_apply_on_flat_store(
+    tmp_path: Path, fdhsi_zip: Path
+) -> None:
+    store_path = _flat_store_without_fillvalue_attrs(fdhsi_zip, tmp_path, "1km")
+    before = store_files(store_path, skip_control_plane=False)
+
+    dry_run = CliRunner().invoke(cli, ["fix-fillvalue", "--store", str(store_path)])
+
+    assert dry_run.exit_code == 0, dry_run.output
+    assert "Mode:  dry-run" in dry_run.output
+    assert "Would stamp _FillValue on 8 array(s):" in dry_run.output
+    assert "  /counts: _FillValue = 65535" in dry_run.output
+    assert "  /pixel_quality: _FillValue = 0" in dry_run.output
+    assert "/x:" not in dry_run.output
+    assert "--yes-i-really-mean-it" in dry_run.output
+    assert store_files(store_path, skip_control_plane=False) == before
+
+    result = CliRunner().invoke(
+        cli,
+        ["fix-fillvalue", "--store", str(store_path), "--yes-i-really-mean-it"],
+    )
+    assert result.exit_code == 0, result.output
+    assert "  /counts: _FillValue = 65535" in result.output
+    assert "data_" not in result.output
+
+    root = zarr.open_group(str(store_path), mode="r")
+    assert root["counts"].attrs["_FillValue"] == 65535
+    assert root["pixel_quality"].attrs["_FillValue"] == 0
+    assert root["spatial_ref"].attrs["_FillValue"] == 0
+    # NaN float fills are stored base64-encoded, as xarray expects for Zarr v3.
+    assert root["latitude"].attrs["_FillValue"] == "AAAAAAAA+H8="
+    assert root["slope"].attrs["_FillValue"] == "AAAAAAAA+H8="
+    # No schema fill (x, y) or non-numeric dtype (time, channel_name): untouched.
+    for name in ("x", "y", "time", "channel_name"):
+        assert "_FillValue" not in dict(root[name].attrs), name
+
+    ds: Any = xr.open_zarr(str(store_path), consolidated=False, mask_and_scale=True)
+    try:
+        assert ds.counts.encoding.get("_FillValue") == 65535
+    finally:
+        ds.close()
+
+
+def _empty_store(store_path: Path) -> None:
+    zarr.open_group(str(store_path), mode="w")
+
+
+def _store_with_unrelated_arrays(store_path: Path) -> None:
+    root = zarr.open_group(str(store_path), mode="w")
+    root.create_array("radiance", shape=(4,), dtype=np.uint16, fill_value=65535)
+    root.require_group("level2").create_array(
+        "counts", shape=(4,), dtype=np.uint16, fill_value=65535
+    )
+
+
+def _mixed_store(store_path: Path) -> None:
+    root = zarr.open_group(str(store_path), mode="w")
+    root.create_array("counts", shape=(4,), dtype=np.uint16, fill_value=65535)
+    root.require_group("data_1km").create_array(
+        "counts", shape=(4,), dtype=np.uint16, fill_value=65535
+    )
+
+
+_NO_LAYOUT = "neither plugin arrays at the root nor data_<res> groups"
+_BOTH_LAYOUTS = "both plugin arrays at the root and data_<res> groups"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("build_store", "reason"),
+    [
+        (_empty_store, _NO_LAYOUT),
+        (_store_with_unrelated_arrays, _NO_LAYOUT),
+        (_mixed_store, _BOTH_LAYOUTS),
+    ],
+    ids=["empty", "unrelated-arrays", "mixed"],
+)
+def test_fix_fillvalue_refuses_store_without_a_single_layout(
+    tmp_path: Path, build_store: Any, reason: str
+) -> None:
+    store_path = tmp_path / "store.zarr"
+    build_store(store_path)
+    before = store_files(store_path, skip_control_plane=False)
+
+    result = CliRunner().invoke(
+        cli, ["fix-fillvalue", "--store", str(store_path), "--yes-i-really-mean-it"]
+    )
+
+    assert result.exit_code == 1, result.output
+    assert reason in result.output
+    assert "No writes performed." in result.output
+    assert "_FillValue =" not in result.output
+    assert store_files(store_path, skip_control_plane=False) == before

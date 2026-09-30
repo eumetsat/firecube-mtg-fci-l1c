@@ -23,7 +23,7 @@ import numpy as np  # pyright: ignore[reportMissingImports]
 
 from .projection import compute_latlon
 
-# Resolution group suffix -> spatial sampling distance in metres.
+# Resolution -> spatial sampling distance in metres.
 _RES_TO_M: dict[str, int] = {"500m": 500, "1km": 1000, "2km": 2000}
 
 
@@ -39,9 +39,9 @@ class LatLonProvider:
         self._cache: dict[tuple[str | None, int], tuple[np.ndarray, np.ndarray]] = {}
         self._lock = threading.Lock()
 
-    def resolution_m_for_group(self, group: str) -> int | None:
-        """Map a ``data_<res>`` group name to its sampling distance in metres."""
-        return _RES_TO_M.get(group.removeprefix("data_"))
+    def resolution_m(self, resolution: str) -> int | None:
+        """Map a resolution such as ``"1km"`` to its sampling distance in metres."""
+        return _RES_TO_M.get(resolution)
 
     def get_lat_lon(
         self, grids_file: str | None, resolution_m: int

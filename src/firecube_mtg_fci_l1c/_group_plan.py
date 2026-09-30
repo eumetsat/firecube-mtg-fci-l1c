@@ -18,8 +18,39 @@ from __future__ import annotations
 
 import dataclasses
 
+from firecube.ingestor.api import (  # pyright: ignore[reportMissingImports]
+    ConfigurationError,
+)
+
 from ._constants import CONSTANTS, PRODUCT_TYPE_FDHSI, VALID_RESOLUTIONS
 from .config import MtgFciL1cConfig
+
+
+def group_name(resolution: str, flat: bool) -> str:
+    """Return the Zarr group for *resolution*: ``data_<res>``, or ``""`` (root) if flat."""
+    return "" if flat else f"data_{resolution}"
+
+
+def validate_effective_resolutions(config: MtgFciL1cConfig, product_type: str) -> None:
+    """Raise ``ConfigurationError`` when the selection leaves nothing to write.
+
+    Both layouts need at least one effective resolution; ``flat_store`` needs
+    exactly one.
+    """
+    resolutions = config.effective_resolutions(product_type)
+    if not resolutions:
+        raise ConfigurationError(
+            f"No {product_type} resolution is left after applying "
+            f"resolutions={config.resolutions!r} and channels={config.channels!r}. "
+            f"Valid resolutions for {product_type}: {VALID_RESOLUTIONS[product_type]}."
+        )
+    if config.flat_store and len(resolutions) > 1:
+        raise ConfigurationError(
+            f"flat_store=true requires exactly one effective resolution for "
+            f"{product_type}, got {list(resolutions)}. Select one with "
+            f"--option resolutions=<res> or a channels selection from a single "
+            f"resolution, or drop flat_store."
+        )
 
 
 @dataclasses.dataclass(frozen=True)
@@ -38,21 +69,17 @@ def resolve_group_plans(
     config: MtgFciL1cConfig,
     product_type: str | None = None,
 ) -> list[GroupPlan]:
-    """Return one GroupPlan per resolution that survives config filtering.
+    """Return one GroupPlan per effective resolution.
 
-    Applies both resolution filtering (config.resolutions) and channel
-    filtering (config.channels). Replaces the old _resolution_groups()
-    fallback-sentinel pattern.
+    The resolutions come from ``config.effective_resolutions``, which applies
+    both resolution filtering (config.resolutions) and channel filtering
+    (config.channels).
     """
     pt = product_type or config.product_type or PRODUCT_TYPE_FDHSI
-    valid = VALID_RESOLUTIONS.get(pt, ["1km", "2km"])
-    configured = config.get_resolutions(pt)
     selection = config.get_channels(pt)
 
     plans: list[GroupPlan] = []
-    for res in valid:
-        if res not in configured:
-            continue
+    for res in config.effective_resolutions(pt):
         if pt not in CONSTANTS or res not in CONSTANTS[pt]:
             continue
         info = CONSTANTS[pt][res]
@@ -61,10 +88,7 @@ def resolve_group_plans(
         logical_to_nc = dict(zip(logical_all, nc_all, strict=True))
 
         if selection is not None:
-            selected_logical = selection.get(res, [])
-            if not selected_logical:
-                continue
-            logical = tuple(selected_logical)
+            logical = tuple(selection[res])
             nc = tuple(logical_to_nc[ch] for ch in logical)
         else:
             logical = logical_all
@@ -74,7 +98,7 @@ def resolve_group_plans(
             GroupPlan(
                 product_type=pt,
                 resolution=res,
-                group=f"data_{res}",
+                group=group_name(res, config.flat_store),
                 dimsize=int(info["dimsize"]),
                 logical_channels=logical,
                 nc_channels=nc,

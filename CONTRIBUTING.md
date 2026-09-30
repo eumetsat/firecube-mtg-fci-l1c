@@ -47,7 +47,8 @@ Prefer small, explicit changes that match the existing module boundaries.
 - Use public Firecube plugin imports from `firecube.ingestor.api` and
   `firecube.core.api`.
 - Keep FCI-specific config validation in `src/firecube_mtg_fci_l1c/config.py`.
-- Keep Zarr variable declarations in `src/firecube_mtg_fci_l1c/schema.py`.
+- Keep Zarr variable declarations in `src/firecube_mtg_fci_l1c/_variables.py`
+  and the schema builder in `src/firecube_mtg_fci_l1c/_schema.py`.
 - Keep schema source functions pure. They should project from
   `VariableContext`; I/O belongs in streaming and ingestor code.
 - Do not use lambdas or nested source functions in schema declarations. They

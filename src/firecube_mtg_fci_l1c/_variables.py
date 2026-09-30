@@ -24,7 +24,7 @@ To add a variable:
 Source functions MUST be module-level (never lambdas) so the list stays
 picklable for ``ProcessPoolExecutor`` workers.
 
-See ``docs/guides/add-zarr-variable.md`` for the decision table and examples.
+See ``docs/contributing/add-zarr-variable.md`` for the decision table and examples.
 """
 
 from __future__ import annotations
@@ -136,7 +136,7 @@ def _offset_source(ctx: VariableContext) -> np.ndarray | None:
 def _latitude_source(ctx: VariableContext) -> np.ndarray | None:
     if ctx.geo_provider is None:
         return None
-    res_m = ctx.geo_provider.resolution_m_for_group(ctx.group)
+    res_m = ctx.geo_provider.resolution_m(ctx.resolution)
     if res_m is None:
         return None
     lat, _lon = ctx.geo_provider.get_lat_lon(ctx.config.fci_grids_file, res_m)
@@ -146,7 +146,7 @@ def _latitude_source(ctx: VariableContext) -> np.ndarray | None:
 def _longitude_source(ctx: VariableContext) -> np.ndarray | None:
     if ctx.geo_provider is None:
         return None
-    res_m = ctx.geo_provider.resolution_m_for_group(ctx.group)
+    res_m = ctx.geo_provider.resolution_m(ctx.resolution)
     if res_m is None:
         return None
     _lat, lon = ctx.geo_provider.get_lat_lon(ctx.config.fci_grids_file, res_m)
@@ -164,10 +164,9 @@ def _projection_angle_source(ctx: VariableContext) -> np.ndarray | None:
     because the files store ``x`` positive-westward while the cube is
     east-positive.
     """
-    res = ctx.group.removeprefix("data_")
-    if res not in FCI_PROJ_SCALE_RAD_PER_INDEX:
+    if ctx.resolution not in FCI_PROJ_SCALE_RAD_PER_INDEX:
         return None
-    scale = FCI_PROJ_SCALE_RAD_PER_INDEX[res]
+    scale = FCI_PROJ_SCALE_RAD_PER_INDEX[ctx.resolution]
     centre = ctx.dimsize / 2 - 0.5
     rad = (np.arange(ctx.dimsize, dtype=np.float64) - centre) * scale
     if ctx.config.projection_units in ("meter", "metre"):

@@ -60,6 +60,24 @@ def test_get_resolutions_filters_by_product_type():
     assert cfg.get_resolutions("HRFI") == ["1km", "500m"]
 
 
+@pytest.mark.parametrize(
+    ("product_type", "config_kwargs", "expected"),
+    [
+        ("FDHSI", {"resolutions": "1km"}, ("1km",)),
+        ("FDHSI", {"resolutions": "2km,1km"}, ("1km", "2km")),
+        ("FDHSI", {"channels": "vis_06,nir_16"}, ("1km",)),
+        ("FDHSI", {"resolutions": "500m"}, ()),
+        ("HRFI", {"resolutions": "500m"}, ("500m",)),
+        ("HRFI", {"channels": "ir_38"}, ("1km",)),
+    ],
+)
+def test_effective_resolutions_applies_resolution_and_channel_filters(
+    product_type: str, config_kwargs: dict[str, str], expected: tuple[str, ...]
+) -> None:
+    cfg = MtgFciL1cConfig(**config_kwargs)  # type: ignore[arg-type]
+    assert cfg.effective_resolutions(product_type) == expected
+
+
 def test_get_resolutions_defaults_when_unset():
     assert MtgFciL1cConfig().get_resolutions("FDHSI") == ["1km", "2km"]
 
@@ -74,9 +92,9 @@ def test_get_channels_unknown_channel_raises():
         cfg.get_channels("FDHSI")
 
 
-def test_get_group_chunk_shape_unknown_group_raises():
-    with pytest.raises(ValueError, match="Unknown resolution group"):
-        MtgFciL1cConfig().get_group_chunk_shape("data_999m")
+def test_get_group_chunk_shape_unknown_resolution_raises():
+    with pytest.raises(ValueError, match="Unknown resolution"):
+        MtgFciL1cConfig().get_group_chunk_shape("999m")
 
 
 @pytest.mark.parametrize("bad", [0, -1, -1024])

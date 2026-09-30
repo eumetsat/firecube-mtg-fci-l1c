@@ -24,7 +24,7 @@ products into direct-region Zarr stores.
 Requirements:
 
 - [uv](https://docs.astral.sh/uv/)
-- Firecube 0.1.4 or newer
+- Firecube 0.1.5 or newer
 
 Clone the plugin and install it into the Firecube environment:
 
@@ -100,6 +100,11 @@ The main arrays are:
 | `latitude`, `longitude` | `(y, x)` | static, computed once per group |
 | `x`, `y` | `(x,)`, `(y,)` | GEOS projection angles |
 | `time`, `channel_name`, `spatial_ref` | `(time,)`, `(channel,)`, `()` | coordinates and CRS metadata |
+
+For a single resolution, add `--option resolutions=1km --option flat_store=true`
+to write these arrays at the store root instead, so `xr.open_zarr(store)` needs
+no `group=` argument. See
+[Flat store layout](docs/customization.md#flat-store-layout).
 
 ## Production Ingestion
 
