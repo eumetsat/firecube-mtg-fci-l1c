@@ -70,6 +70,7 @@ from .geolocation import LatLonProvider
 from ._group_plan import GroupPlan, resolve_group_plans
 from ._decode import (
     AssemblyPreconditionError,
+    ChannelCalibration,
     ChannelSlicePayload,
     ChunkOwnedAssembler,
     SharedNcPartReader,
@@ -347,7 +348,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                 for variable in VARIABLES:
                     if TIME_COORD_NAME in variable.dims:
                         continue
-                    if not variable_enabled(variable, config):
+                    if not variable_enabled(variable, config, plan.logical_channels):
                         continue
                     if variable.source is None:
                         continue
@@ -408,7 +409,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         res: str,
         logical_channels: list[str],
         timestamp: Any,
-        calibration_table: dict[str, tuple[float, float]],
+        calibration_table: dict[str, ChannelCalibration],
         nc_channels: list[str] | None = None,
     ) -> list[IndexedWrite]:
         """Iterate VARIABLES with dims==('time','channel'); emit slot writes."""
@@ -431,7 +432,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         for variable in VARIABLES:
             if variable.dims != (TIME_COORD_NAME, "channel"):
                 continue
-            if not variable_enabled(variable, config):
+            if not variable_enabled(variable, config, ctx.logical_channels):
                 continue
             if variable.source is None:
                 continue
@@ -498,7 +499,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             for variable in VARIABLES:
                 if variable.dims != (TIME_COORD_NAME, "y", "x", "channel"):
                     continue
-                if not variable_enabled(variable, config):
+                if not variable_enabled(variable, config, plan.logical_channels):
                     continue
                 if variable.source is None:
                     continue
@@ -722,7 +723,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         if not row_ranges:
             return
 
-        calibration_table: dict[str, tuple[float, float]] = {}
+        calibration_table: dict[str, ChannelCalibration] = {}
         if config.include_calibration:
             for part_idx, part_path in enumerate(nc_parts):
                 if part_idx not in row_ranges:

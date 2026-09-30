@@ -1,6 +1,6 @@
 {
   "fdhsi_defaults": {
-    "hash": "d32d473df21428a9005297be3f985126c4b2b490bac9343b50fb5e1120be3748",
+    "hash": "d02c3cbd093c12070971c0f1e8d73bf766d00634a4e7b91bebe363d52331531c",
     "options": {},
     "product_type": "FDHSI",
     "structure": {
@@ -566,6 +566,50 @@
                 1
               ]
             },
+            "warm_offset": {
+              "attrs": {
+                "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "long_name": "FCI warm calibration offset",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                1
+              ]
+            },
+            "warm_slope": {
+              "attrs": {
+                "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "long_name": "FCI warm calibration slope",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                1
+              ]
+            },
             "x": {
               "attrs": {
                 "axis": "X",
@@ -621,7 +665,7 @@
     }
   },
   "hrfi_defaults": {
-    "hash": "c5c2202b80326ae578e839d3028e4dd43ab6ea5fc991cb457fff7da18fd58d4d",
+    "hash": "ea1d22284f32f7ae33e67f60ac60596b78da9b40c22bd1c61aa8065d9c596642",
     "options": {},
     "product_type": "HRFI",
     "structure": {
@@ -880,6 +924,50 @@
               "fill_value": null,
               "has_static_marker": false,
               "shape": [
+                1
+              ]
+            },
+            "warm_offset": {
+              "attrs": {
+                "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "long_name": "FCI warm calibration offset",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
+                1
+              ]
+            },
+            "warm_slope": {
+              "attrs": {
+                "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "long_name": "FCI warm calibration slope",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1,
                 1
               ]
             },

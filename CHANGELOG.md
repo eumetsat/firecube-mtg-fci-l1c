@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- IR 3.8 dual-gain calibration (issue #16): `warm_slope` and `warm_offset` `(time, channel)` variables from the `warm_scale_factor`/`warm_add_offset` attributes of `effective_radiance`. They convert `ir_38` counts above 4095, exist only in groups that contain `ir_38` (FDHSI `data_2km`, HRFI `data_1km`), and are `NaN` for the other channels there. Enabled with `include_calibration`. Golden snapshots regenerated.
 - `_schema.py`: time coordinate spec now uses `chunks=None` (dense chunk resolution delegated to core `preallocate`) and declares CF standard_name, long_name, axis attributes. Golden snapshots regenerated.
 
 ### Changed
