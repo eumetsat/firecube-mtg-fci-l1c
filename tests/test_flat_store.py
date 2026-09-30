@@ -45,6 +45,24 @@ EXPECTED_ARRAY_NAMES = [
     "spatial_ref",
 ]
 
+# Groups holding ir_38 also declare the warm-gain calibration arrays.
+EXPECTED_ARRAY_NAMES_WITH_IR38 = [
+    "counts",
+    "pixel_quality",
+    "pixel_time",
+    "slope",
+    "offset",
+    "warm_slope",
+    "warm_offset",
+    "latitude",
+    "longitude",
+    "x",
+    "y",
+    "time",
+    "channel_name",
+    "spatial_ref",
+]
+
 
 def _flat_ingestor(**config_kwargs: Any) -> MtgFciL1cIngestor:
     ingestor = MtgFciL1cIngestor()
@@ -85,27 +103,31 @@ def test_flat_store_with_several_resolutions_is_rejected(
 
 
 @pytest.mark.parametrize(
-    ("config_kwargs", "expected_counts_shape", "expected_index_name"),
+    ("config_kwargs", "expected_counts_shape", "expected_index_name", "expected_names"),
     [
         (
             {"product_type": "FDHSI", "resolutions": "1km"},
             (1, 11136, 11136, 8),
             "eumetsat_repeat_cycle_v1_fdhsi_1km",
+            EXPECTED_ARRAY_NAMES,
         ),
         (
             {"product_type": "HRFI", "resolutions": "500m"},
             (1, 22272, 22272, 2),
             "eumetsat_repeat_cycle_v1_hrfi_500m",
+            EXPECTED_ARRAY_NAMES,
         ),
         (
             {"product_type": "HRFI", "resolutions": "1km"},
             (1, 11136, 11136, 2),
             "eumetsat_repeat_cycle_v1_hrfi_1km",
+            EXPECTED_ARRAY_NAMES_WITH_IR38,
         ),
         (
             {"product_type": "FDHSI", "channels": "ir_105,wv_63"},
             (1, 5568, 5568, 2),
             "eumetsat_repeat_cycle_v1_fdhsi_2km",
+            EXPECTED_ARRAY_NAMES,
         ),
     ],
 )
@@ -113,6 +135,7 @@ def test_flat_store_single_resolution_declares_everything_at_root(
     config_kwargs: dict[str, str],
     expected_counts_shape: tuple[int, ...],
     expected_index_name: str,
+    expected_names: list[str],
 ) -> None:
     ingestor = _flat_ingestor(**config_kwargs)
 
@@ -120,7 +143,7 @@ def test_flat_store_single_resolution_declares_everything_at_root(
     index_spec = ingestor.index_spec(_ctx())
 
     assert [spec.group for spec in specs] == [""]
-    assert [array.name for array in specs[0].arrays] == EXPECTED_ARRAY_NAMES
+    assert [array.name for array in specs[0].arrays] == expected_names
     assert _array(ingestor, "counts").shape == expected_counts_shape
     assert index_spec is not None
     assert index_spec.name == expected_index_name

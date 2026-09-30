@@ -704,6 +704,7 @@ def test_warm_calibration_only_for_ir38_nan_elsewhere() -> None:
     # The files set warm_* to 0.0 on ir_105; the store must show NaN.
     ctx = VariableContext(
         group="data_1km",
+        resolution="1km",
         product_type="HRFI",
         config=MtgFciL1cConfig(),
         dimsize=11136,
