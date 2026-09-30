@@ -146,7 +146,7 @@ Variable(
 
 The NetCDF path is `data/<channel>/quality_channel/number_of_noise_warning_pixels`. The same six `number_of_*_pixels` variants in `quality_channel/` follow the identical pattern.
 
-**Static scalars use first-wins, not sum.** The same Case B template works for per-channel static scalars like `channel_effective_solar_irradiance` (path: `data/<channel>/measured/channel_effective_solar_irradiance`). The only difference is the aggregation semantics: static scalars are identical across all nc_parts, so use first-wins (skip if already in the table) rather than summing. The `calibration_table` block in `ingestor.py` already shows this pattern: copy it directly.
+**Per-product scalars use first-wins, not sum.** Scalars in `data/<channel>/measured`, such as `channel_effective_solar_irradiance`, are identical across the nc_parts of one product, so they are read once per product with first-wins (skip if already in the table) rather than summed. They still get `dims=("time", "channel")`, because the next product may declare different values. `read_calibration` in `_decode.py` reads the radiance conversion coefficients this way into `ChannelCalibration`, and the `calibration_table` block in `ingestor.py` carries them to the sources: extend those two rather than adding a second table.
 
 ## Files touched
 

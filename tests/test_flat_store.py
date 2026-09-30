@@ -42,6 +42,13 @@ EXPECTED_ARRAY_NAMES = [
     "y",
     "time",
     "channel_name",
+    "radiance_unit_conversion_coefficient",
+    "radiance_to_bt_conversion_coefficient_wavenumber",
+    "radiance_to_bt_conversion_coefficient_a",
+    "radiance_to_bt_conversion_coefficient_b",
+    "radiance_to_bt_conversion_constant_c1",
+    "radiance_to_bt_conversion_constant_c2",
+    "channel_effective_solar_irradiance",
     "spatial_ref",
 ]
 
@@ -60,6 +67,13 @@ EXPECTED_ARRAY_NAMES_WITH_IR38 = [
     "y",
     "time",
     "channel_name",
+    "radiance_unit_conversion_coefficient",
+    "radiance_to_bt_conversion_coefficient_wavenumber",
+    "radiance_to_bt_conversion_coefficient_a",
+    "radiance_to_bt_conversion_coefficient_b",
+    "radiance_to_bt_conversion_constant_c1",
+    "radiance_to_bt_conversion_constant_c2",
+    "channel_effective_solar_irradiance",
     "spatial_ref",
 ]
 

@@ -221,6 +221,52 @@ def _channel_name_source(ctx: VariableContext) -> np.ndarray:
     return np.asarray(ctx.logical_channels, dtype="S16")
 
 
+def _calibration_field(ctx: VariableContext, field: str) -> np.ndarray | None:
+    """Return one ``ChannelCalibration`` field per channel for this slot.
+
+    NaN for channels without a calibration entry or whose product marks the
+    value not applicable.
+    """
+    if ctx.calibration_table is None:
+        return None
+    vec = np.full(ctx.n_channels, np.nan, dtype=np.float32)
+    found = False
+    for i, ch in enumerate(ctx.nc_channels):
+        cal = ctx.calibration_table.get(ch)
+        if cal is not None:
+            found = True
+            vec[i] = getattr(cal, field)
+    return vec if found else None
+
+
+def _radiance_unit_conversion_source(ctx: VariableContext) -> np.ndarray | None:
+    return _calibration_field(ctx, "radiance_unit_conversion_coefficient")
+
+
+def _bt_wavenumber_source(ctx: VariableContext) -> np.ndarray | None:
+    return _calibration_field(ctx, "radiance_to_bt_conversion_coefficient_wavenumber")
+
+
+def _bt_a_source(ctx: VariableContext) -> np.ndarray | None:
+    return _calibration_field(ctx, "radiance_to_bt_conversion_coefficient_a")
+
+
+def _bt_b_source(ctx: VariableContext) -> np.ndarray | None:
+    return _calibration_field(ctx, "radiance_to_bt_conversion_coefficient_b")
+
+
+def _bt_c1_source(ctx: VariableContext) -> np.ndarray | None:
+    return _calibration_field(ctx, "radiance_to_bt_conversion_constant_c1")
+
+
+def _bt_c2_source(ctx: VariableContext) -> np.ndarray | None:
+    return _calibration_field(ctx, "radiance_to_bt_conversion_constant_c2")
+
+
+def _solar_irradiance_source(ctx: VariableContext) -> np.ndarray | None:
+    return _calibration_field(ctx, "channel_effective_solar_irradiance")
+
+
 def _projection_x_attrs(config: MtgFciL1cConfig) -> dict[str, str]:
     if config.projection_units in ("meter", "metre"):
         return {
@@ -466,6 +512,102 @@ VARIABLES: list[Variable] = [
             "units": "1",
         },
         source=_channel_name_source,
+    ),
+    # Radiance conversion constants, read per product like slope/offset. Names,
+    # long_names and comments follow data/<channel>/measured in the L1C files.
+    Variable(
+        name="radiance_unit_conversion_coefficient",
+        dims=(TIME_COORD_NAME, "channel"),
+        dtype=np.float32,
+        fill_value=np.float32(np.nan),
+        attrs={
+            "long_name": "Conversion coefficients to convert radiance units from "
+            "mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+            "units": "W mW-1 cm-1 um-1",
+        },
+        source=_radiance_unit_conversion_source,
+        enabled_by="include_calibration",
+    ),
+    Variable(
+        name="radiance_to_bt_conversion_coefficient_wavenumber",
+        dims=(TIME_COORD_NAME, "channel"),
+        dtype=np.float32,
+        fill_value=np.float32(np.nan),
+        attrs={
+            "long_name": "Radiance to brightness temperature conversion "
+            "coefficient wavenumber",
+            "units": "cm-1",
+            "comment": "Only for IR channels. NaN for VNIR channels",
+        },
+        source=_bt_wavenumber_source,
+        enabled_by="include_calibration",
+    ),
+    Variable(
+        name="radiance_to_bt_conversion_coefficient_a",
+        dims=(TIME_COORD_NAME, "channel"),
+        dtype=np.float32,
+        fill_value=np.float32(np.nan),
+        attrs={
+            "long_name": "Radiance to brightness temperature conversion coefficient A",
+            "units": "1",
+            "comment": "Only for IR channels. NaN for VNIR channels",
+        },
+        source=_bt_a_source,
+        enabled_by="include_calibration",
+    ),
+    Variable(
+        name="radiance_to_bt_conversion_coefficient_b",
+        dims=(TIME_COORD_NAME, "channel"),
+        dtype=np.float32,
+        fill_value=np.float32(np.nan),
+        attrs={
+            "long_name": "Radiance to brightness temperature conversion coefficient B",
+            "units": "K",
+            "comment": "Only for IR channels. NaN for VNIR channels",
+        },
+        source=_bt_b_source,
+        enabled_by="include_calibration",
+    ),
+    Variable(
+        name="radiance_to_bt_conversion_constant_c1",
+        dims=(TIME_COORD_NAME, "channel"),
+        dtype=np.float32,
+        fill_value=np.float32(np.nan),
+        attrs={
+            "long_name": "Radiance to brightness temperature conversion constant C1",
+            "units": "mW m-2 sr-1 (cm-1)-4",
+            "comment": "Only for IR channels. NaN for VNIR channels",
+        },
+        source=_bt_c1_source,
+        enabled_by="include_calibration",
+    ),
+    Variable(
+        name="radiance_to_bt_conversion_constant_c2",
+        dims=(TIME_COORD_NAME, "channel"),
+        dtype=np.float32,
+        fill_value=np.float32(np.nan),
+        attrs={
+            "long_name": "Radiance to brightness temperature conversion constant C2",
+            "units": "cm K",
+            "comment": "Only for IR channels. NaN for VNIR channels",
+        },
+        source=_bt_c2_source,
+        enabled_by="include_calibration",
+    ),
+    Variable(
+        name="channel_effective_solar_irradiance",
+        dims=(TIME_COORD_NAME, "channel"),
+        dtype=np.float32,
+        fill_value=np.float32(np.nan),
+        attrs={
+            "long_name": "Channel effective solar irradiance at 1 AU",
+            "units": "mW m-2 (cm-1)-1",
+            "comment": "For the derivation of reflectance for VNIR spectral "
+            "channels. NaN where the product marks it not applicable (most IR "
+            "channels; ir_38 carries a value)",
+        },
+        source=_solar_irradiance_source,
+        enabled_by="include_calibration",
     ),
     Variable(
         name="spatial_ref",

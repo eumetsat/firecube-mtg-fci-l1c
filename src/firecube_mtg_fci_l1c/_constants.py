@@ -159,6 +159,18 @@ FCI_PROJ_SCALE_RAD_PER_INDEX: dict[str, float] = {
 MTG_PERSPECTIVE_POINT_HEIGHT_M: float = 35786400.0
 FCI_PROJ_SWEEP_AXIS: str = "y"
 
+# Radiance conversion constants read per product from the float32 scalars
+# data/<channel>/measured/<name>. Each becomes a (time, channel) array.
+FCI_CONVERSION_CONSTANT_NAMES: tuple[str, ...] = (
+    "radiance_unit_conversion_coefficient",
+    "radiance_to_bt_conversion_coefficient_wavenumber",
+    "radiance_to_bt_conversion_coefficient_a",
+    "radiance_to_bt_conversion_coefficient_b",
+    "radiance_to_bt_conversion_constant_c1",
+    "radiance_to_bt_conversion_constant_c2",
+    "channel_effective_solar_irradiance",
+)
+
 # Logical channels with dual-gain (cold/warm) calibration. Only these carry
 # meaningful warm_scale_factor/warm_add_offset; the L1C files set them to 0.0
 # for every other channel.

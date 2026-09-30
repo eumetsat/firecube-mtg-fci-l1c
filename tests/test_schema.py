@@ -105,7 +105,7 @@ def test_variable_context_with_runtime_fields() -> None:
 
 def test_variable_enabled_default_true() -> None:
     v = Variable(name="x", dims=("x",), dtype="f8", fill_value=None)
-    assert variable_enabled(v, MtgFciL1cConfig()) is True
+    assert variable_enabled(v, MtgFciL1cConfig(), ("vis_06",)) is True
 
 
 def test_variable_enabled_by_config_flag() -> None:
@@ -116,8 +116,14 @@ def test_variable_enabled_by_config_flag() -> None:
         fill_value=None,
         enabled_by="include_pixel_quality",
     )
-    assert variable_enabled(v, MtgFciL1cConfig(include_pixel_quality=True)) is True
-    assert variable_enabled(v, MtgFciL1cConfig(include_pixel_quality=False)) is False
+    assert (
+        variable_enabled(v, MtgFciL1cConfig(include_pixel_quality=True), ("vis_06",))
+        is True
+    )
+    assert (
+        variable_enabled(v, MtgFciL1cConfig(include_pixel_quality=False), ("vis_06",))
+        is False
+    )
 
 
 def test_variable_enabled_missing_attr_defaults_true() -> None:
@@ -128,7 +134,7 @@ def test_variable_enabled_missing_attr_defaults_true() -> None:
         fill_value=None,
         enabled_by="nonexistent_flag",
     )
-    assert variable_enabled(v, MtgFciL1cConfig()) is True
+    assert variable_enabled(v, MtgFciL1cConfig(), ("vis_06",)) is True
 
 
 # ─────────────────────────────────────────────────────────────
@@ -137,8 +143,8 @@ def test_variable_enabled_missing_attr_defaults_true() -> None:
 
 
 def test_variables_count() -> None:
-    assert len(VARIABLES) == 14, (
-        f"Expected 14, got {len(VARIABLES)}: {[v.name for v in VARIABLES]}"
+    assert len(VARIABLES) == 21, (
+        f"Expected 21, got {len(VARIABLES)}: {[v.name for v in VARIABLES]}"
     )
 
 
@@ -694,6 +700,116 @@ def test_chunk_overrides_dict_of_lists_accepted() -> None:
         if a.name == "counts"
     )
     assert tuple(counts.chunks) == (1, 556, 11136, 1)
+
+
+# ─────────────────────────────────────────────────────────────
+# Radiance conversion constants: per-product (time, channel) variables
+# ─────────────────────────────────────────────────────────────
+
+_CONVERSION_VARIABLES = (
+    "radiance_unit_conversion_coefficient",
+    "radiance_to_bt_conversion_coefficient_wavenumber",
+    "radiance_to_bt_conversion_coefficient_a",
+    "radiance_to_bt_conversion_coefficient_b",
+    "radiance_to_bt_conversion_constant_c1",
+    "radiance_to_bt_conversion_constant_c2",
+    "channel_effective_solar_irradiance",
+)
+
+
+def _conversion_values(name: str) -> np.ndarray:
+    """Project one conversion variable from a mixed IR/VNIR calibration table."""
+    from firecube_mtg_fci_l1c._decode import ChannelCalibration
+
+    nan = float("nan")
+    variable = next(v for v in VARIABLES if v.name == name)
+    assert variable.source is not None
+    # HRFI 1 km group reads logical ir_105/ir_38 from the *_hr groups; the
+    # third channel has no calibration entry in this slot.
+    ctx = VariableContext(
+        group="data_1km",
+        resolution="1km",
+        product_type="HRFI",
+        config=MtgFciL1cConfig(),
+        dimsize=11136,
+        n_channels=3,
+        logical_channels=("ir_105", "ir_38", "vis_06"),
+        nc_channels=("ir_105_hr", "ir_38_hr", "vis_06_hr"),
+        calibration_table={
+            "ir_105_hr": ChannelCalibration(
+                0.0528,
+                -10.77,
+                radiance_unit_conversion_coefficient=0.09,
+                radiance_to_bt_conversion_coefficient_wavenumber=950.5,
+                radiance_to_bt_conversion_coefficient_a=0.998,
+                radiance_to_bt_conversion_coefficient_b=0.36,
+                radiance_to_bt_conversion_constant_c1=1.2e-05,
+                radiance_to_bt_conversion_constant_c2=1.44,
+                channel_effective_solar_irradiance=nan,
+            ),
+            "ir_38_hr": ChannelCalibration(
+                0.00122,
+                -0.2498,
+                radiance_unit_conversion_coefficient=0.7,
+                radiance_to_bt_conversion_coefficient_wavenumber=2645.0,
+                radiance_to_bt_conversion_coefficient_a=0.9967,
+                radiance_to_bt_conversion_coefficient_b=2.25,
+                radiance_to_bt_conversion_constant_c1=1.2e-05,
+                radiance_to_bt_conversion_constant_c2=1.44,
+                channel_effective_solar_irradiance=15.4,
+            ),
+        },
+    )
+    data = variable.source(ctx)
+    assert data is not None
+    return data
+
+
+@pytest.mark.unit
+def test_conversion_constants_are_time_channel_arrays() -> None:
+    specs = build_specs(MtgFciL1cConfig(), "FDHSI")
+    for group in ("data_1km", "data_2km"):
+        arrays = {a.name: a for a in next(g for g in specs if g.group == group).arrays}
+        for name in _CONVERSION_VARIABLES:
+            spec = arrays[name]
+            assert spec.dimension_names == (TIME_COORD_NAME, "channel"), name
+            assert spec.shape[1] == 8, name
+            assert spec.time_indexed is True, name
+            assert np.dtype(spec.dtype) == np.float32, name
+            assert spec.attrs is not None and spec.attrs["units"], name
+
+
+@pytest.mark.unit
+def test_conversion_constants_take_each_channels_product_value() -> None:
+    np.testing.assert_array_equal(
+        _conversion_values("radiance_to_bt_conversion_coefficient_wavenumber"),
+        np.array([950.5, 2645.0, np.nan], dtype=np.float32),
+    )
+    np.testing.assert_array_equal(
+        _conversion_values("radiance_unit_conversion_coefficient"),
+        np.array([0.09, 0.7, np.nan], dtype=np.float32),
+    )
+    np.testing.assert_array_equal(
+        _conversion_values("radiance_to_bt_conversion_constant_c2"),
+        np.array([1.44, 1.44, np.nan], dtype=np.float32),
+    )
+
+
+@pytest.mark.unit
+def test_conversion_constants_nan_where_product_marks_not_applicable() -> None:
+    # ir_105 carries no solar irradiance; ir_38 does, although it is IR.
+    np.testing.assert_array_equal(
+        _conversion_values("channel_effective_solar_irradiance"),
+        np.array([np.nan, 15.4, np.nan], dtype=np.float32),
+    )
+
+
+@pytest.mark.unit
+def test_conversion_constants_omitted_without_calibration() -> None:
+    specs = build_specs(MtgFciL1cConfig(include_calibration=False), "FDHSI")
+    for group_spec in specs:
+        names = {a.name for a in group_spec.arrays}
+        assert names.isdisjoint(_CONVERSION_VARIABLES), group_spec.group
 
 
 @pytest.mark.unit

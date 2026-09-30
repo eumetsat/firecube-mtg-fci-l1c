@@ -41,6 +41,13 @@ EXPECTED_DATA_VARS = {
     "slope",
     "offset",
     "channel_name",
+    "radiance_unit_conversion_coefficient",
+    "radiance_to_bt_conversion_coefficient_wavenumber",
+    "radiance_to_bt_conversion_coefficient_a",
+    "radiance_to_bt_conversion_coefficient_b",
+    "radiance_to_bt_conversion_constant_c1",
+    "radiance_to_bt_conversion_constant_c2",
+    "channel_effective_solar_irradiance",
     "spatial_ref",
 }
 EXPECTED_COORDS = {"time", "y", "x", "latitude", "longitude"}
@@ -153,7 +160,7 @@ def test_flat_root_arrays_equal_the_grouped_arrays_from_the_same_input(
     grouped = grouped_root["data_1km"]
 
     assert sorted(flat_root.array_keys()) == sorted(grouped.array_keys())
-    assert len(list(flat_root.array_keys())) == 12
+    assert len(list(flat_root.array_keys())) == 19
 
     for name in sorted(flat_root.array_keys()):
         flat_array = flat_root[name]

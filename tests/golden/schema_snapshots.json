@@ -3808,10 +3808,35 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "1cf98bc5ce9a6841e6e01d7af70db1a42a08824f5d4daf2dfdacb5fb70c81076",
+    "hash": "914352faade0d3444fc3bd9cfb0abefedf7e2250140b262dccb501646ecf0574",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -3887,6 +3912,155 @@
             "expected_time_count": null,
             "fill_value": "nan",
             "name": "offset",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
             "shape": [
               1,
               8
@@ -4028,6 +4202,31 @@
         "arrays": [
           {
             "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI logical channel name",
               "units": "1"
             },
@@ -4101,6 +4300,155 @@
             "expected_time_count": null,
             "fill_value": "nan",
             "name": "offset",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
             "shape": [
               1,
               8
@@ -4291,10 +4639,35 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "775ac276734066d6f7fedfa17b32cd8fa25aa8bff01b48e3d3fe2dec465c067a",
+    "hash": "4742bf0c0cdff4c5ae5946995b3357e2fc4fe35d7303f67848abcbc7d221c75c",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -4413,6 +4786,155 @@
               11136,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -4549,6 +5071,31 @@
         "arrays": [
           {
             "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI logical channel name",
               "units": "1"
             },
@@ -4665,6 +5212,155 @@
               5568,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -4850,10 +5546,35 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "8ceed550df9cef03ca9b95a8e40deeebba6ba763f53c7cf95d10a3516907be2b",
+    "hash": "181e9a0788de6fff0fcd037c851a9520e8096ea4b2984be1c356693d3c597fd3",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -4981,6 +5702,155 @@
               11136,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -5117,6 +5987,31 @@
         "arrays": [
           {
             "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI logical channel name",
               "units": "1"
             },
@@ -5242,6 +6137,155 @@
               5568,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -5427,10 +6471,35 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "2cfc87dacea43dd2782cf4262125348d25f844a7478c9004c6ab7e5c48850266",
+    "hash": "d9308c0827e686a0023957828ebacaffb87986719794b8cc5d72152ecf1e4d7c",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -5600,6 +6669,155 @@
           },
           {
             "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI calibration slope",
               "units": "mW m-2 sr-1 (cm-1)-1"
             },
@@ -5730,6 +6948,31 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -5895,6 +7138,155 @@
               5568,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -6080,10 +7472,35 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "51544deb6ab3875796ace25c213d7e0c1bb36177f33d485dae9487e7c67ee9a3",
+    "hash": "079a60224e82eb943e5f4b49d1e029453cf2ac7247c961f3f6dd21ac4fa90357",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -6210,6 +7627,155 @@
             "expected_time_count": null,
             "fill_value": "nan",
             "name": "offset",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
             "shape": [
               1,
               8
@@ -6353,6 +7919,31 @@
         "arrays": [
           {
             "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI logical channel name",
               "units": "1"
             },
@@ -6477,6 +8068,155 @@
             "expected_time_count": null,
             "fill_value": "nan",
             "name": "offset",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
             "shape": [
               1,
               8
@@ -6669,10 +8409,35 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "94b2354089fd1de7c7ade8afb27f1a664b5905fe39814f4a4603c852d9c8f3cc",
+    "hash": "cd4a78d8218761c4a189849911dab2d5df7aa1922eef09b83100142d5cd66414",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -6847,6 +8612,155 @@
           },
           {
             "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI calibration slope",
               "units": "mW m-2 sr-1 (cm-1)-1"
             },
@@ -6979,6 +8893,31 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -7149,6 +9088,155 @@
               5568,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -7336,10 +9424,35 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "dfc1a6c50fee1a31955802ca07bd3264fcf4cbd103360a935d450db0f209e6c6",
+    "hash": "3421ac11aad69d23a39917d6cd1511534fa4a9e1f6754af111d6d53b540bbbd4",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -7523,6 +9636,155 @@
           },
           {
             "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI calibration slope",
               "units": "mW m-2 sr-1 (cm-1)-1"
             },
@@ -7655,6 +9917,31 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -7834,6 +10121,155 @@
               5568,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -8021,10 +10457,35 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "1fec7420cc75d438bf100f356d79bee0038d0e88dd38001babd5c8fbd3dcaa55",
+    "hash": "784464a2890e40b9ab298cc9fdb382dec75b8cc0b1f02d96157b0a4d6e5325e7",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -8247,6 +10708,155 @@
           },
           {
             "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI calibration slope",
               "units": "mW m-2 sr-1 (cm-1)-1"
             },
@@ -8379,6 +10989,31 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -8597,6 +11232,155 @@
               5568,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -12592,10 +15376,35 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "1331ce2789544f007d6368c5092c1cfc66aaa30900022e495653668a63bfc892",
+    "hash": "9a11280c4fd51fed946b7036288d44080b08a34e330444586b00478a0ca0bf68",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -12671,6 +15480,155 @@
             "expected_time_count": null,
             "fill_value": "nan",
             "name": "offset",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
             "shape": [
               1,
               2
@@ -12862,6 +15820,31 @@
         "arrays": [
           {
             "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI logical channel name",
               "units": "1"
             },
@@ -12935,6 +15918,155 @@
             "expected_time_count": null,
             "fill_value": "nan",
             "name": "offset",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
             "shape": [
               1,
               2
@@ -13075,10 +16207,35 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "4ac912b44a73c258ac7b69409c32cdff307fdcefdb03f7d6f310a8553840976a",
+    "hash": "a9f078f198955dabe57c24e79ef09241e50d6e861afd9b6109e3433f32b546b4",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -13197,6 +16354,155 @@
               11136,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -13383,6 +16689,31 @@
         "arrays": [
           {
             "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI logical channel name",
               "units": "1"
             },
@@ -13499,6 +16830,155 @@
               22272,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -13634,10 +17114,35 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "ec5079768ab2f53977ab65da5d400d588f965a34610b3e9681b0b5abeb0ac393",
+    "hash": "3d12551d44873fe888b7ecbfd68a73ca2e0b43c64141d457bd283e75918cb176",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -13765,6 +17270,155 @@
               11136,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -13951,6 +17605,31 @@
         "arrays": [
           {
             "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI logical channel name",
               "units": "1"
             },
@@ -14076,6 +17755,155 @@
               22272,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -14211,10 +18039,35 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "d8433dea1e7568fc4356e9e613b0ffcd52734b13db57f1c89d2ebf08cfec2b8e",
+    "hash": "a745c730609d0d8a6e6f55fc380282b822e69d939dee103f050fe7e9edba195f",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -14384,6 +18237,155 @@
           },
           {
             "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI calibration slope",
               "units": "mW m-2 sr-1 (cm-1)-1"
             },
@@ -14566,6 +18568,31 @@
         "arrays": [
           {
             "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI logical channel name",
               "units": "1"
             },
@@ -14733,6 +18760,155 @@
           },
           {
             "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI calibration slope",
               "units": "mW m-2 sr-1 (cm-1)-1"
             },
@@ -14864,10 +19040,35 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "b0c5ecd377ff40d706f78b4d71fee0bc7cf5ee78c00e2037c092446aacd461e9",
+    "hash": "157648f04a61f2c9477adf43d90ca0d195e425653ee96f229cf9ed3dd39e8b83",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -14994,6 +19195,155 @@
             "expected_time_count": null,
             "fill_value": "nan",
             "name": "offset",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
             "shape": [
               1,
               2
@@ -15187,6 +19537,31 @@
         "arrays": [
           {
             "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI logical channel name",
               "units": "1"
             },
@@ -15311,6 +19686,155 @@
             "expected_time_count": null,
             "fill_value": "nan",
             "name": "offset",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
             "shape": [
               1,
               2
@@ -15453,10 +19977,35 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "19be16e626b15313fe7f9831b0701daaab2b6f98455005a379edb595c59d3d25",
+    "hash": "67a6c6e13f247ba4e997b4af0049ab5197f46d169ebe9a755de22ee66d8a1ba0",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -15627,6 +20176,155 @@
               11136,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -15815,6 +20513,31 @@
         "arrays": [
           {
             "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI logical channel name",
               "units": "1"
             },
@@ -15983,6 +20706,155 @@
               22272,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -16120,10 +20992,35 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "dfb56243ac9bac64f273ac47bf27640dc8dd3fdf49b5caebbd916d678be32373",
+    "hash": "b451ed5d9eb2158c4ad1777f476e53478f585bbf60795e69ba898dcf083e3b64",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -16303,6 +21200,155 @@
               11136,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {
@@ -16491,6 +21537,31 @@
         "arrays": [
           {
             "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI logical channel name",
               "units": "1"
             },
@@ -16672,6 +21743,155 @@
           },
           {
             "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI calibration slope",
               "units": "mW m-2 sr-1 (cm-1)-1"
             },
@@ -16805,10 +22025,35 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "84156e08d401d1843094bce989794a0370c50ea04af8492c5ee898110117f752",
+    "hash": "3fe8e7dc2aa608577ffc98c609ca3fc2a36508d81b5e480a510ed6108bced5f9",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -17031,6 +22276,155 @@
           },
           {
             "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "long_name": "FCI calibration slope",
               "units": "mW m-2 sr-1 (cm-1)-1"
             },
@@ -17213,6 +22607,31 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+              "long_name": "Channel effective solar irradiance at 1 AU",
+              "units": "mW m-2 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "channel_effective_solar_irradiance",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
           {
             "attrs": {
               "long_name": "FCI logical channel name",
@@ -17431,6 +22850,155 @@
               22272,
               1
             ],
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient A",
+              "units": "1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_a",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient B",
+              "units": "K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_b",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
+              "units": "cm-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_coefficient_wavenumber",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C1",
+              "units": "mW m-2 sr-1 (cm-1)-4"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c1",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Only for IR channels. NaN for VNIR channels",
+              "long_name": "Radiance to brightness temperature conversion constant C2",
+              "units": "cm K"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_to_bt_conversion_constant_c2",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
+              "units": "W mW-1 cm-1 um-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float32",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "radiance_unit_conversion_coefficient",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
             "time_indexed": true
           },
           {

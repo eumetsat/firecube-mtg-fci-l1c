@@ -330,9 +330,16 @@ import sys
 
 import zarr
 
-STATIC_ARRAYS = ("latitude", "longitude", "x", "y")
+# x and y are declared in every layout; the layout is detected through them.
 ALWAYS_DECLARED = ("x", "y")
 MARKER = "firecube_static_written"
+TIME_DIM = "time"
+
+
+def is_static(array):
+    """A dimensioned array without the time axis is written once and marked."""
+    dims = array.metadata.dimension_names
+    return bool(dims) and TIME_DIM not in dims
 
 
 def fail(message):
@@ -346,7 +353,7 @@ def label(group_name):
 
 target, plan_groups, plan_source = sys.argv[1:4]
 root = zarr.open_group(target.removeprefix("file://"), mode="r")
-flat = any(name in STATIC_ARRAYS for name in root.array_keys())
+flat = any(name in ALWAYS_DECLARED for name in root.array_keys())
 data_groups = sorted(name for name in root.group_keys() if name.startswith("data_"))
 if flat and data_groups:
     fail(f"mixed layout at {target}: static arrays at root and groups {', '.join(data_groups)}")
@@ -369,13 +376,13 @@ problems = []
 for group_name in locations:
     group = root[group_name] if group_name else root
     present = set(group.array_keys())
-    for array_name in STATIC_ARRAYS:
-        path = f"{group_name}/{array_name}"
+    for array_name in ALWAYS_DECLARED:
         if array_name not in present:
-            if array_name in ALWAYS_DECLARED:
-                problems.append(f"{path} (absent)")
-        elif MARKER not in group[array_name].attrs:
-            problems.append(path)
+            problems.append(f"{group_name}/{array_name} (absent)")
+    for array_name in sorted(present):
+        array = group[array_name]
+        if is_static(array) and MARKER not in array.attrs:
+            problems.append(f"{group_name}/{array_name}")
 if problems:
     fail(f"missing {MARKER} on: {', '.join(problems)}")
 layout = "flat" if flat else "grouped"

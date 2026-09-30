@@ -102,6 +102,7 @@ def test_flat_store_writes_arrays_at_root(
     root = zarr.open_group(str(tmp_path / "store.zarr"), mode="r")
     assert sorted(root.group_keys()) == []
     assert sorted(root.array_keys()) == [
+        "channel_effective_solar_irradiance",
         "channel_name",
         "counts",
         "latitude",
@@ -109,6 +110,12 @@ def test_flat_store_writes_arrays_at_root(
         "offset",
         "pixel_quality",
         "pixel_time",
+        "radiance_to_bt_conversion_coefficient_a",
+        "radiance_to_bt_conversion_coefficient_b",
+        "radiance_to_bt_conversion_coefficient_wavenumber",
+        "radiance_to_bt_conversion_constant_c1",
+        "radiance_to_bt_conversion_constant_c2",
+        "radiance_unit_conversion_coefficient",
         "slope",
         "spatial_ref",
         "time",

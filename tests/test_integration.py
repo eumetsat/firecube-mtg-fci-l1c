@@ -54,12 +54,16 @@ def _make_local_storage_session(target_path: Path) -> StorageSession:
     return StorageSession(binding)
 
 
+_NC_FLOAT32_FILL = 9.96921e36
+
+
 def _write_nc_part_netcdf(
     path: Path,
     nc_channels: list[str],
     dimsize: int,
     radiance_attrs: dict[str, dict[str, float]] | None = None,
     counts: dict[str, np.ndarray] | None = None,
+    measured_scalars: dict[str, dict[str, float]] | None = None,
 ) -> None:
     with h5netcdf.File(path, "w") as ds:
         ds.attrs["time_coverage_start"] = "20240101000000"
@@ -88,6 +92,15 @@ def _write_nc_part_netcdf(
             for name, value in (radiance_attrs or {}).get(channel, {}).items():
                 radiance.attrs[name] = np.float32(value)
 
+            for name, value in (measured_scalars or {}).get(channel, {}).items():
+                # Mirrors the L1C float32 measured scalars and their default fill.
+                measured.create_variable(
+                    name,
+                    (),
+                    data=np.float32(value),
+                    fillvalue=np.float32(_NC_FLOAT32_FILL),
+                )
+
             measured.create_variable("start_position_row", (), data=np.int32(1))
             measured.create_variable("end_position_row", (), data=np.int32(dimsize))
             measured.create_variable(
@@ -109,6 +122,7 @@ def _make_zip_with_nc_part(
     dimsize: int,
     radiance_attrs: dict[str, dict[str, float]] | None = None,
     counts: dict[str, np.ndarray] | None = None,
+    measured_scalars: dict[str, dict[str, float]] | None = None,
 ) -> Path:
     tmp_nc = zip_path.with_suffix(".nc")
     _write_nc_part_netcdf(
@@ -117,6 +131,7 @@ def _make_zip_with_nc_part(
         dimsize=dimsize,
         radiance_attrs=radiance_attrs,
         counts=counts,
+        measured_scalars=measured_scalars,
     )
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_STORED) as zf:
         zf.write(tmp_nc, arcname=f"{get_nc_part_prefix(product_type)}0001.nc")
@@ -333,6 +348,123 @@ def test_channel_name_static_replay_is_idempotent(tmp_path: Path, fdhsi_zip: Pat
     root = zarr.open_group(str(out), mode="r")
     data_1km = cast(Any, root["data_1km"])
     np.testing.assert_array_equal(np.asarray(data_1km["channel_name"][:]), first)
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+def test_conversion_constants_follow_each_product_per_slot(
+    tmp_path: Path, small_fci_layout: list[int]
+):
+    """Constants are (time, channel) and hold each product's own values."""
+    src = tmp_path / "src"
+    src.mkdir()
+    # vis_06 carries no measured scalars at all; vis_04 marks the IR-only
+    # wavenumber as not applicable with the float32 default fill.
+    scalars = {
+        "20240101000000": {
+            "vis_04": {
+                "channel_effective_solar_irradiance": 38.1,
+                "radiance_to_bt_conversion_coefficient_wavenumber": _NC_FLOAT32_FILL,
+            },
+            "ir_38": {
+                "radiance_to_bt_conversion_coefficient_wavenumber": 2644.33,
+                "channel_effective_solar_irradiance": 15.37,
+            },
+        },
+        "20240101001000": {
+            "vis_04": {
+                "channel_effective_solar_irradiance": 38.2,
+                "radiance_to_bt_conversion_coefficient_wavenumber": _NC_FLOAT32_FILL,
+            },
+            "ir_38": {
+                "radiance_to_bt_conversion_coefficient_wavenumber": 2650.0,
+                "channel_effective_solar_irradiance": 15.5,
+            },
+        },
+    }
+    for stamp, measured_scalars in scalars.items():
+        _make_zip_with_nc_part(
+            src / f"W_XX-FCI-1C-RRAD-FDHSI-FD-{stamp}-END.zip",
+            PRODUCT_TYPE_FDHSI,
+            ["vis_04", "vis_06", "ir_38"],
+            dimsize=4,
+            measured_scalars=measured_scalars,
+        )
+
+    out = _run_ingest(src, tmp_path, options={"include_geolocation": False})
+
+    root = zarr.open_group(str(out), mode="r")
+    # small_fci_layout: data_1km = [vis_04, vis_06], data_2km = [ir_38].
+    data_1km = cast(Any, root["data_1km"])
+    data_2km = cast(Any, root["data_2km"])
+    wavenumber_2km = data_2km["radiance_to_bt_conversion_coefficient_wavenumber"]
+    assert wavenumber_2km.metadata.dimension_names == ("time", "channel")
+    np.testing.assert_array_equal(
+        wavenumber_2km[:], np.array([[2644.33], [2650.0]], dtype=np.float32)
+    )
+    np.testing.assert_array_equal(
+        data_2km["channel_effective_solar_irradiance"][:],
+        np.array([[15.37], [15.5]], dtype=np.float32),
+    )
+    np.testing.assert_array_equal(
+        data_1km["channel_effective_solar_irradiance"][:],
+        np.array([[38.1, np.nan], [38.2, np.nan]], dtype=np.float32),
+    )
+    wavenumber_1km = data_1km["radiance_to_bt_conversion_coefficient_wavenumber"]
+    assert wavenumber_1km.shape == (2, 2)
+    assert np.isnan(wavenumber_1km[:]).all()
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+def test_store_without_conversion_constants_gains_them_on_next_direct_ingest(
+    tmp_path: Path, small_fci_layout: list[int]
+):
+    import shutil
+
+    from firecube_mtg_fci_l1c._constants import FCI_CONVERSION_CONSTANT_NAMES
+
+    src = tmp_path / "src"
+    src.mkdir()
+    ir38_scalars = {"ir_38": {"radiance_to_bt_conversion_constant_c1": 1.19104e-05}}
+    _make_zip_with_nc_part(
+        src / "W_XX-FCI-1C-RRAD-FDHSI-FD-20240101000000-END.zip",
+        PRODUCT_TYPE_FDHSI,
+        ["vis_04", "vis_06", "ir_38"],
+        dimsize=4,
+        measured_scalars=ir38_scalars,
+    )
+    options = {"include_geolocation": False}
+    out = _run_ingest(src, tmp_path, options=options)
+
+    # Given: a store created before the constants were declared.
+    for group in ("data_1km", "data_2km"):
+        for name in FCI_CONVERSION_CONSTANT_NAMES:
+            shutil.rmtree(Path(out) / group / name)
+
+    # When: the next ingest brings only a new product.
+    new_src = tmp_path / "new_src"
+    new_src.mkdir()
+    _make_zip_with_nc_part(
+        new_src / "W_XX-FCI-1C-RRAD-FDHSI-FD-20240101001000-END.zip",
+        PRODUCT_TYPE_FDHSI,
+        ["vis_04", "vis_06", "ir_38"],
+        dimsize=4,
+        measured_scalars=ir38_scalars,
+    )
+    _run_ingest(
+        new_src,
+        tmp_path,
+        options={**options, "resume_existing": True, "force_reingest": False},
+    )
+
+    # The slot ingested before the arrays existed reads as NaN; the new one
+    # carries the product's value.
+    root = zarr.open_group(str(out), mode="r")
+    np.testing.assert_array_equal(
+        cast(Any, root["data_2km"])["radiance_to_bt_conversion_constant_c1"][:],
+        np.array([[np.nan], [1.19104e-05]], dtype=np.float32),
+    )
 
 
 @pytest.mark.integration

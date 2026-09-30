@@ -77,8 +77,8 @@ Variable(
 
 - Writing NetCDF internal channel names like `vis_06_hr`. Use logical names (`vis_06`) from `ctx.logical_channels`.
 - Defining the source as a lambda. It must be module-level for pickle-safety.
-- Using `dims=("time", "channel")`. Channel names and static per-channel constants are static; use `dims=("channel",)`.
-- Putting `(channel,)` data that varies per acquisition. If the value changes from one scan to the next (like calibration slope), use `dims=("time", "channel")` instead: see [time-channel-variable.md](time-channel-variable.md).
+- Using `dims=("time", "channel")` for a value that never comes from a product, such as a channel name or an instrument-spec lookup table. Those are static; use `dims=("channel",)`.
+- Using `dims=("channel",)` for a value that is read from each product. Anything the L1C file declares per product, including calibration slopes and the radiance conversion coefficients, is recorded per acquisition with `dims=("time", "channel")`: see [time-channel-variable.md](time-channel-variable.md).
 
 ## See also
 
