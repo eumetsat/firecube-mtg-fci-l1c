@@ -29,6 +29,8 @@ That's it. The ingestor's generic phase emitters dispatch by `dims` shape, so th
 
 **Use `enabled_by`.** Set `enabled_by="include_pixel_quality"` (or any `MtgFciL1cConfig` flag name) to gate a variable on a config option. Omit it for variables that are always written.
 
+**Use `only_for_channels`.** Set `only_for_channels=frozenset({"ir_38"})` to declare a variable only in groups that hold at least one of those logical channels; other groups get no array at all. `warm_slope` and `warm_offset` use it. Both gates are evaluated by `variable_enabled(variable, config, logical_channels)`, which every caller must pass the group's channels to.
+
 **`source=None`.** For attrs-only variables like `spatial_ref`, set `source=None`. The ingestor writes the array with fill values and attaches the attrs.
 
 ## VariableContext Fields

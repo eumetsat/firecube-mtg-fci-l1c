@@ -3808,20 +3808,22 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "f3c3cee89e555cabe9c6f130b30218f7d924be1cfb5768b7fd6c1edd36206d0f",
+    "hash": "914352faade0d3444fc3bd9cfb0abefedf7e2250140b262dccb501646ecf0574",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -3829,10 +3831,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -3923,9 +3926,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -3933,10 +3938,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -3945,9 +3951,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -3955,10 +3963,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -3967,9 +3976,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -3977,10 +3988,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -3989,9 +4001,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -3999,10 +4013,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4011,9 +4026,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4021,10 +4038,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4032,9 +4050,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4042,10 +4062,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4171,14 +4192,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -4188,14 +4202,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4203,10 +4219,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4297,9 +4314,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4307,10 +4326,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4319,9 +4339,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4329,10 +4351,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4341,9 +4364,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4351,10 +4376,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4363,9 +4389,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4373,10 +4401,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4385,9 +4414,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4395,10 +4426,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4406,9 +4438,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4416,10 +4450,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4595,14 +4630,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -4611,20 +4639,22 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "a7a186cb442b1e72338fe8a8608e728453af16293f38b4e93bdcad880769abe3",
+    "hash": "4742bf0c0cdff4c5ae5946995b3357e2fc4fe35d7303f67848abcbc7d221c75c",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4632,10 +4662,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4764,9 +4795,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4774,10 +4807,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4786,9 +4820,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4796,10 +4832,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4808,9 +4845,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4818,10 +4857,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4830,9 +4870,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4840,10 +4882,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4852,9 +4895,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4862,10 +4907,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -4873,9 +4919,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -4883,10 +4931,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5012,14 +5061,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -5029,14 +5071,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5044,10 +5088,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5176,9 +5221,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5186,10 +5233,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5198,9 +5246,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5208,10 +5258,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5220,9 +5271,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5230,10 +5283,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5242,9 +5296,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5252,10 +5308,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5264,9 +5321,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5274,10 +5333,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5285,9 +5345,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5295,10 +5357,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5474,14 +5537,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -5490,20 +5546,22 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "8c365a748bd4819ce83275165aac5627008fc7af74b64f758d221898c8d222c8",
+    "hash": "181e9a0788de6fff0fcd037c851a9520e8096ea4b2984be1c356693d3c597fd3",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5511,10 +5569,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5652,9 +5711,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5662,10 +5723,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5674,9 +5736,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5684,10 +5748,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5696,9 +5761,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5706,10 +5773,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5718,9 +5786,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5728,10 +5798,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5740,9 +5811,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5750,10 +5823,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5761,9 +5835,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5771,10 +5847,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -5900,14 +5977,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -5917,14 +5987,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -5932,10 +6004,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -6073,9 +6146,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -6083,10 +6158,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -6095,9 +6171,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -6105,10 +6183,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -6117,9 +6196,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -6127,10 +6208,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -6139,9 +6221,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -6149,10 +6233,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -6161,9 +6246,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -6171,10 +6258,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -6182,9 +6270,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -6192,10 +6282,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -6371,14 +6462,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -6387,20 +6471,22 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "772cbbec4bf0f6d9a9355e980ebc7d997231c861e2f8aaaabc39a405c035f8ee",
+    "hash": "d9308c0827e686a0023957828ebacaffb87986719794b8cc5d72152ecf1e4d7c",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -6408,10 +6494,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -6587,9 +6674,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -6597,10 +6686,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -6609,9 +6699,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -6619,10 +6711,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -6631,9 +6724,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -6641,10 +6736,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -6653,9 +6749,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -6663,10 +6761,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -6675,9 +6774,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -6685,10 +6786,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -6696,9 +6798,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -6706,10 +6810,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -6835,14 +6940,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -6852,14 +6950,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -6867,10 +6967,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7046,9 +7147,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7056,10 +7159,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7068,9 +7172,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7078,10 +7184,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7090,9 +7197,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7100,10 +7209,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7112,9 +7222,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7122,10 +7234,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7134,9 +7247,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7144,10 +7259,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7155,9 +7271,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7165,10 +7283,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7344,14 +7463,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -7360,20 +7472,22 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "3070e6e6736826e6975bc3c04c8f2330ad63db11c07a192b4c65ba3bd40703c0",
+    "hash": "079a60224e82eb943e5f4b49d1e029453cf2ac7247c961f3f6dd21ac4fa90357",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7381,10 +7495,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7526,9 +7641,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7536,10 +7653,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7548,9 +7666,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7558,10 +7678,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7570,9 +7691,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7580,10 +7703,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7592,9 +7716,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7602,10 +7728,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7614,9 +7741,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7624,10 +7753,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7635,9 +7765,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7645,10 +7777,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7774,16 +7907,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -7793,14 +7919,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7808,10 +7936,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7953,9 +8082,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7963,10 +8094,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7975,9 +8107,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -7985,10 +8119,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -7997,9 +8132,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8007,10 +8144,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -8019,9 +8157,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8029,10 +8169,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -8041,9 +8182,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8051,10 +8194,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -8062,9 +8206,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8072,10 +8218,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -8251,16 +8398,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -8269,20 +8409,22 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "294533eb98acd8b27e210788ade5a4e34b22f3eb0d2ee78cb3ea1994b0697041",
+    "hash": "cd4a78d8218761c4a189849911dab2d5df7aa1922eef09b83100142d5cd66414",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8290,10 +8432,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -8474,9 +8617,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8484,10 +8629,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -8496,9 +8642,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8506,10 +8654,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -8518,9 +8667,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8528,10 +8679,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -8540,9 +8692,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8550,10 +8704,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -8562,9 +8717,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8572,10 +8729,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -8583,9 +8741,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8593,10 +8753,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -8722,16 +8883,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -8741,14 +8895,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8756,10 +8912,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -8940,9 +9097,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8950,10 +9109,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -8962,9 +9122,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8972,10 +9134,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -8984,9 +9147,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -8994,10 +9159,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -9006,9 +9172,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -9016,10 +9184,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -9028,9 +9197,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -9038,10 +9209,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -9049,9 +9221,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -9059,10 +9233,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -9238,16 +9413,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -9256,20 +9424,22 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "716da2f990663a772f508eca80095ac815a3474843a1a7144c42ee9107da0ae9",
+    "hash": "3421ac11aad69d23a39917d6cd1511534fa4a9e1f6754af111d6d53b540bbbd4",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -9277,10 +9447,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -9470,9 +9641,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -9480,10 +9653,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -9492,9 +9666,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -9502,10 +9678,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -9514,9 +9691,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -9524,10 +9703,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -9536,9 +9716,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -9546,10 +9728,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -9558,9 +9741,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -9568,10 +9753,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -9579,9 +9765,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -9589,10 +9777,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -9718,16 +9907,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -9737,14 +9919,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -9752,10 +9936,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -9945,9 +10130,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -9955,10 +10142,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -9967,9 +10155,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -9977,10 +10167,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -9989,9 +10180,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -9999,10 +10192,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -10011,9 +10205,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -10021,10 +10217,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -10033,9 +10230,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -10043,10 +10242,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -10054,9 +10254,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -10064,10 +10266,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -10243,16 +10446,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -10261,20 +10457,22 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "b0db3f6c230c5fdc5db8701f98b5dfa7c8c8525dba0c6fff6bcadd2b23690dbb",
+    "hash": "784464a2890e40b9ab298cc9fdb382dec75b8cc0b1f02d96157b0a4d6e5325e7",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -10282,10 +10480,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -10514,9 +10713,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -10524,10 +10725,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -10536,9 +10738,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -10546,10 +10750,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -10558,9 +10763,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -10568,10 +10775,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -10580,9 +10788,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -10590,10 +10800,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -10602,9 +10813,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -10612,10 +10825,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -10623,9 +10837,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -10633,10 +10849,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -10762,16 +10979,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -10781,14 +10991,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -10796,10 +11008,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -11028,9 +11241,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -11038,10 +11253,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -11050,9 +11266,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -11060,10 +11278,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -11072,9 +11291,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -11082,10 +11303,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -11094,9 +11316,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -11104,10 +11328,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -11116,9 +11341,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -11126,10 +11353,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -11137,9 +11365,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               8
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -11147,10 +11377,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               8
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -11326,16 +11557,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -15152,20 +15376,22 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "265dd807f2fd9855dd067496ea45ae27849cf3ebb692171cef81e3b55a87b047",
+    "hash": "9a11280c4fd51fed946b7036288d44080b08a34e330444586b00478a0ca0bf68",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15173,10 +15399,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -15267,9 +15494,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15277,10 +15506,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -15289,9 +15519,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15299,10 +15531,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -15311,9 +15544,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15321,10 +15556,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -15333,9 +15569,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15343,10 +15581,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -15355,9 +15594,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15365,10 +15606,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -15376,9 +15618,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15386,10 +15630,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -15565,14 +15810,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -15582,14 +15820,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15597,10 +15837,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -15691,9 +15932,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15701,10 +15944,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -15713,9 +15957,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15723,10 +15969,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -15735,9 +15982,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15745,10 +15994,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -15757,9 +16007,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15767,10 +16019,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -15779,9 +16032,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15789,10 +16044,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -15800,9 +16056,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15810,10 +16068,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -15939,14 +16198,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -15955,20 +16207,22 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "6ddd81091b7eb5781822a143590d7321fd5c3025f8b776085fe54ed8c0799682",
+    "hash": "a9f078f198955dabe57c24e79ef09241e50d6e861afd9b6109e3433f32b546b4",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -15976,10 +16230,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16108,9 +16363,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -16118,10 +16375,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16130,9 +16388,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -16140,10 +16400,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16152,9 +16413,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -16162,10 +16425,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16174,9 +16438,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -16184,10 +16450,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16196,9 +16463,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -16206,10 +16475,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16217,9 +16487,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -16227,10 +16499,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16406,14 +16679,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -16423,14 +16689,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -16438,10 +16706,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16570,9 +16839,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -16580,10 +16851,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16592,9 +16864,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -16602,10 +16876,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16614,9 +16889,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -16624,10 +16901,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16636,9 +16914,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -16646,10 +16926,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16658,9 +16939,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -16668,10 +16951,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16679,9 +16963,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -16689,10 +16975,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16818,14 +17105,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -16834,20 +17114,22 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "f92abaed2b248b3e34b6ae32830ee57c976dc863065fcf7790bd396882e7f47e",
+    "hash": "3d12551d44873fe888b7ecbfd68a73ca2e0b43c64141d457bd283e75918cb176",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -16855,10 +17137,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -16996,9 +17279,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17006,10 +17291,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17018,9 +17304,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17028,10 +17316,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17040,9 +17329,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17050,10 +17341,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17062,9 +17354,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17072,10 +17366,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17084,9 +17379,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17094,10 +17391,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17105,9 +17403,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17115,10 +17415,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17294,14 +17595,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -17311,14 +17605,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17326,10 +17622,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17467,9 +17764,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17477,10 +17776,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17489,9 +17789,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17499,10 +17801,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17511,9 +17814,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17521,10 +17826,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17533,9 +17839,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17543,10 +17851,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17555,9 +17864,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17565,10 +17876,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17576,9 +17888,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17586,10 +17900,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17715,14 +18030,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -17731,20 +18039,22 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "6b6c57a81abb7a7d79eb2ca1a1eeb9bb76b94df7f711e692aa9d08899d5de928",
+    "hash": "a745c730609d0d8a6e6f55fc380282b822e69d939dee103f050fe7e9edba195f",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17752,10 +18062,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17931,9 +18242,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17941,10 +18254,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17953,9 +18267,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17963,10 +18279,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17975,9 +18292,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -17985,10 +18304,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -17997,9 +18317,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18007,10 +18329,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18019,9 +18342,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18029,10 +18354,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18040,9 +18366,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18050,10 +18378,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18229,14 +18558,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -18246,14 +18568,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18261,10 +18585,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18440,9 +18765,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18450,10 +18777,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18462,9 +18790,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18472,10 +18802,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18484,9 +18815,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18494,10 +18827,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18506,9 +18840,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18516,10 +18852,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18528,9 +18865,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18538,10 +18877,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18549,9 +18889,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18559,10 +18901,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18688,14 +19031,7 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -18704,20 +19040,22 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "98137f24b96664a4ef4b74aa8be5324a90a5081dee951f5bb4fcdf600fafa354",
+    "hash": "157648f04a61f2c9477adf43d90ca0d195e425653ee96f229cf9ed3dd39e8b83",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18725,10 +19063,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18870,9 +19209,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18880,10 +19221,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18892,9 +19234,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18902,10 +19246,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18914,9 +19259,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18924,10 +19271,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18936,9 +19284,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18946,10 +19296,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18958,9 +19309,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18968,10 +19321,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -18979,9 +19333,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -18989,10 +19345,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -19168,16 +19525,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -19187,14 +19537,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -19202,10 +19554,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -19347,9 +19700,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -19357,10 +19712,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -19369,9 +19725,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -19379,10 +19737,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -19391,9 +19750,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -19401,10 +19762,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -19413,9 +19775,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -19423,10 +19787,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -19435,9 +19800,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -19445,10 +19812,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -19456,9 +19824,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -19466,10 +19836,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -19595,16 +19966,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -19613,20 +19977,22 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "6749645d0b808c90e83f79ad7e6188458b132c0cb494ab94b0dfe70db2c37713",
+    "hash": "67a6c6e13f247ba4e997b4af0049ab5197f46d169ebe9a755de22ee66d8a1ba0",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -19634,10 +20000,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -19818,9 +20185,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -19828,10 +20197,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -19840,9 +20210,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -19850,10 +20222,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -19862,9 +20235,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -19872,10 +20247,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -19884,9 +20260,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -19894,10 +20272,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -19906,9 +20285,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -19916,10 +20297,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -19927,9 +20309,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -19937,10 +20321,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -20116,16 +20501,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -20135,14 +20513,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -20150,10 +20530,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -20334,9 +20715,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -20344,10 +20727,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -20356,9 +20740,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -20366,10 +20752,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -20378,9 +20765,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -20388,10 +20777,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -20400,9 +20790,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -20410,10 +20802,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -20422,9 +20815,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -20432,10 +20827,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -20443,9 +20839,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -20453,10 +20851,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -20582,16 +20981,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -20600,20 +20992,22 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "66be48b6c438f53521e848ccb66b0ddf3e177cdc8b527bdc2adc29356974f381",
+    "hash": "b451ed5d9eb2158c4ad1777f476e53478f585bbf60795e69ba898dcf083e3b64",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -20621,10 +21015,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -20814,9 +21209,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -20824,10 +21221,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -20836,9 +21234,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -20846,10 +21246,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -20858,9 +21259,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -20868,10 +21271,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -20880,9 +21284,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -20890,10 +21296,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -20902,9 +21309,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -20912,10 +21321,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -20923,9 +21333,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -20933,10 +21345,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -21112,16 +21525,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -21131,14 +21537,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -21146,10 +21554,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -21339,9 +21748,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -21349,10 +21760,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -21361,9 +21773,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -21371,10 +21785,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -21383,9 +21798,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -21393,10 +21810,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -21405,9 +21823,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -21415,10 +21835,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -21427,9 +21848,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -21437,10 +21860,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -21448,9 +21872,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -21458,10 +21884,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -21587,16 +22014,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -21605,20 +22025,22 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "851fc5fe754c8923d5a9c34278e357109964904e049b7796b6a4bdb7bb104123",
+    "hash": "3fe8e7dc2aa608577ffc98c609ca3fc2a36508d81b5e480a510ed6108bced5f9",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -21626,10 +22048,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -21858,9 +22281,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -21868,10 +22293,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -21880,9 +22306,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -21890,10 +22318,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -21902,9 +22331,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -21912,10 +22343,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -21924,9 +22356,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -21934,10 +22368,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -21946,9 +22381,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -21956,10 +22393,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -21967,9 +22405,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -21977,10 +22417,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -22156,16 +22597,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],
@@ -22175,14 +22609,16 @@
         "arrays": [
           {
             "attrs": {
-              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN for IR channels",
+              "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -22190,10 +22626,11 @@
             "fill_value": "nan",
             "name": "channel_effective_solar_irradiance",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -22422,9 +22859,11 @@
               "units": "1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -22432,10 +22871,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_a",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -22444,9 +22884,11 @@
               "units": "K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -22454,10 +22896,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_b",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -22466,9 +22909,11 @@
               "units": "cm-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -22476,10 +22921,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_coefficient_wavenumber",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -22488,9 +22934,11 @@
               "units": "mW m-2 sr-1 (cm-1)-4"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -22498,10 +22946,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c1",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -22510,9 +22959,11 @@
               "units": "cm K"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -22520,10 +22971,11 @@
             "fill_value": "nan",
             "name": "radiance_to_bt_conversion_constant_c2",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -22531,9 +22983,11 @@
               "units": "W mW-1 cm-1 um-1"
             },
             "chunks": [
+              1,
               2
             ],
             "dimension_names": [
+              "time",
               "channel"
             ],
             "dtype": "float32",
@@ -22541,10 +22995,11 @@
             "fill_value": "nan",
             "name": "radiance_unit_conversion_coefficient",
             "shape": [
+              1,
               2
             ],
             "shards": null,
-            "time_indexed": false
+            "time_indexed": true
           },
           {
             "attrs": {
@@ -22670,16 +23125,9 @@
         },
         "coord_names": [
           "channel",
-          "channel_effective_solar_irradiance",
           "channel_name",
           "latitude",
           "longitude",
-          "radiance_to_bt_conversion_coefficient_a",
-          "radiance_to_bt_conversion_coefficient_b",
-          "radiance_to_bt_conversion_coefficient_wavenumber",
-          "radiance_to_bt_conversion_constant_c1",
-          "radiance_to_bt_conversion_constant_c2",
-          "radiance_unit_conversion_coefficient",
           "x",
           "y"
         ],

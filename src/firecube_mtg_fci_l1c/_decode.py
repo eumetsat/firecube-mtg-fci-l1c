@@ -29,12 +29,20 @@ from typing import Any, NamedTuple
 import h5netcdf  # pyright: ignore[reportMissingImports]
 import numpy as np  # pyright: ignore[reportMissingImports]
 
-from ._constants import CONSTANTS, get_nc_part_prefix, nc_channel_resolution_map
+from ._constants import (
+    CONSTANTS,
+    FCI_CONVERSION_CONSTANT_NAMES,
+    get_nc_part_prefix,
+    nc_channel_resolution_map,
+)
 
 _PART_NUMBER_RE = re.compile(r"(\d+)\.nc$", re.IGNORECASE)
 _BOUNDED_UNSIGNED_DTYPES = frozenset(
     {np.dtype("uint8"), np.dtype("uint16"), np.dtype("uint32")}
 )
+# netCDF default _FillValue for float32, used by the L1C products for
+# measured scalars that do not apply to a channel.
+_NC_FLOAT32_DEFAULT_FILL = 9.96921e36
 
 
 class ChannelCalibration(NamedTuple):
@@ -45,12 +53,25 @@ class ChannelCalibration(NamedTuple):
     4095 (dual-gain calibration). They hold the source attributes as read
     (0.0 for channels without a warm range, NaN when absent); the schema
     keeps them for ``DUAL_GAIN_CHANNELS`` only.
+
+    The remaining fields are the radiance conversion constants read from the
+    float32 scalars ``data/<channel>/measured/<name>``: unit conversion,
+    brightness-temperature coefficients and constants, and the effective
+    solar irradiance. Each is NaN when the scalar is absent or holds its
+    ``_FillValue`` (the product marks it not applicable to the channel).
     """
 
     slope: float
     offset: float
     warm_slope: float = float("nan")
     warm_offset: float = float("nan")
+    radiance_unit_conversion_coefficient: float = float("nan")
+    radiance_to_bt_conversion_coefficient_wavenumber: float = float("nan")
+    radiance_to_bt_conversion_coefficient_a: float = float("nan")
+    radiance_to_bt_conversion_coefficient_b: float = float("nan")
+    radiance_to_bt_conversion_constant_c1: float = float("nan")
+    radiance_to_bt_conversion_constant_c2: float = float("nan")
+    channel_effective_solar_irradiance: float = float("nan")
 
 
 def _scalar_attr(attrs: Any, name: str) -> float:
@@ -58,6 +79,23 @@ def _scalar_attr(attrs: Any, name: str) -> float:
     if name not in attrs:
         return float("nan")
     return float(np.asarray(attrs[name]).item())
+
+
+def _measured_scalar(measured: Any, name: str) -> float:
+    """Return a scalar variable of a ``measured`` group as float.
+
+    Returns NaN if the variable is absent or equals its ``_FillValue``
+    (netCDF float32 default fill when the attribute is missing).
+    """
+    if name not in measured.variables:
+        return float("nan")
+    variable = measured[name]
+    value = np.asarray(variable[()]).item()
+    fill = variable.attrs.get("_FillValue", _NC_FLOAT32_DEFAULT_FILL)
+    fill_value = np.asarray(fill, dtype=variable.dtype).item()
+    if value == fill_value or np.isnan(value):
+        return float("nan")
+    return float(value)
 
 
 def _read_variable_array(variable: Any) -> np.ndarray:
@@ -202,8 +240,9 @@ class NCPartReader:
 
         Maps ``scale_factor``/``add_offset`` to ``slope``/``offset`` and
         ``warm_scale_factor``/``warm_add_offset`` to ``warm_slope``/
-        ``warm_offset``. Returns ``None`` if the channel or its
-        ``scale_factor``/``add_offset`` are absent.
+        ``warm_offset``, and reads the radiance conversion constants from
+        the channel's ``measured`` scalars. Returns ``None`` if the channel
+        or its ``scale_factor``/``add_offset`` are absent.
         """
         ds = self._open()
         if "data" not in ds.groups or channel not in ds["data"].groups:
@@ -222,11 +261,16 @@ class NCPartReader:
         if "scale_factor" not in attrs or "add_offset" not in attrs:
             return None
 
+        constants = {
+            name: _measured_scalar(measured, name)
+            for name in FCI_CONVERSION_CONSTANT_NAMES
+        }
         return ChannelCalibration(
             slope=_scalar_attr(attrs, "scale_factor"),
             offset=_scalar_attr(attrs, "add_offset"),
             warm_slope=_scalar_attr(attrs, "warm_scale_factor"),
             warm_offset=_scalar_attr(attrs, "warm_add_offset"),
+            **constants,
         )
 
     def close(self) -> None:

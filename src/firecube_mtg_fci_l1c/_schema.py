@@ -91,17 +91,15 @@ class Variable:
 def variable_enabled(
     variable: Variable,
     config: MtgFciL1cConfig,
-    logical_channels: tuple[str, ...] | None = None,
+    logical_channels: tuple[str, ...],
 ) -> bool:
-    """Return True if *variable* is enabled under *config*.
+    """Return True if *variable* is declared for a group holding *logical_channels*.
 
-    When *logical_channels* (the group's channels) is given, a variable with
-    ``only_for_channels`` is enabled only if the group holds one of them.
+    A variable with ``only_for_channels`` is enabled only if the group holds
+    one of them; ``enabled_by`` names the config flag that switches it on.
     """
-    if (
-        logical_channels is not None
-        and variable.only_for_channels is not None
-        and variable.only_for_channels.isdisjoint(logical_channels)
+    if variable.only_for_channels is not None and variable.only_for_channels.isdisjoint(
+        logical_channels
     ):
         return False
     if variable.enabled_by is None:

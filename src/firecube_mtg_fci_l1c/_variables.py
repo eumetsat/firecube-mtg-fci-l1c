@@ -33,7 +33,6 @@ import numpy as np  # pyright: ignore[reportMissingImports]
 
 from . import _schema
 from ._constants import (
-    FCI_CONVERSION_CONSTANTS,
     DUAL_GAIN_CHANNELS,
     FCI_PROJ_SCALE_RAD_PER_INDEX,
     MTG_PERSPECTIVE_POINT_HEIGHT_M,
@@ -222,40 +221,50 @@ def _channel_name_source(ctx: VariableContext) -> np.ndarray:
     return np.asarray(ctx.logical_channels, dtype="S16")
 
 
-def _conversion_constant(ctx: VariableContext, name: str) -> np.ndarray:
-    """Return one conversion constant per channel; NaN where it does not apply."""
-    values = [FCI_CONVERSION_CONSTANTS[ch][name] for ch in ctx.logical_channels]
-    return np.asarray(
-        [np.nan if value is None else value for value in values], dtype=np.float32
-    )
+def _calibration_field(ctx: VariableContext, field: str) -> np.ndarray | None:
+    """Return one ``ChannelCalibration`` field per channel for this slot.
+
+    NaN for channels without a calibration entry or whose product marks the
+    value not applicable.
+    """
+    if ctx.calibration_table is None:
+        return None
+    vec = np.full(ctx.n_channels, np.nan, dtype=np.float32)
+    found = False
+    for i, ch in enumerate(ctx.nc_channels):
+        cal = ctx.calibration_table.get(ch)
+        if cal is not None:
+            found = True
+            vec[i] = getattr(cal, field)
+    return vec if found else None
 
 
-def _radiance_unit_conversion_source(ctx: VariableContext) -> np.ndarray:
-    return _conversion_constant(ctx, "radiance_unit_conversion_coefficient")
+def _radiance_unit_conversion_source(ctx: VariableContext) -> np.ndarray | None:
+    return _calibration_field(ctx, "radiance_unit_conversion_coefficient")
 
 
-def _bt_wavenumber_source(ctx: VariableContext) -> np.ndarray:
-    return _conversion_constant(ctx, "radiance_to_bt_conversion_coefficient_wavenumber")
+def _bt_wavenumber_source(ctx: VariableContext) -> np.ndarray | None:
+    return _calibration_field(ctx, "radiance_to_bt_conversion_coefficient_wavenumber")
 
 
-def _bt_a_source(ctx: VariableContext) -> np.ndarray:
-    return _conversion_constant(ctx, "radiance_to_bt_conversion_coefficient_a")
+def _bt_a_source(ctx: VariableContext) -> np.ndarray | None:
+    return _calibration_field(ctx, "radiance_to_bt_conversion_coefficient_a")
 
 
-def _bt_b_source(ctx: VariableContext) -> np.ndarray:
-    return _conversion_constant(ctx, "radiance_to_bt_conversion_coefficient_b")
+def _bt_b_source(ctx: VariableContext) -> np.ndarray | None:
+    return _calibration_field(ctx, "radiance_to_bt_conversion_coefficient_b")
 
 
-def _bt_c1_source(ctx: VariableContext) -> np.ndarray:
-    return _conversion_constant(ctx, "radiance_to_bt_conversion_constant_c1")
+def _bt_c1_source(ctx: VariableContext) -> np.ndarray | None:
+    return _calibration_field(ctx, "radiance_to_bt_conversion_constant_c1")
 
 
-def _bt_c2_source(ctx: VariableContext) -> np.ndarray:
-    return _conversion_constant(ctx, "radiance_to_bt_conversion_constant_c2")
+def _bt_c2_source(ctx: VariableContext) -> np.ndarray | None:
+    return _calibration_field(ctx, "radiance_to_bt_conversion_constant_c2")
 
 
-def _solar_irradiance_source(ctx: VariableContext) -> np.ndarray:
-    return _conversion_constant(ctx, "channel_effective_solar_irradiance")
+def _solar_irradiance_source(ctx: VariableContext) -> np.ndarray | None:
+    return _calibration_field(ctx, "channel_effective_solar_irradiance")
 
 
 def _projection_x_attrs(config: MtgFciL1cConfig) -> dict[str, str]:
@@ -504,11 +513,11 @@ VARIABLES: list[Variable] = [
         },
         source=_channel_name_source,
     ),
-    # Radiance conversion constants: static per channel, written once. Names,
+    # Radiance conversion constants, read per product like slope/offset. Names,
     # long_names and comments follow data/<channel>/measured in the L1C files.
     Variable(
         name="radiance_unit_conversion_coefficient",
-        dims=("channel",),
+        dims=(TIME_COORD_NAME, "channel"),
         dtype=np.float32,
         fill_value=np.float32(np.nan),
         attrs={
@@ -521,7 +530,7 @@ VARIABLES: list[Variable] = [
     ),
     Variable(
         name="radiance_to_bt_conversion_coefficient_wavenumber",
-        dims=("channel",),
+        dims=(TIME_COORD_NAME, "channel"),
         dtype=np.float32,
         fill_value=np.float32(np.nan),
         attrs={
@@ -535,7 +544,7 @@ VARIABLES: list[Variable] = [
     ),
     Variable(
         name="radiance_to_bt_conversion_coefficient_a",
-        dims=("channel",),
+        dims=(TIME_COORD_NAME, "channel"),
         dtype=np.float32,
         fill_value=np.float32(np.nan),
         attrs={
@@ -548,7 +557,7 @@ VARIABLES: list[Variable] = [
     ),
     Variable(
         name="radiance_to_bt_conversion_coefficient_b",
-        dims=("channel",),
+        dims=(TIME_COORD_NAME, "channel"),
         dtype=np.float32,
         fill_value=np.float32(np.nan),
         attrs={
@@ -561,7 +570,7 @@ VARIABLES: list[Variable] = [
     ),
     Variable(
         name="radiance_to_bt_conversion_constant_c1",
-        dims=("channel",),
+        dims=(TIME_COORD_NAME, "channel"),
         dtype=np.float32,
         fill_value=np.float32(np.nan),
         attrs={
@@ -574,7 +583,7 @@ VARIABLES: list[Variable] = [
     ),
     Variable(
         name="radiance_to_bt_conversion_constant_c2",
-        dims=("channel",),
+        dims=(TIME_COORD_NAME, "channel"),
         dtype=np.float32,
         fill_value=np.float32(np.nan),
         attrs={
@@ -587,14 +596,15 @@ VARIABLES: list[Variable] = [
     ),
     Variable(
         name="channel_effective_solar_irradiance",
-        dims=("channel",),
+        dims=(TIME_COORD_NAME, "channel"),
         dtype=np.float32,
         fill_value=np.float32(np.nan),
         attrs={
             "long_name": "Channel effective solar irradiance at 1 AU",
             "units": "mW m-2 (cm-1)-1",
             "comment": "For the derivation of reflectance for VNIR spectral "
-            "channels. NaN for IR channels",
+            "channels. NaN where the product marks it not applicable (most IR "
+            "channels; ir_38 carries a value)",
         },
         source=_solar_irradiance_source,
         enabled_by="include_calibration",

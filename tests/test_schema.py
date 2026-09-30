@@ -105,7 +105,7 @@ def test_variable_context_with_runtime_fields() -> None:
 
 def test_variable_enabled_default_true() -> None:
     v = Variable(name="x", dims=("x",), dtype="f8", fill_value=None)
-    assert variable_enabled(v, MtgFciL1cConfig()) is True
+    assert variable_enabled(v, MtgFciL1cConfig(), ("vis_06",)) is True
 
 
 def test_variable_enabled_by_config_flag() -> None:
@@ -116,8 +116,14 @@ def test_variable_enabled_by_config_flag() -> None:
         fill_value=None,
         enabled_by="include_pixel_quality",
     )
-    assert variable_enabled(v, MtgFciL1cConfig(include_pixel_quality=True)) is True
-    assert variable_enabled(v, MtgFciL1cConfig(include_pixel_quality=False)) is False
+    assert (
+        variable_enabled(v, MtgFciL1cConfig(include_pixel_quality=True), ("vis_06",))
+        is True
+    )
+    assert (
+        variable_enabled(v, MtgFciL1cConfig(include_pixel_quality=False), ("vis_06",))
+        is False
+    )
 
 
 def test_variable_enabled_missing_attr_defaults_true() -> None:
@@ -128,7 +134,7 @@ def test_variable_enabled_missing_attr_defaults_true() -> None:
         fill_value=None,
         enabled_by="nonexistent_flag",
     )
-    assert variable_enabled(v, MtgFciL1cConfig()) is True
+    assert variable_enabled(v, MtgFciL1cConfig(), ("vis_06",)) is True
 
 
 # ─────────────────────────────────────────────────────────────
@@ -697,10 +703,8 @@ def test_chunk_overrides_dict_of_lists_accepted() -> None:
 
 
 # ─────────────────────────────────────────────────────────────
-# Radiance conversion constants: static (channel,) variables
+# Radiance conversion constants: per-product (time, channel) variables
 # ─────────────────────────────────────────────────────────────
-# Expected literals come from the data/<channel>/measured scalars of MTI1
-# FDHSI/HRFI products of 2026-09-28 12:20 UTC, not from the plugin table.
 
 _CONVERSION_VARIABLES = (
     "radiance_unit_conversion_coefficient",
@@ -713,19 +717,48 @@ _CONVERSION_VARIABLES = (
 )
 
 
-def _conversion_values(
-    name: str, product_type: str, logical_channels: tuple[str, ...]
-) -> np.ndarray:
+def _conversion_values(name: str) -> np.ndarray:
+    """Project one conversion variable from a mixed IR/VNIR calibration table."""
+    from firecube_mtg_fci_l1c._decode import ChannelCalibration
+
+    nan = float("nan")
     variable = next(v for v in VARIABLES if v.name == name)
     assert variable.source is not None
+    # HRFI 1 km group reads logical ir_105/ir_38 from the *_hr groups; the
+    # third channel has no calibration entry in this slot.
     ctx = VariableContext(
-        group="data_2km",
-        resolution="2km",
-        product_type=product_type,
+        group="data_1km",
+        resolution="1km",
+        product_type="HRFI",
         config=MtgFciL1cConfig(),
-        dimsize=5568,
-        n_channels=len(logical_channels),
-        logical_channels=logical_channels,
+        dimsize=11136,
+        n_channels=3,
+        logical_channels=("ir_105", "ir_38", "vis_06"),
+        nc_channels=("ir_105_hr", "ir_38_hr", "vis_06_hr"),
+        calibration_table={
+            "ir_105_hr": ChannelCalibration(
+                0.0528,
+                -10.77,
+                radiance_unit_conversion_coefficient=0.09,
+                radiance_to_bt_conversion_coefficient_wavenumber=950.5,
+                radiance_to_bt_conversion_coefficient_a=0.998,
+                radiance_to_bt_conversion_coefficient_b=0.36,
+                radiance_to_bt_conversion_constant_c1=1.2e-05,
+                radiance_to_bt_conversion_constant_c2=1.44,
+                channel_effective_solar_irradiance=nan,
+            ),
+            "ir_38_hr": ChannelCalibration(
+                0.00122,
+                -0.2498,
+                radiance_unit_conversion_coefficient=0.7,
+                radiance_to_bt_conversion_coefficient_wavenumber=2645.0,
+                radiance_to_bt_conversion_coefficient_a=0.9967,
+                radiance_to_bt_conversion_coefficient_b=2.25,
+                radiance_to_bt_conversion_constant_c1=1.2e-05,
+                radiance_to_bt_conversion_constant_c2=1.44,
+                channel_effective_solar_irradiance=15.4,
+            ),
+        },
     )
     data = variable.source(ctx)
     assert data is not None
@@ -733,57 +766,41 @@ def _conversion_values(
 
 
 @pytest.mark.unit
-def test_conversion_constants_are_static_channel_arrays() -> None:
+def test_conversion_constants_are_time_channel_arrays() -> None:
     specs = build_specs(MtgFciL1cConfig(), "FDHSI")
     for group in ("data_1km", "data_2km"):
         arrays = {a.name: a for a in next(g for g in specs if g.group == group).arrays}
         for name in _CONVERSION_VARIABLES:
             spec = arrays[name]
-            assert spec.dimension_names == ("channel",), name
-            assert spec.shape == (8,), name
-            assert spec.time_indexed is False, name
+            assert spec.dimension_names == (TIME_COORD_NAME, "channel"), name
+            assert spec.shape[1] == 8, name
+            assert spec.time_indexed is True, name
             assert np.dtype(spec.dtype) == np.float32, name
             assert spec.attrs is not None and spec.attrs["units"], name
 
 
 @pytest.mark.unit
-def test_conversion_constants_follow_channel_order_with_nan_where_not_applicable() -> (
-    None
-):
-    channels = ("ir_105", "ir_38", "vis_06")
-
+def test_conversion_constants_take_each_channels_product_value() -> None:
     np.testing.assert_array_equal(
-        _conversion_values(
-            "radiance_to_bt_conversion_coefficient_wavenumber", "FDHSI", channels
-        ),
-        np.array([949.9734497070312, 2644.3291015625, np.nan], dtype=np.float32),
+        _conversion_values("radiance_to_bt_conversion_coefficient_wavenumber"),
+        np.array([950.5, 2645.0, np.nan], dtype=np.float32),
     )
     np.testing.assert_array_equal(
-        _conversion_values("channel_effective_solar_irradiance", "FDHSI", channels),
-        np.array([np.nan, 15.373283386230469, 65.727783203125], dtype=np.float32),
+        _conversion_values("radiance_unit_conversion_coefficient"),
+        np.array([0.09, 0.7, np.nan], dtype=np.float32),
     )
     np.testing.assert_array_equal(
-        _conversion_values("radiance_unit_conversion_coefficient", "FDHSI", channels),
-        np.array(
-            [0.08997274190187454, 0.6971830129623413, 24.666019439697266],
-            dtype=np.float32,
-        ),
+        _conversion_values("radiance_to_bt_conversion_constant_c2"),
+        np.array([1.44, 1.44, np.nan], dtype=np.float32),
     )
 
 
 @pytest.mark.unit
-def test_conversion_constants_for_hrfi_match_fdhsi_band_values() -> None:
+def test_conversion_constants_nan_where_product_marks_not_applicable() -> None:
+    # ir_105 carries no solar irradiance; ir_38 does, although it is IR.
     np.testing.assert_array_equal(
-        _conversion_values(
-            "radiance_to_bt_conversion_coefficient_a", "HRFI", ("ir_38", "ir_105")
-        ),
-        np.array([0.9966715574264526, 0.999032199382782], dtype=np.float32),
-    )
-    np.testing.assert_array_equal(
-        _conversion_values(
-            "radiance_to_bt_conversion_constant_c2", "HRFI", ("ir_38", "ir_105")
-        ),
-        np.array([1.4387749433517456, 1.4387749433517456], dtype=np.float32),
+        _conversion_values("channel_effective_solar_irradiance"),
+        np.array([np.nan, 15.4, np.nan], dtype=np.float32),
     )
 
 

@@ -58,7 +58,7 @@ Every resolution group, or the root of a flat store, contains:
 | `warm_slope`, `warm_offset` | `(time, channel)` | negligible | IR 3.8 dual-gain calibration for counts above 4095; only in groups with `ir_38` (FDHSI `data_2km`, HRFI `data_1km`), `NaN` for the other channels there (see [formula](#radiometric-calibration)) |
 | `time` | `(time,)` | negligible | slot timestamp coordinate, anchored by `time_epoch`; stored as `datetime64[s]` |
 | `channel_name` | `(channel,)` | negligible | logical channel names such as `vis_06` and `ir_105` |
-| radiance conversion constants | `(channel,)` | negligible | seven static per-channel constants for brightness temperature and reflectance (see [below](#brightness-temperature-and-reflectance)) |
+| radiance conversion constants | `(time, channel)` | negligible | seven per-acquisition constants for brightness temperature and reflectance (see [below](#brightness-temperature-and-reflectance)) |
 | `x`, `y` | `(x,)`, `(y,)` | negligible | GEOS projection coordinates. Default units: metres (east-positive x, north-positive y). Use `--option projection_units=radian` for radian output. See [Projection units](customization.md#projection-units). |
 | `latitude`, `longitude` | `(y, x)` | `float32`, 1.9 GB / 475 MB / 120 MB per array at 500 m / 1 km / 2 km | static, computed once per group; `NaN` beyond Earth's limb |
 | `spatial_ref` | `()` | negligible | CF grid-mapping container with geostationary projection metadata |
@@ -137,10 +137,19 @@ They exist only in groups that contain `ir_38` (FDHSI `data_2km`, HRFI
 
 ## Brightness temperature and reflectance
 
-Each group stores the per-channel constants from the FCI L1C files as
-`(channel,)` variables. They do not change over time, so they have no `time`
-dimension and are written once when the store is first ingested. `NaN` marks
-a constant that does not apply to a channel.
+Each group stores the radiance conversion constants of every product as
+`(time, channel)` variables, recorded per acquisition like `slope` and
+`offset`. The values come from the scalars in `data/<channel>/measured` of
+each product. `NaN` marks a constant that the product declares not
+applicable to a channel. `ir_38` carries a solar irradiance value in the
+products although it is an IR channel.
+
+Slots ingested before the store had these variables hold no values and read
+as `NaN`, as do slots ingested before `warm_slope` and `warm_offset` existed.
+Every product ingested afterwards fills them. To fill earlier slots, re-run the
+ingest over their products with `resume_existing=true`: the per-acquisition
+variables are written again from each product, image data that is already
+present is left alone.
 
 | Variable | Units | Set for |
 |---|---|---|

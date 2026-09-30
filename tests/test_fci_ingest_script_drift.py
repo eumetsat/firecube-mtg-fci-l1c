@@ -51,12 +51,18 @@ def _drift_check_program() -> str:
     return "\n".join(lines[opening + 1 : closing]) + "\n"
 
 
+TIME_INDEXED = ("counts", "slope")
+
+
 def _write_store(path: Path, spec: StoreSpec) -> None:
     root = zarr.open_group(str(path), mode="w")
     for location, arrays in spec.items():
         group = root.require_group(location) if location else root
         for name, marked in arrays.items():
-            array = group.create_array(name, shape=(2,), dtype="float32")
+            dims = ("time",) if name in TIME_INDEXED else (name,)
+            array = group.create_array(
+                name, shape=(2,), dtype="float32", dimension_names=dims
+            )
             array[:] = np.zeros(2, dtype="float32")
             if marked:
                 array.attrs["firecube_static_written"] = True
@@ -77,12 +83,20 @@ def _run_check(
 
 CASES = [
     pytest.param(
-        {"": _all_marked(*STATIC, "counts")},
+        {"": {**_all_marked(*STATIC), "counts": False, "slope": False}},
         "",
         "slots",
         0,
         "DRIFT-CHECK OK: flat layout",
         id="flat-complete",
+    ),
+    pytest.param(
+        {"": {**_all_marked(*STATIC), "channel_name": False}},
+        "",
+        "slots",
+        1,
+        "missing firecube_static_written on: /channel_name",
+        id="flat-unmarked-channel-name",
     ),
     pytest.param(
         {"": _all_marked("x", "y", "counts")},

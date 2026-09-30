@@ -363,7 +363,9 @@ def fix_fillvalue(store: Path, yes_i_really_mean_it: bool) -> None:
     if skipped_idempotent:
         click.echo(f"Already stamped correctly: {len(skipped_idempotent)}")
     if missing:
-        click.echo(f"Missing from store (partial ingest?): {len(missing)}")
+        # Arrays the current schema declares but this store never had, for
+        # example ones added in a later plugin version. Nothing to repair.
+        click.echo(f"Declared but not in this store (left alone): {len(missing)}")
         for g, a in missing:
             click.echo(f"  {g}/{a}")
     if not yes_i_really_mean_it and patched:
