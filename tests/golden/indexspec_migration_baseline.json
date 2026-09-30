@@ -1,6 +1,6 @@
 {
   "fdhsi_defaults": {
-    "hash": "aac2b9c9f63fb62b2f3722ead94c337a0eae67d0e3a4752a916441437862bcab",
+    "hash": "fe8d167af3eae6180a2bf6d4e23e6bed534cd2d8e09b37ec48bc2edb9c01d741",
     "structure": {
       "attrs": {
         "firecube_resolved_index": "{\"groups\":{\"data_1km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null},\"data_2km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null}},\"name\":\"eumetsat_repeat_cycle_v1\",\"schema_version\":\"v1\"}",
@@ -806,6 +806,48 @@
                 1
               ]
             },
+            "warm_offset": {
+              "attrs": {
+                "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "long_name": "FCI warm calibration offset",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "shape": [
+                1,
+                1
+              ]
+            },
+            "warm_slope": {
+              "attrs": {
+                "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "long_name": "FCI warm calibration slope",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "shape": [
+                1,
+                1
+              ]
+            },
             "x": {
               "attrs": {
                 "axis": "X",
@@ -859,7 +901,7 @@
     }
   },
   "hrfi_defaults": {
-    "hash": "e6629a4ebe89da036529cd9f550577005afef5acce317aa2b16a97cb0ee05c86",
+    "hash": "833a34f950c41e7d56fc6eddd74aa8490f8df4ab6aee7b6f8ba31946621a5778",
     "structure": {
       "attrs": {
         "firecube_resolved_index": "{\"groups\":{\"data_1km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null},\"data_500m\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null}},\"name\":\"eumetsat_repeat_cycle_v1\",\"schema_version\":\"v1\"}",
@@ -1238,6 +1280,48 @@
               "dtype": "datetime64[s]",
               "fill_value": null,
               "shape": [
+                1
+              ]
+            },
+            "warm_offset": {
+              "attrs": {
+                "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "long_name": "FCI warm calibration offset",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "shape": [
+                1,
+                1
+              ]
+            },
+            "warm_slope": {
+              "attrs": {
+                "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "long_name": "FCI warm calibration slope",
+                "units": "mW m-2 sr-1 (cm-1)-1"
+              },
+              "chunks": [
+                1,
+                1
+              ],
+              "dimension_names": [
+                "time",
+                "channel"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "shape": [
+                1,
                 1
               ]
             },

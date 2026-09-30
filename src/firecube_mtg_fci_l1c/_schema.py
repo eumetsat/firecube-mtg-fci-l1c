@@ -19,7 +19,7 @@ from __future__ import annotations
 import dataclasses
 import math
 from collections.abc import Callable, Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np  # pyright: ignore[reportMissingImports]
 from firecube.ingestor.api import (  # pyright: ignore[reportMissingImports]
@@ -27,8 +27,12 @@ from firecube.ingestor.api import (  # pyright: ignore[reportMissingImports]
     ZarrGroupSpec,
 )
 
-from ._constants import CONSTANTS, VALID_RESOLUTIONS
+from ._constants import CONSTANTS
+from ._group_plan import group_name
 from .config import MtgFciL1cConfig
+
+if TYPE_CHECKING:
+    from ._decode import ChannelCalibration
 
 
 TIME_COORD_NAME = "time"
@@ -38,13 +42,14 @@ TIME_COORD_NAME = "time"
 class VariableContext:
     """Per-emission context passed to source callables.
 
-    Static-phase emitters populate ``group``, ``product_type``, ``config``,
-    ``dimsize``, ``n_channels``, ``logical_channels``. Time-phase emitters add
-    ``timestamp``. Spatial-phase emitters add ``y_slice`` and
+    Static-phase emitters populate ``group``, ``resolution``, ``product_type``,
+    ``config``, ``dimsize``, ``n_channels``, ``logical_channels``. Time-phase
+    emitters add ``timestamp``. Spatial-phase emitters add ``y_slice`` and
     ``channel_payload``.
     """
 
     group: str
+    resolution: str
     product_type: str
     config: MtgFciL1cConfig
     dimsize: int
@@ -54,7 +59,7 @@ class VariableContext:
     y_slice: slice | None = None
     timestamp: Any = None
     geo_provider: Any = None
-    calibration_table: dict[str, tuple[float, float]] | None = None
+    calibration_table: dict[str, ChannelCalibration] | None = None
     channel_payload: Any = None  # ChannelSlicePayload; Any avoids circular import
     nc_channels: tuple[str, ...] = ()
 
@@ -78,10 +83,27 @@ class Variable:
     enabled_by: str | None = None
     # Must be a module-level callable (no lambdas) if used from process workers.
     attrs_resolver: Callable[[MtgFciL1cConfig], Mapping[str, Any]] | None = None
+    # Declare the array only in groups holding at least one of these logical
+    # channels. None means every group.
+    only_for_channels: frozenset[str] | None = None
 
 
-def variable_enabled(variable: Variable, config: MtgFciL1cConfig) -> bool:
-    """Return True if *variable* is enabled under *config*."""
+def variable_enabled(
+    variable: Variable,
+    config: MtgFciL1cConfig,
+    logical_channels: tuple[str, ...] | None = None,
+) -> bool:
+    """Return True if *variable* is enabled under *config*.
+
+    When *logical_channels* (the group's channels) is given, a variable with
+    ``only_for_channels`` is enabled only if the group holds one of them.
+    """
+    if (
+        logical_channels is not None
+        and variable.only_for_channels is not None
+        and variable.only_for_channels.isdisjoint(logical_channels)
+    ):
+        return False
     if variable.enabled_by is None:
         return True
     return bool(getattr(config, variable.enabled_by, True))
@@ -91,12 +113,11 @@ def _copy_attrs(attrs: Mapping[str, Any] | None) -> dict[str, Any] | None:
     return dict(attrs) if attrs is not None else None
 
 
-def _group_attrs(group: str) -> dict[str, str]:
-    """Global attributes for a ``data_<res>`` group."""
-    res = group.removeprefix("data_")
+def _group_attrs(resolution: str) -> dict[str, str]:
+    """Global attributes for the group holding one resolution."""
     return {
         "Conventions": "CF-1.8",
-        "title": f"MTG FCI Level 1C effective radiances ({res})",
+        "title": f"MTG FCI Level 1C effective radiances ({resolution})",
         "institution": "EUMETSAT",
         "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
         "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
@@ -206,18 +227,20 @@ def _build_array_time_yx_channel(
     spec: _ArraySpecInputs, ctx: VariableContext
 ) -> ZarrArraySpec:
     """Build the ``(time, y, x, channel)`` per-pixel array spec."""
-    chunks = ctx.config.get_group_chunk_shape(ctx.group)
+    chunks = ctx.config.get_group_chunk_shape(ctx.resolution)
     if len(chunks) != 4:
-        raise ValueError(f"Expected rank-4 chunks for {ctx.group}, got {chunks!r}")
+        raise ValueError(f"Expected rank-4 chunks for {ctx.resolution}, got {chunks!r}")
     chunks4 = (chunks[0], chunks[1], chunks[2], chunks[3])
+    # Overrides are keyed by data_<res> in both layouts; ctx.group is "" when flat.
+    override_key = f"data_{ctx.resolution}"
     shard_override = None
     if ctx.config.zarr_shard_overrides is not None:
-        shard_override = ctx.config.zarr_shard_overrides.get(ctx.group)
+        shard_override = ctx.config.zarr_shard_overrides.get(override_key)
     if not ctx.config.template_config.zarr_sharding:
         shards: tuple[int, ...] | None = None
     elif shard_override is not None:
         _validate_shard_override(
-            shard_override, chunks4, group=ctx.group, name=spec.variable.name
+            shard_override, chunks4, group=override_key, name=spec.variable.name
         )
         shards = shard_override
     else:
@@ -398,19 +421,10 @@ def build_specs(config: MtgFciL1cConfig, product_type: str) -> list[ZarrGroupSpe
             f"Unsupported product type: {product_type!r}. Expected one of {sorted(CONSTANTS)}"
         )
 
-    valid = VALID_RESOLUTIONS.get(
-        product_type, VALID_RESOLUTIONS[next(iter(CONSTANTS))]
-    )
-    configured = config.get_resolutions(product_type)
-    resolutions = [res for res in valid if res in configured]
-
     channel_selection = config.get_channels(product_type)
-    if channel_selection is not None:
-        resolutions = [res for res in resolutions if channel_selection.get(res)]
-
     group_specs: list[ZarrGroupSpec] = []
-    for resolution in resolutions:
-        group = f"data_{resolution}"
+    for resolution in config.effective_resolutions(product_type):
+        group = group_name(resolution, config.flat_store)
         res_info = CONSTANTS[product_type][resolution]
         dimsize = int(res_info["dimsize"])  # type: ignore[call-overload]
         logical_channels: tuple[str, ...] = tuple(res_info["channels"])  # type: ignore[arg-type]
@@ -419,6 +433,7 @@ def build_specs(config: MtgFciL1cConfig, product_type: str) -> list[ZarrGroupSpe
 
         ctx = VariableContext(
             group=group,
+            resolution=resolution,
             product_type=product_type,
             config=config,
             dimsize=dimsize,
@@ -426,7 +441,9 @@ def build_specs(config: MtgFciL1cConfig, product_type: str) -> list[ZarrGroupSpe
             logical_channels=logical_channels,
         )
         enabled_variables = [
-            variable for variable in VARIABLES if variable_enabled(variable, config)
+            variable
+            for variable in VARIABLES
+            if variable_enabled(variable, config, logical_channels)
         ]
         group_specs.append(
             ZarrGroupSpec(
@@ -436,7 +453,7 @@ def build_specs(config: MtgFciL1cConfig, product_type: str) -> list[ZarrGroupSpe
                     for variable in enabled_variables
                 ],
                 coord_names=_coord_names_for(enabled_variables, TIME_COORD_NAME),
-                attrs=_group_attrs(group),
+                attrs=_group_attrs(resolution),
             )
         )
     return group_specs

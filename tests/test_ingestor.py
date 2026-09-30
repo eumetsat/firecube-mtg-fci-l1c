@@ -25,6 +25,7 @@ import numpy as np
 import pytest
 
 from firecube.core.api import IndexSpec, ItemInfo, RegularTimeAxis
+from firecube_mtg_fci_l1c._decode import ChannelCalibration
 
 
 class TestMtgFciL1cIngestorImport:
@@ -214,6 +215,34 @@ class TestIndexSpecAndInspectItem:
             assert axis.mode == "floor"
             assert axis.slot_count == 144
 
+    @pytest.mark.parametrize(
+        ("product_type", "channels", "expected_groups"),
+        [
+            ("FDHSI", "vis_06", {"data_1km"}),
+            ("FDHSI", "ir_105,wv_63", {"data_2km"}),
+            ("FDHSI", "vis_06,ir_105", {"data_1km", "data_2km"}),
+            ("HRFI", "nir_22", {"data_500m"}),
+        ],
+    )
+    def test_index_spec_groups_follow_channel_selection(
+        self, product_type, channels, expected_groups
+    ):
+        """IndexSpec groups must be exactly the groups zarr_schema() declares."""
+        from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig, MtgFciL1cIngestor
+
+        ingestor = MtgFciL1cIngestor()
+        ingestor.plugin_config = MtgFciL1cConfig(
+            product_type=product_type, channels=channels, time_slots=144
+        )
+        ctx: Any = SimpleNamespace(source="unused", options={})
+
+        spec = ingestor.index_spec(ctx)
+        schema_groups = {group.group for group in ingestor.zarr_schema(ctx)}
+
+        assert spec is not None
+        assert set(spec.groups) == expected_groups
+        assert schema_groups == expected_groups
+
     def test_inspect_item_returns_timestamp_coordinate(self):
         from datetime import datetime
 
@@ -320,7 +349,7 @@ class TestBuildWriteIntentsLogging:
         ingestor._log.exception.assert_called_once()
 
 
-class TestVariableDispatchRegressions:
+class TestVariableDispatch:
     def test_spatial_phase_emits_callable_payloads(self):
         from firecube_mtg_fci_l1c._group_plan import GroupPlan
         from firecube_mtg_fci_l1c._decode import ChunkOwnedAssembler
@@ -491,9 +520,9 @@ class TestVariableDispatchRegressions:
 
             def read_calibration(self, channel):
                 if self.part_path.name == "part-a.nc" and channel == "vis_04":
-                    return (1.0, 10.0)
+                    return ChannelCalibration(1.0, 10.0)
                 if self.part_path.name == "part-b.nc" and channel == "vis_06":
-                    return (2.0, 20.0)
+                    return ChannelCalibration(2.0, 20.0)
                 return None
 
             def read_channel_data(self, _channel):

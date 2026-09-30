@@ -3808,7 +3808,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "211784b40cb853637f2de51428c89e196f61db247cb978f6adf2e1bc9e1250ae",
+    "hash": "f3c3cee89e555cabe9c6f130b30218f7d924be1cfb5768b7fd6c1edd36206d0f",
     "normalized_spec": [
       {
         "arrays": [
@@ -4485,6 +4485,56 @@
             "name": "time",
             "shape": [
               1
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              8
             ],
             "shards": null,
             "time_indexed": true
@@ -4561,7 +4611,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "56fdf32f2e76e1838c6e8a75106c2a9fa13fbc6aa02111c016c18f18d3b57260",
+    "hash": "a7a186cb442b1e72338fe8a8608e728453af16293f38b4e93bdcad880769abe3",
     "normalized_spec": [
       {
         "arrays": [
@@ -5314,6 +5364,56 @@
             "name": "time",
             "shape": [
               1
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              8
             ],
             "shards": null,
             "time_indexed": true
@@ -5390,7 +5490,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "9388d79e3212f274498d79e7b2cabeb0ed2f373dc1178190ed84aa82278b9fba",
+    "hash": "8c365a748bd4819ce83275165aac5627008fc7af74b64f758d221898c8d222c8",
     "normalized_spec": [
       {
         "arrays": [
@@ -6167,6 +6267,56 @@
           },
           {
             "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "axis": "X",
               "long_name": "x coordinate of projection",
               "standard_name": "projection_x_coordinate",
@@ -6237,7 +6387,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "5060337d94c7224bdf77fad5510283d8f4a87e8e245ef2dfa462368aa67b1bc3",
+    "hash": "772cbbec4bf0f6d9a9355e980ebc7d997231c861e2f8aaaabc39a405c035f8ee",
     "normalized_spec": [
       {
         "arrays": [
@@ -7090,6 +7240,56 @@
           },
           {
             "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "axis": "X",
               "long_name": "x coordinate of projection",
               "standard_name": "projection_x_coordinate",
@@ -7160,7 +7360,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "68b85b11d164eb1387a7c3bd8ba51ee74062bffe4918104e937e8fc697c047cd",
+    "hash": "3070e6e6736826e6975bc3c04c8f2330ad63db11c07a192b4c65ba3bd40703c0",
     "normalized_spec": [
       {
         "arrays": [
@@ -7941,6 +8141,56 @@
             "name": "time",
             "shape": [
               1
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              8
             ],
             "shards": null,
             "time_indexed": true
@@ -8019,7 +8269,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "22175465f1ac3b751b6d0c1b794fb2e01752b5a9d1a3a7b922f2d9a4246aa92e",
+    "hash": "294533eb98acd8b27e210788ade5a4e34b22f3eb0d2ee78cb3ea1994b0697041",
     "normalized_spec": [
       {
         "arrays": [
@@ -8878,6 +9128,56 @@
             "name": "time",
             "shape": [
               1
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              8
             ],
             "shards": null,
             "time_indexed": true
@@ -8956,7 +9256,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "856b6ceca48092f83449eb954542733a759ffea3d32bddc2b6c5cef59a4d8e59",
+    "hash": "716da2f990663a772f508eca80095ac815a3474843a1a7144c42ee9107da0ae9",
     "normalized_spec": [
       {
         "arrays": [
@@ -9839,6 +10139,56 @@
           },
           {
             "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
               "axis": "X",
               "long_name": "x coordinate of projection",
               "standard_name": "projection_x_coordinate",
@@ -9911,7 +10261,7 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "7182e7dcebefb5e1d882e6e0b5d3710114688d06783ca3a8c0c23ab0ff5e6a5d",
+    "hash": "b0db3f6c230c5fdc5db8701f98b5dfa7c8c8525dba0c6fff6bcadd2b23690dbb",
     "normalized_spec": [
       {
         "arrays": [
@@ -10866,6 +11216,56 @@
             "name": "time",
             "shape": [
               1
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              8
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              8
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              8
             ],
             "shards": null,
             "time_indexed": true
@@ -14752,7 +15152,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "91dbf8bc57b706f0c17fa7b23c4e7eaae910789179753f49de5d1c3a29566d2d",
+    "hash": "265dd807f2fd9855dd067496ea45ae27849cf3ebb692171cef81e3b55a87b047",
     "normalized_spec": [
       {
         "arrays": [
@@ -15055,6 +15455,56 @@
             "name": "time",
             "shape": [
               1
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              2
             ],
             "shards": null,
             "time_indexed": true
@@ -15505,7 +15955,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "b18960ba374cc17e93c30072a776f7179e8badccf55153f9a51773f5a30b736d",
+    "hash": "6ddd81091b7eb5781822a143590d7321fd5c3025f8b776085fe54ed8c0799682",
     "normalized_spec": [
       {
         "arrays": [
@@ -15846,6 +16296,56 @@
             "name": "time",
             "shape": [
               1
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              2
             ],
             "shards": null,
             "time_indexed": true
@@ -16334,7 +16834,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "e9c8fb9b5fdc3cb97028b31cefa92354c4904639f9c9a81c3b81339758d9c0a3",
+    "hash": "f92abaed2b248b3e34b6ae32830ee57c976dc863065fcf7790bd396882e7f47e",
     "normalized_spec": [
       {
         "arrays": [
@@ -16684,6 +17184,56 @@
             "name": "time",
             "shape": [
               1
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              2
             ],
             "shards": null,
             "time_indexed": true
@@ -17181,7 +17731,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "636a503e794b5067ad5f226d7686b742ab02d7931e3eb938e4b9a63975e90259",
+    "hash": "6b6c57a81abb7a7d79eb2ca1a1eeb9bb76b94df7f711e692aa9d08899d5de928",
     "normalized_spec": [
       {
         "arrays": [
@@ -17569,6 +18119,56 @@
             "name": "time",
             "shape": [
               1
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              2
             ],
             "shards": null,
             "time_indexed": true
@@ -18104,7 +18704,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "aeb642d67c0509fb5a69863297e562976ca31b7eba0a618383314e4c63737991",
+    "hash": "98137f24b96664a4ef4b74aa8be5324a90a5081dee951f5bb4fcdf600fafa354",
     "normalized_spec": [
       {
         "arrays": [
@@ -18458,6 +19058,56 @@
             "name": "time",
             "shape": [
               1
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              2
             ],
             "shards": null,
             "time_indexed": true
@@ -18963,7 +19613,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "84db908365a6fe1118397d7cc8ba547e6a337384af4c900ecac5e7a728c12c94",
+    "hash": "6749645d0b808c90e83f79ad7e6188458b132c0cb494ab94b0dfe70db2c37713",
     "normalized_spec": [
       {
         "arrays": [
@@ -19356,6 +20006,56 @@
             "name": "time",
             "shape": [
               1
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              2
             ],
             "shards": null,
             "time_indexed": true
@@ -19900,7 +20600,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "94945fa2615d2ef6d830852b5a187ae3e06627a8cd91ca5ca6c5603d6651b625",
+    "hash": "66be48b6c438f53521e848ccb66b0ddf3e177cdc8b527bdc2adc29356974f381",
     "normalized_spec": [
       {
         "arrays": [
@@ -20302,6 +21002,56 @@
             "name": "time",
             "shape": [
               1
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              2
             ],
             "shards": null,
             "time_indexed": true
@@ -20855,7 +21605,7 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "876ced95558f1fce2fbd7e4b193c80af10ea5384876f0800d9dc5749533e9b68",
+    "hash": "851fc5fe754c8923d5a9c34278e357109964904e049b7796b6a4bdb7bb104123",
     "normalized_spec": [
       {
         "arrays": [
@@ -21296,6 +22046,56 @@
             "name": "time",
             "shape": [
               1
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration offset",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_offset",
+            "shape": [
+              1,
+              2
+            ],
+            "shards": null,
+            "time_indexed": true
+          },
+          {
+            "attrs": {
+              "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+              "long_name": "FCI warm calibration slope",
+              "units": "mW m-2 sr-1 (cm-1)-1"
+            },
+            "chunks": [
+              1,
+              2
+            ],
+            "dimension_names": [
+              "time",
+              "channel"
+            ],
+            "dtype": "float64",
+            "expected_time_count": null,
+            "fill_value": "nan",
+            "name": "warm_slope",
+            "shape": [
+              1,
+              2
             ],
             "shards": null,
             "time_indexed": true

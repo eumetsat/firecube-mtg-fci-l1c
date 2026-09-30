@@ -247,7 +247,42 @@ def test_nc_part_reader_reads_calibration_from_radiance_attrs(tmp_path: Path):
     )
 
     with NCPartReader(part) as reader:
-        assert reader.read_calibration("vis_04") == pytest.approx((0.25, 3.5))
+        cal = reader.read_calibration("vis_04")
+
+    assert cal is not None
+    assert (cal.slope, cal.offset) == pytest.approx((0.25, 3.5))
+    # The fixture has no warm_scale_factor/warm_add_offset attributes.
+    assert np.isnan(cal.warm_slope) and np.isnan(cal.warm_offset)
+
+
+@pytest.mark.unit
+def test_nc_part_reader_reads_ir38_dual_gain_warm_calibration(tmp_path: Path):
+    # Attribute values as in MTI1 FDHSI data/ir_38/measured/effective_radiance.
+    part = tmp_path / "part.nc"
+    with h5netcdf.File(part, "w") as ds:
+        measured = (
+            ds.create_group("data").create_group("ir_38").create_group("measured")
+        )
+        measured.dimensions["y"] = 1
+        measured.dimensions["x"] = 2
+        radiance = measured.create_variable(
+            "effective_radiance",
+            ("y", "x"),
+            data=np.array([[4095, 4290]], dtype=np.uint16),
+        )
+        radiance.attrs["scale_factor"] = np.float32(0.001224690000526607)
+        radiance.attrs["add_offset"] = np.float32(-0.24983632564544678)
+        radiance.attrs["warm_scale_factor"] = np.float32(0.02422214113175869)
+        radiance.attrs["warm_add_offset"] = np.float32(-94.42408752441406)
+
+    with NCPartReader(part) as reader:
+        cal = reader.read_calibration("ir_38")
+
+    assert cal is not None
+    assert cal.slope == 0.001224690000526607
+    assert cal.offset == -0.24983632564544678
+    assert cal.warm_slope == 0.02422214113175869
+    assert cal.warm_offset == -94.42408752441406
 
 
 @pytest.mark.unit
@@ -456,8 +491,9 @@ def test_shared_nc_part_reader_decode_channel_matches_eager_calibration(
     with SharedNcPartReader() as shared:
         shared_cal = shared.decode_channel(part, "vis_04")
 
-    assert shared_cal == eager_cal
-    assert shared_cal == pytest.approx((0.25, 3.5))
+    assert shared_cal is not None and eager_cal is not None
+    np.testing.assert_array_equal(np.array(shared_cal), np.array(eager_cal))
+    assert (shared_cal.slope, shared_cal.offset) == pytest.approx((0.25, 3.5))
 
 
 @pytest.mark.unit
@@ -792,6 +828,7 @@ def test_variable_projections_do_not_mutate_cached_payload(tmp_path: Path):
 
         ctx = VariableContext(
             group="data_1km",
+            resolution="1km",
             product_type="FDHSI",
             config=MtgFciL1cConfig(),
             dimsize=2,

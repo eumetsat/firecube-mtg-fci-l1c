@@ -20,9 +20,34 @@ output.zarr/
 
 Channel names are also stored per group in the `channel_name[c]` array.
 
+```python
+import xarray as xr
+
+ds = xr.open_zarr("output.zarr", group="data_1km")
+```
+
+### Flat layout
+
+A store ingested with `--option flat_store=true` holds a single resolution
+(one row of the table above) and has no `data_<res>/` group. The variables sit
+at the store root:
+
+```
+fci-1km.zarr/
+├── counts/  pixel_quality/  pixel_time/  slope/  offset/
+└── latitude/  longitude/  x/  y/  time/  channel_name/  spatial_ref/
+```
+
+```python
+ds = xr.open_zarr("fci-1km.zarr")
+```
+
+Options, rules, and examples are in
+[Customization → Flat store layout](customization.md#flat-store-layout).
+
 ## Variables
 
-Every group contains:
+Every resolution group, or the root of a flat store, contains:
 
 | Variable | Shape | Storage | Notes |
 |---|---|---|---|
@@ -30,6 +55,7 @@ Every group contains:
 | `pixel_quality` | `(time, y, x, channel)` | `uint8`, ~1 GB per slot at 1 km | 8-bit warning flags (see [bit table](#pixel_quality-bits)) |
 | `pixel_time` | `(time, y, x, channel)` | `float64`, ~7.9 GB per slot at 1 km | seconds since 2000-01-01 UTC; `pixel_time_dtype=float32` halves it, `include_pixel_time=false` drops it |
 | `slope`, `offset` | `(time, channel)` | negligible | radiometric calibration (see [formula](#radiometric-calibration)) |
+| `warm_slope`, `warm_offset` | `(time, channel)` | negligible | IR 3.8 dual-gain calibration for counts above 4095; only in groups with `ir_38` (FDHSI `data_2km`, HRFI `data_1km`), `NaN` for the other channels there (see [formula](#radiometric-calibration)) |
 | `time` | `(time,)` | negligible | slot timestamp coordinate, anchored by `time_epoch`; stored as `datetime64[s]` |
 | `channel_name` | `(channel,)` | negligible | logical channel names such as `vis_06` and `ir_105` |
 | radiance conversion constants | `(channel,)` | negligible | seven static per-channel constants for brightness temperature and reflectance (see [below](#brightness-temperature-and-reflectance)) |
@@ -87,6 +113,27 @@ radiance = counts * slope + offset  # mW m-2 sr-1 (cm-1)-1
 
 `slope` and `offset` are recorded per acquisition: one value per `(time, channel)`,
 not per pixel.
+
+### IR 3.8 dual-gain calibration
+
+The IR 3.8 channel (`ir_38`) stores counts up to 8191 to cover its extended
+radiometric range. Counts up to 4095 use `slope` and `offset`; counts above
+4095 use `warm_slope` and `warm_offset`:
+
+```python
+ds = ds.assign_coords(channel=ds.channel_name.astype(str))
+ir38 = ds.sel(channel="ir_38")
+radiance = xr.where(
+    ir38.counts > 4095,
+    ir38.counts * ir38.warm_slope + ir38.warm_offset,
+    ir38.counts * ir38.slope + ir38.offset,
+)
+```
+
+`warm_slope` and `warm_offset` are recorded per acquisition like `slope` and
+`offset`, so reprocessed data with different coefficients stays consistent.
+They exist only in groups that contain `ir_38` (FDHSI `data_2km`, HRFI
+`data_1km`) and are `NaN` for the other channels in those groups.
 
 ## Brightness temperature and reflectance
 

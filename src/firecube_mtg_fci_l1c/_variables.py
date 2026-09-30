@@ -24,7 +24,7 @@ To add a variable:
 Source functions MUST be module-level (never lambdas) so the list stays
 picklable for ``ProcessPoolExecutor`` workers.
 
-See ``docs/guides/add-zarr-variable.md`` for the decision table and examples.
+See ``docs/contributing/add-zarr-variable.md`` for the decision table and examples.
 """
 
 from __future__ import annotations
@@ -34,6 +34,7 @@ import numpy as np  # pyright: ignore[reportMissingImports]
 from . import _schema
 from ._constants import (
     FCI_CONVERSION_CONSTANTS,
+    DUAL_GAIN_CHANNELS,
     FCI_PROJ_SCALE_RAD_PER_INDEX,
     MTG_PERSPECTIVE_POINT_HEIGHT_M,
 )
@@ -134,10 +135,38 @@ def _offset_source(ctx: VariableContext) -> np.ndarray | None:
     return vec if found else None
 
 
+def _warm_slope_source(ctx: VariableContext) -> np.ndarray | None:
+    if ctx.calibration_table is None:
+        return None
+    vec = np.full(ctx.n_channels, np.nan, dtype=np.float64)
+    found = False
+    for i, (logical, ch) in enumerate(zip(ctx.logical_channels, ctx.nc_channels)):
+        cal = ctx.calibration_table.get(ch)
+        if cal is not None:
+            found = True
+            if logical in DUAL_GAIN_CHANNELS:
+                vec[i] = cal.warm_slope
+    return vec if found else None
+
+
+def _warm_offset_source(ctx: VariableContext) -> np.ndarray | None:
+    if ctx.calibration_table is None:
+        return None
+    vec = np.full(ctx.n_channels, np.nan, dtype=np.float64)
+    found = False
+    for i, (logical, ch) in enumerate(zip(ctx.logical_channels, ctx.nc_channels)):
+        cal = ctx.calibration_table.get(ch)
+        if cal is not None:
+            found = True
+            if logical in DUAL_GAIN_CHANNELS:
+                vec[i] = cal.warm_offset
+    return vec if found else None
+
+
 def _latitude_source(ctx: VariableContext) -> np.ndarray | None:
     if ctx.geo_provider is None:
         return None
-    res_m = ctx.geo_provider.resolution_m_for_group(ctx.group)
+    res_m = ctx.geo_provider.resolution_m(ctx.resolution)
     if res_m is None:
         return None
     lat, _lon = ctx.geo_provider.get_lat_lon(ctx.config.fci_grids_file, res_m)
@@ -147,7 +176,7 @@ def _latitude_source(ctx: VariableContext) -> np.ndarray | None:
 def _longitude_source(ctx: VariableContext) -> np.ndarray | None:
     if ctx.geo_provider is None:
         return None
-    res_m = ctx.geo_provider.resolution_m_for_group(ctx.group)
+    res_m = ctx.geo_provider.resolution_m(ctx.resolution)
     if res_m is None:
         return None
     _lat, lon = ctx.geo_provider.get_lat_lon(ctx.config.fci_grids_file, res_m)
@@ -165,10 +194,9 @@ def _projection_angle_source(ctx: VariableContext) -> np.ndarray | None:
     because the files store ``x`` positive-westward while the cube is
     east-positive.
     """
-    res = ctx.group.removeprefix("data_")
-    if res not in FCI_PROJ_SCALE_RAD_PER_INDEX:
+    if ctx.resolution not in FCI_PROJ_SCALE_RAD_PER_INDEX:
         return None
-    scale = FCI_PROJ_SCALE_RAD_PER_INDEX[res]
+    scale = FCI_PROJ_SCALE_RAD_PER_INDEX[ctx.resolution]
     centre = ctx.dimsize / 2 - 0.5
     rad = (np.arange(ctx.dimsize, dtype=np.float64) - centre) * scale
     if ctx.config.projection_units in ("meter", "metre"):
@@ -371,6 +399,36 @@ VARIABLES: list[Variable] = [
         attrs={"units": "mW m-2 sr-1 (cm-1)-1", "long_name": "FCI calibration offset"},
         source=_offset_source,
         enabled_by="include_calibration",
+    ),
+    Variable(
+        name="warm_slope",
+        dims=(TIME_COORD_NAME, "channel"),
+        dtype=np.float64,
+        fill_value=np.nan,
+        attrs={
+            "units": "mW m-2 sr-1 (cm-1)-1",
+            "long_name": "FCI warm calibration slope",
+            "comment": "Dual-gain calibration of IR 3.8: applies to counts "
+            "above 4095. NaN for all other channels.",
+        },
+        source=_warm_slope_source,
+        enabled_by="include_calibration",
+        only_for_channels=DUAL_GAIN_CHANNELS,
+    ),
+    Variable(
+        name="warm_offset",
+        dims=(TIME_COORD_NAME, "channel"),
+        dtype=np.float64,
+        fill_value=np.nan,
+        attrs={
+            "units": "mW m-2 sr-1 (cm-1)-1",
+            "long_name": "FCI warm calibration offset",
+            "comment": "Dual-gain calibration of IR 3.8: applies to counts "
+            "above 4095. NaN for all other channels.",
+        },
+        source=_warm_offset_source,
+        enabled_by="include_calibration",
+        only_for_channels=DUAL_GAIN_CHANNELS,
     ),
     Variable(
         name="latitude",
