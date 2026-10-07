@@ -32,6 +32,7 @@ import numpy as np  # pyright: ignore[reportMissingImports]
 from ._constants import (
     CONSTANTS,
     FCI_CONVERSION_CONSTANT_NAMES,
+    SLOT_GEOMETRY_SOURCES,
     get_nc_part_prefix,
     nc_channel_resolution_map,
 )
@@ -235,6 +236,34 @@ class NCPartReader:
             for index, time in zip(index_values, time_values, strict=True)
         }
 
+    def read_slot_geometry(self) -> dict[int, dict[str, float]]:
+        """Read the ``SLOT_GEOMETRY_SOURCES`` tables, keyed by root ``index``.
+
+        Returns one row per ``index`` value with NaN for values equal to the
+        variable's ``_FillValue`` or for variables absent from the nc_part.
+        Returns an empty mapping for nc_parts without a root ``index``.
+        """
+        ds = self._open()
+        if "index" not in ds.variables:
+            return {}
+        index_values = np.asarray(ds["index"][:])
+        columns: dict[str, np.ndarray] = {}
+        for name, path in SLOT_GEOMETRY_SOURCES.items():
+            group_path, _, var_name = path.rpartition("/")
+            try:
+                variable = ds[group_path][var_name]
+            except KeyError:
+                columns[name] = np.full(index_values.shape, np.nan)
+                continue
+            values = np.asarray(variable[:], dtype=np.float64)
+            fill = variable.attrs.get("_FillValue", _NC_FLOAT32_DEFAULT_FILL)
+            fill_value = np.asarray(fill, dtype=variable.dtype).astype(np.float64)
+            columns[name] = np.where(values == fill_value, np.nan, values)
+        return {
+            int(index): {name: float(column[k]) for name, column in columns.items()}
+            for k, index in enumerate(index_values)
+        }
+
     def read_calibration(self, channel: str) -> ChannelCalibration | None:
         """Return the channel's calibration from ``effective_radiance`` attrs.
 
@@ -340,6 +369,37 @@ class TimeMapAccumulator:
     def build_index2time(self) -> dict[int, float]:
         """Return a copy of the accumulated ``index -> time`` mapping."""
         return dict(self._index2time)
+
+
+class SlotGeometryAccumulator:
+    """Accumulate the satellite position tables across nc_parts.
+
+    Each nc_part carries the rows of its own ``index`` values; neighbouring
+    nc_parts can repeat an ``index``. As in :class:`TimeMapAccumulator`, the
+    later nc_part wins, so a row matches the ``pixel_time`` derived from it.
+    """
+
+    def __init__(self) -> None:
+        """Initialize empty per-index state."""
+        self._rows: dict[int, dict[str, float]] = {}
+
+    def accumulate(self, reader: NCPartReader) -> None:
+        """Merge one nc_part's geometry rows into accumulator state."""
+        self._rows.update(reader.read_slot_geometry())
+
+    def build(self) -> dict[str, float]:
+        """Return the mean of each variable over the repeat cycle.
+
+        NaN rows are ignored; a variable with no valid row is NaN.
+        """
+        geometry: dict[str, float] = {}
+        for name in SLOT_GEOMETRY_SOURCES:
+            values = np.array(
+                [row[name] for row in self._rows.values()], dtype=np.float64
+            )
+            valid = values[np.isfinite(values)]
+            geometry[name] = float(valid.mean()) if valid.size else float("nan")
+        return geometry
 
 
 class SharedNcPartReader:

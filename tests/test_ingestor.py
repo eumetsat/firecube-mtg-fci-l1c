@@ -518,6 +518,9 @@ class TestVariableDispatch:
                     return (0, 2)
                 raise KeyError(res)
 
+            def read_slot_geometry(self):
+                return {}
+
             def read_calibration(self, channel):
                 if self.part_path.name == "part-a.nc" and channel == "vis_04":
                     return ChannelCalibration(1.0, 10.0)

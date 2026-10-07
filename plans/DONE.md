@@ -3,6 +3,38 @@
 Dated log of design decisions and release-completion notes. New entries appended to the top.
 Related documents: [DESIGN.md](DESIGN.md), [TODO.md](TODO.md), [IDEAS.md](IDEAS.md).
 
+## 2026-10-07 — Satellite position and Sun–Earth distance per slot (issue #15); astropy added
+
+### Decision
+Every group stores four `(time,)` variables: `subsatellite_latitude`,
+`subsatellite_longitude`, `platform_altitude` (mean over the repeat cycle of the
+`state/platform` tables) and `sun_earth_distance` in AU. The distance is computed
+with `astropy.coordinates.get_sun` for the slot time, as in the reference
+calibration notebook. The plugin does not compute solar angles.
+
+### New runtime dependency
+`astropy>=7.0` (BSD-3-Clause), which installs `pyerfa` and `astropy-iers-data`
+(both BSD-3-Clause). It is imported lazily when a slot is ingested, uses the
+built-in ephemeris, and is called with IERS auto-download disabled so ingest
+pods need no network. First call costs about 1 s per process, later calls about
+1 ms.
+
+### Why the product value is not used
+`state/celestial/earth_sun_distance` holds the same values as
+`sun_satellite_distance` in the five MTI1 FDHSI products checked (2025-06-15,
+2026-09-28, 2026-09-29; 00, 06, 12 and 18 UTC). They match the Sun–satellite
+distance to about 6 km and differ from the Earth–Sun distance by up to about
+42 000 km (0.03 %, 0.06 % in reflectance) with a daily cycle. To be raised with
+EUMETSAT user support.
+
+### Alternatives considered
+- Derive the distance from the product's own tables (Sun–satellite distance,
+  satellite position, subsolar point). Agrees with astropy to about 10 km and
+  needs no dependency, but was dropped in favour of matching the reference
+  notebook.
+- A low-precision series in the Sun's mean anomaly: no dependency, error up to
+  about 13 000 km.
+
 ## 2026-08-24 — decode_spatial payload cache: shipped then retired for chunk-owned assembly
 
 ### What shipped

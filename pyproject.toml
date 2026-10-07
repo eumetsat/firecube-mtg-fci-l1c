@@ -18,6 +18,8 @@ dependencies = [
     "xarray>=2026.4.0",
     "numpy>=2.4",
     "h5netcdf>=1.8",
+    # Sun-Earth distance per slot (astropy.coordinates.get_sun).
+    "astropy>=7.0",
 ]
 
 [project.urls]
@@ -58,10 +60,11 @@ dev = [
 [tool.mypy]
 python_version = "3.12"
 
-# h5netcdf and the firecube core API ship no py.typed marker / stubs, so mypy
-# cannot analyse them. Treat them as untyped rather than erroring per import.
+# h5netcdf, astropy and the firecube core API ship no py.typed marker / stubs,
+# so mypy cannot analyse them. Treat them as untyped rather than erroring per
+# import.
 [[tool.mypy.overrides]]
-module = ["h5netcdf.*", "firecube.*"]
+module = ["h5netcdf.*", "astropy.*", "firecube.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

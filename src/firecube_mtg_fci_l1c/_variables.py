@@ -214,6 +214,29 @@ def _projection_y_source(ctx: VariableContext) -> np.ndarray | None:
     return _projection_angle_source(ctx)
 
 
+def _slot_geometry_value(ctx: VariableContext, name: str) -> np.ndarray | None:
+    """Return one slot's geometry value as a 0-d array (NaN if missing)."""
+    if ctx.slot_geometry is None:
+        return None
+    return np.asarray(ctx.slot_geometry.get(name, np.nan), dtype=np.float64)
+
+
+def _subsatellite_latitude_source(ctx: VariableContext) -> np.ndarray | None:
+    return _slot_geometry_value(ctx, "subsatellite_latitude")
+
+
+def _subsatellite_longitude_source(ctx: VariableContext) -> np.ndarray | None:
+    return _slot_geometry_value(ctx, "subsatellite_longitude")
+
+
+def _platform_altitude_source(ctx: VariableContext) -> np.ndarray | None:
+    return _slot_geometry_value(ctx, "platform_altitude")
+
+
+def _sun_earth_distance_source(ctx: VariableContext) -> np.ndarray | None:
+    return _slot_geometry_value(ctx, "sun_earth_distance")
+
+
 def _time_source(ctx: VariableContext) -> None:
     # Timestamp writes handled by WriteIntent kind="timestamp"; source returns None.
     return None
@@ -485,6 +508,54 @@ VARIABLES: list[Variable] = [
         attrs={"axis": "Y"},
         source=_projection_y_source,
         attrs_resolver=_projection_y_attrs,
+    ),
+    # Satellite position: one value per slot, the mean over the repeat cycle
+    # of the state/platform tables.
+    Variable(
+        name="subsatellite_latitude",
+        dims=(TIME_COORD_NAME,),
+        dtype=np.float64,
+        fill_value=np.nan,
+        attrs={
+            "units": "degrees_north",
+            "long_name": "Sub-satellite latitude, mean over the repeat cycle",
+        },
+        source=_subsatellite_latitude_source,
+    ),
+    Variable(
+        name="subsatellite_longitude",
+        dims=(TIME_COORD_NAME,),
+        dtype=np.float64,
+        fill_value=np.nan,
+        attrs={
+            "units": "degrees_east",
+            "long_name": "Sub-satellite longitude, mean over the repeat cycle",
+        },
+        source=_subsatellite_longitude_source,
+    ),
+    Variable(
+        name="platform_altitude",
+        dims=(TIME_COORD_NAME,),
+        dtype=np.float64,
+        fill_value=np.nan,
+        attrs={
+            "units": "m",
+            "long_name": "Platform altitude, mean over the repeat cycle",
+        },
+        source=_platform_altitude_source,
+    ),
+    Variable(
+        name="sun_earth_distance",
+        dims=(TIME_COORD_NAME,),
+        dtype=np.float64,
+        fill_value=np.nan,
+        attrs={
+            "units": "AU",
+            "long_name": "Distance between Sun and Earth centre at the slot time",
+            "comment": "Computed with astropy for the slot time, not read from "
+            "the product.",
+        },
+        source=_sun_earth_distance_source,
     ),
     Variable(
         name=TIME_COORD_NAME,

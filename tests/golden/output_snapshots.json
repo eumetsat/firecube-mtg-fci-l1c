@@ -1,6 +1,6 @@
 {
   "fdhsi_defaults": {
-    "hash": "7794b9fcec8d38f2fd9320be63a1786acc15a0457ba0d9135851bebfd49a73c1",
+    "hash": "873cb5d7d09d50d70953df7398b6ded144370e6de50c1032f2308f25cb53fc67",
     "options": {},
     "product_type": "FDHSI",
     "structure": {
@@ -221,6 +221,24 @@
                 2
               ]
             },
+            "platform_altitude": {
+              "attrs": {
+                "long_name": "Platform altitude, mean over the repeat cycle",
+                "units": "m"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
             "radiance_to_bt_conversion_coefficient_a": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
@@ -394,6 +412,61 @@
               "fill_value": 0,
               "has_static_marker": false,
               "shape": []
+            },
+            "subsatellite_latitude": {
+              "attrs": {
+                "long_name": "Sub-satellite latitude, mean over the repeat cycle",
+                "units": "degrees_north"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
+            "subsatellite_longitude": {
+              "attrs": {
+                "long_name": "Sub-satellite longitude, mean over the repeat cycle",
+                "units": "degrees_east"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
+            "sun_earth_distance": {
+              "attrs": {
+                "comment": "Computed with astropy for the slot time, not read from the product.",
+                "long_name": "Distance between Sun and Earth centre at the slot time",
+                "units": "AU"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
             },
             "time": {
               "attrs": {
@@ -677,6 +750,24 @@
                 1
               ]
             },
+            "platform_altitude": {
+              "attrs": {
+                "long_name": "Platform altitude, mean over the repeat cycle",
+                "units": "m"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
             "radiance_to_bt_conversion_coefficient_a": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
@@ -851,6 +942,61 @@
               "has_static_marker": false,
               "shape": []
             },
+            "subsatellite_latitude": {
+              "attrs": {
+                "long_name": "Sub-satellite latitude, mean over the repeat cycle",
+                "units": "degrees_north"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
+            "subsatellite_longitude": {
+              "attrs": {
+                "long_name": "Sub-satellite longitude, mean over the repeat cycle",
+                "units": "degrees_east"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
+            "sun_earth_distance": {
+              "attrs": {
+                "comment": "Computed with astropy for the slot time, not read from the product.",
+                "long_name": "Distance between Sun and Earth centre at the slot time",
+                "units": "AU"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
             "time": {
               "attrs": {
                 "axis": "T",
@@ -969,7 +1115,7 @@
     }
   },
   "hrfi_defaults": {
-    "hash": "aed2bf0d2e3bf4d0f61d6e1af5cec9f233a33568a44084118459dd72d7e02fe9",
+    "hash": "5248a85146be2f791fd9a9c54425ee9c6150bb29cadee1edfe19973b6d9d1242",
     "options": {},
     "product_type": "HRFI",
     "structure": {
@@ -1190,6 +1336,24 @@
                 1
               ]
             },
+            "platform_altitude": {
+              "attrs": {
+                "long_name": "Platform altitude, mean over the repeat cycle",
+                "units": "m"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
             "radiance_to_bt_conversion_coefficient_a": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
@@ -1363,6 +1527,61 @@
               "fill_value": 0,
               "has_static_marker": false,
               "shape": []
+            },
+            "subsatellite_latitude": {
+              "attrs": {
+                "long_name": "Sub-satellite latitude, mean over the repeat cycle",
+                "units": "degrees_north"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
+            "subsatellite_longitude": {
+              "attrs": {
+                "long_name": "Sub-satellite longitude, mean over the repeat cycle",
+                "units": "degrees_east"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
+            "sun_earth_distance": {
+              "attrs": {
+                "comment": "Computed with astropy for the slot time, not read from the product.",
+                "long_name": "Distance between Sun and Earth centre at the slot time",
+                "units": "AU"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
             },
             "time": {
               "attrs": {
@@ -1690,6 +1909,24 @@
                 1
               ]
             },
+            "platform_altitude": {
+              "attrs": {
+                "long_name": "Platform altitude, mean over the repeat cycle",
+                "units": "m"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
             "radiance_to_bt_conversion_coefficient_a": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
@@ -1863,6 +2100,61 @@
               "fill_value": 0,
               "has_static_marker": false,
               "shape": []
+            },
+            "subsatellite_latitude": {
+              "attrs": {
+                "long_name": "Sub-satellite latitude, mean over the repeat cycle",
+                "units": "degrees_north"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
+            "subsatellite_longitude": {
+              "attrs": {
+                "long_name": "Sub-satellite longitude, mean over the repeat cycle",
+                "units": "degrees_east"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
+            },
+            "sun_earth_distance": {
+              "attrs": {
+                "comment": "Computed with astropy for the slot time, not read from the product.",
+                "long_name": "Distance between Sun and Earth centre at the slot time",
+                "units": "AU"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "time"
+              ],
+              "dtype": "float64",
+              "fill_value": "nan",
+              "has_static_marker": false,
+              "shape": [
+                1
+              ]
             },
             "time": {
               "attrs": {

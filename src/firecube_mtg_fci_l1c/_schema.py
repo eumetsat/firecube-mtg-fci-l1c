@@ -62,6 +62,9 @@ class VariableContext:
     calibration_table: dict[str, ChannelCalibration] | None = None
     channel_payload: Any = None  # ChannelSlicePayload; Any avoids circular import
     nc_channels: tuple[str, ...] = ()
+    # Per-slot satellite position (SLOT_GEOMETRY_SOURCES names) and
+    # sun_earth_distance. None outside the time phase.
+    slot_geometry: dict[str, float] | None = None
 
 
 @dataclasses.dataclass(frozen=True)

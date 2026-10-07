@@ -248,10 +248,11 @@ install/runtime:
 
 | dependency | version | license | copyright | home_url | comments |
 | --- | --- | --- | --- | --- | --- |
-| `firecube` | 0.1.4 | Apache-2.0 |  | https://github.com/eumetsat/firecube | Required runtime dependency |
+| `firecube` | 0.1.7 | Apache-2.0 |  | https://github.com/eumetsat/firecube | Required runtime dependency |
 | `xarray` | 2026.4.0 | Apache-2.0 |  | https://xarray.dev/ | Direct dependency. |
 | `numpy` | 2.5.0 | BSD-3-Clause |  | https://numpy.org | Direct dependency. |
 | `h5netcdf` | 1.8.1 | BSD-3-Clause |  | https://h5netcdf.org | Direct dependency; NetCDF/HDF5 reader for FCI nc_parts. |
+| `astropy` | 8.0.1 | BSD-3-Clause |  | https://www.astropy.org/ | Direct dependency; solar ephemeris for the Sun–Earth distance. Installs `pyerfa` and `astropy-iers-data` (both BSD-3-Clause). |
 
 ### Direct Build, Edit, And Test Dependencies
 
@@ -259,7 +260,7 @@ The following dependencies are only required for building, editing, or testing:
 
 | dependency | version | sw type | license | copyright | home_url | comments |
 | --- | --- | --- | --- | --- | --- | --- |
-| `hatchling` | 1.30.1 | Development tools | MIT |  | https://hatch.pypa.io/latest/ | Build backend (`[build-system].requires`). |
+| `hatchling` | 1.32.4 | Development tools | MIT |  | https://hatch.pypa.io/latest/ | Build backend (`[build-system].requires`). |
 | `pytest` | 9.1.1 | Development tools | MIT |  | https://docs.pytest.org/en/latest/ | Direct `dev` dependency. |
 | `ruff` | 0.15.20 | Development tools | MIT |  | https://docs.astral.sh/ruff | Direct `dev` dependency. |
 | `mypy` | 2.1.0 | Development tools | MIT |  | https://www.mypy-lang.org/ | Direct `dev` dependency. |

@@ -64,6 +64,7 @@ def _write_nc_part_netcdf(
     radiance_attrs: dict[str, dict[str, float]] | None = None,
     counts: dict[str, np.ndarray] | None = None,
     measured_scalars: dict[str, dict[str, float]] | None = None,
+    state_tables: dict[str, list[float]] | None = None,
 ) -> None:
     with h5netcdf.File(path, "w") as ds:
         ds.attrs["time_coverage_start"] = "20240101000000"
@@ -72,6 +73,17 @@ def _write_nc_part_netcdf(
         ds.create_variable("index", ("n_time",), data=np.array([0, 1], dtype=np.uint16))
         time_var = ds.create_variable("time", ("n_time",), data=np.array([0.0, 60.0]))
         time_var.attrs["_FillValue"] = 0.0
+        # Index-dimensioned tables such as state/platform/platform_altitude.
+        for table_path, values in (state_tables or {}).items():
+            group_path, _, name = table_path.rpartition("/")
+            group = ds
+            for part in group_path.split("/"):
+                group = (
+                    group[part] if part in group.groups else group.create_group(part)
+                )
+            group.create_variable(
+                name, ("n_time",), data=np.asarray(values, dtype=np.float32)
+            )
 
         data_group = ds.create_group("data")
         for i, channel in enumerate(nc_channels):
@@ -123,6 +135,7 @@ def _make_zip_with_nc_part(
     radiance_attrs: dict[str, dict[str, float]] | None = None,
     counts: dict[str, np.ndarray] | None = None,
     measured_scalars: dict[str, dict[str, float]] | None = None,
+    state_tables: dict[str, list[float]] | None = None,
 ) -> Path:
     tmp_nc = zip_path.with_suffix(".nc")
     _write_nc_part_netcdf(
@@ -132,6 +145,7 @@ def _make_zip_with_nc_part(
         radiance_attrs=radiance_attrs,
         counts=counts,
         measured_scalars=measured_scalars,
+        state_tables=state_tables,
     )
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_STORED) as zf:
         zf.write(tmp_nc, arcname=f"{get_nc_part_prefix(product_type)}0001.nc")
@@ -549,6 +563,64 @@ def test_warm_calibration_written_per_slot_for_ir38_dual_gain(
         counts * data_2km["slope"][0, 0] + data_2km["offset"][0, 0],
     )
     assert radiance.ravel()[warm_pixel[0]] == pytest.approx(9.4895, abs=1e-3)
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+def test_satellite_position_and_sun_earth_distance_written_per_slot(
+    tmp_path: Path, small_fci_layout: list[int]
+):
+    """Each slot stores the satellite position mean and the Sun-Earth distance."""
+    src = tmp_path / "src"
+    src.mkdir()
+    tables = {
+        "20240101000000": {
+            "state/platform/subsatellite_latitude": [0.10, 0.12],
+            "state/platform/subsatellite_longitude": [-0.3930, -0.3926],
+            "state/platform/platform_altitude": [35780764.0, 35781284.0],
+        },
+        "20240101001000": {
+            "state/platform/subsatellite_latitude": [0.20, 0.22],
+            "state/platform/subsatellite_longitude": [-0.3900, -0.3900],
+            "state/platform/platform_altitude": [35781000.0, 35781000.0],
+        },
+        # A product without state tables: NaN position, distance still set.
+        "20240101002000": None,
+    }
+    for stamp, state_tables in tables.items():
+        _make_zip_with_nc_part(
+            src / f"W_XX-FCI-1C-RRAD-FDHSI-FD-{stamp}-END.zip",
+            PRODUCT_TYPE_FDHSI,
+            ["vis_04", "vis_06", "ir_38"],
+            dimsize=4,
+            state_tables=state_tables,
+        )
+
+    out = _run_ingest(src, tmp_path, options={"include_geolocation": False})
+
+    root = zarr.open_group(str(out), mode="r")
+    for group in ("data_1km", "data_2km"):
+        data = cast(Any, root[group])
+        for name in (
+            "subsatellite_latitude",
+            "subsatellite_longitude",
+            "platform_altitude",
+            "sun_earth_distance",
+        ):
+            assert data[name].metadata.dimension_names == ("time",), (group, name)
+        # float32 source values, averaged in float64.
+        np.testing.assert_allclose(
+            data["subsatellite_latitude"][:2], [0.11, 0.21], rtol=1e-6
+        )
+        np.testing.assert_allclose(
+            data["platform_altitude"][:2], [35781024.0, 35781000.0], rtol=1e-12
+        )
+        assert np.isnan(data["subsatellite_longitude"][2])
+        assert np.isnan(data["platform_altitude"][2])
+        # Two days before the 2024 perihelion (0.98331 AU). Computed from the
+        # slot time, so it is set even without state tables.
+        np.testing.assert_allclose(data["sun_earth_distance"][:3], 0.98332, atol=1e-5)
+        assert data["sun_earth_distance"].attrs["units"] == "AU"
 
 
 @pytest.mark.integration

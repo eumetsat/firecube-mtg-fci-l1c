@@ -143,8 +143,8 @@ def test_variable_enabled_missing_attr_defaults_true() -> None:
 
 
 def test_variables_count() -> None:
-    assert len(VARIABLES) == 21, (
-        f"Expected 21, got {len(VARIABLES)}: {[v.name for v in VARIABLES]}"
+    assert len(VARIABLES) == 25, (
+        f"Expected 25, got {len(VARIABLES)}: {[v.name for v in VARIABLES]}"
     )
 
 

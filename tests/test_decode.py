@@ -34,6 +34,7 @@ from firecube_mtg_fci_l1c._decode import (
     ChunkOwnedAssembler,
     NCPartReader,
     SharedNcPartReader,
+    SlotGeometryAccumulator,
     TimeMapAccumulator,
     _IdentityRef,
     expand_pixel_time,
@@ -848,3 +849,109 @@ def test_variable_projections_do_not_mutate_cached_payload(tmp_path: Path):
         assert np.array_equal(payload.counts, counts_before)
         assert np.array_equal(payload.pixel_quality, pixel_quality_before)
         assert np.array_equal(payload.pixel_time, pixel_time_before, equal_nan=True)
+
+
+_FILL32 = np.float32(9.96921e36)
+
+
+def _write_geometry_part(
+    path: Path,
+    index: list[int],
+    platform: dict[str, list[float]] | None,
+    celestial: dict[str, list[float]],
+) -> Path:
+    """Write the root ``index`` and the state tables of one nc_part."""
+    with h5netcdf.File(path, "w") as ds:
+        ds.dimensions["index"] = len(index)
+        ds.create_variable("index", ("index",), data=np.asarray(index, dtype=np.uint16))
+        state = ds.create_group("state")
+        groups = {"celestial": celestial}
+        if platform is not None:
+            groups["platform"] = platform
+        for group_name, columns in groups.items():
+            group = state.create_group(group_name)
+            for name, values in columns.items():
+                var = group.create_variable(
+                    name, ("index",), data=np.asarray(values, dtype=np.float32)
+                )
+                var.attrs["_FillValue"] = _FILL32
+    return path
+
+
+@pytest.mark.unit
+def test_read_slot_geometry_maps_fill_and_missing_tables_to_nan(tmp_path: Path):
+    part = _write_geometry_part(
+        tmp_path / "part.nc",
+        index=[6, 7],
+        platform={"platform_altitude": [35781000.0, _FILL32]},
+        celestial={},
+    )
+
+    with NCPartReader(part) as reader:
+        rows = reader.read_slot_geometry()
+
+    assert set(rows) == {6, 7}
+    assert rows[6]["platform_altitude"] == 35781000.0
+    assert np.isnan(rows[7]["platform_altitude"])
+    # Tables absent from the nc_part read as NaN.
+    assert np.isnan(rows[6]["subsatellite_latitude"])
+    assert np.isnan(rows[6]["subsatellite_longitude"])
+
+
+@pytest.mark.unit
+def test_read_slot_geometry_without_state_platform_group_is_nan(tmp_path: Path):
+    part = _write_geometry_part(
+        tmp_path / "part.nc", index=[6], platform=None, celestial={}
+    )
+
+    with NCPartReader(part) as reader:
+        rows = reader.read_slot_geometry()
+
+    assert set(rows) == {6}
+    assert all(np.isnan(value) for value in rows[6].values())
+
+
+@pytest.mark.unit
+def test_slot_geometry_accumulator_later_part_wins_and_mean_ignores_nan(
+    tmp_path: Path,
+):
+    platform_a = {
+        "subsatellite_latitude": [0.10, 0.20],
+        "subsatellite_longitude": [-0.39, -0.39],
+        "platform_altitude": [35781000.0, 35781100.0],
+    }
+    # Index 7 repeats in part b with a different value; part b wins.
+    platform_b = {
+        "subsatellite_latitude": [0.40, _FILL32],
+        "subsatellite_longitude": [-0.40, -0.40],
+        "platform_altitude": [35781200.0, 35781300.0],
+    }
+    part_a = _write_geometry_part(tmp_path / "a.nc", [6, 7], platform_a, {})
+    part_b = _write_geometry_part(tmp_path / "b.nc", [7, 8], platform_b, {})
+
+    accumulator = SlotGeometryAccumulator()
+    for part in (part_a, part_b):
+        with NCPartReader(part) as reader:
+            accumulator.accumulate(reader)
+    geometry = accumulator.build()
+
+    # Rows: 6 from a, 7 and 8 from b. Latitude of index 8 is fill -> ignored.
+    assert geometry["subsatellite_latitude"] == pytest.approx((0.10 + 0.40) / 2)
+    assert geometry["subsatellite_longitude"] == pytest.approx(
+        (-0.39 - 0.40 - 0.40) / 3
+    )
+    assert geometry["platform_altitude"] == pytest.approx(
+        (35781000.0 + 35781200.0 + 35781300.0) / 3
+    )
+
+
+@pytest.mark.unit
+def test_slot_geometry_accumulator_without_rows_is_nan() -> None:
+    geometry = SlotGeometryAccumulator().build()
+
+    assert set(geometry) == {
+        "subsatellite_latitude",
+        "subsatellite_longitude",
+        "platform_altitude",
+    }
+    assert all(np.isnan(value) for value in geometry.values())

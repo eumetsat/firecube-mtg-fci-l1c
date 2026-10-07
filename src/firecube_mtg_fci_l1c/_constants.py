@@ -159,6 +159,16 @@ FCI_PROJ_SCALE_RAD_PER_INDEX: dict[str, float] = {
 MTG_PERSPECTIVE_POINT_HEIGHT_M: float = 35786400.0
 FCI_PROJ_SWEEP_AXIS: str = "y"
 
+# Satellite position, read per product from index-dimensioned tables (one row
+# per ~1 s of the repeat cycle) and stored as one (time,) value per slot: the
+# mean over the repeat cycle. Within a cycle they vary by < 0.03 deg and 520 m.
+# Maps output variable name -> netCDF path.
+SLOT_GEOMETRY_SOURCES: dict[str, str] = {
+    "subsatellite_latitude": "state/platform/subsatellite_latitude",
+    "subsatellite_longitude": "state/platform/subsatellite_longitude",
+    "platform_altitude": "state/platform/platform_altitude",
+}
+
 # Radiance conversion constants read per product from the float32 scalars
 # data/<channel>/measured/<name>. Each becomes a (time, channel) array.
 FCI_CONVERSION_CONSTANT_NAMES: tuple[str, ...] = (

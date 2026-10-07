@@ -67,6 +67,7 @@ from ._data import (
     validate_no_mixed_products,
 )
 from .geolocation import LatLonProvider
+from ._ephemeris import sun_earth_distance_au
 from ._group_plan import (
     GroupPlan,
     group_name,
@@ -79,6 +80,7 @@ from ._decode import (
     ChannelSlicePayload,
     ChunkOwnedAssembler,
     SharedNcPartReader,
+    SlotGeometryAccumulator,
     TimeMapAccumulator,
     list_fci_nc_parts,
 )
@@ -426,8 +428,13 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         timestamp: Any,
         calibration_table: dict[str, ChannelCalibration],
         nc_channels: list[str] | None = None,
+        slot_geometry: dict[str, float] | None = None,
     ) -> list[IndexedWrite]:
-        """Iterate VARIABLES with dims==('time','channel'); emit slot writes."""
+        """Emit slot writes for VARIABLES with dims ('time', 'channel') or ('time',).
+
+        The ``time`` coordinate itself has no data source and is written by
+        Firecube from the slot coordinate.
+        """
         from ._variables import VARIABLES, VariableContext, variable_enabled
 
         group = group_name(res, config.flat_store)
@@ -442,11 +449,12 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             logical_channels=tuple(logical_channels),
             calibration_table=calibration_table,
             nc_channels=tuple(nc_channels or ()),
+            slot_geometry=slot_geometry,
         )
 
         intents: list[IndexedWrite] = []
         for variable in VARIABLES:
-            if variable.dims != (TIME_COORD_NAME, "channel"):
+            if variable.dims not in ((TIME_COORD_NAME, "channel"), (TIME_COORD_NAME,)):
                 continue
             if not variable_enabled(variable, config, ctx.logical_channels):
                 continue
@@ -698,12 +706,19 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                     time_accum.accumulate(shared_reader.reader_for(part_path))
             index2time = time_accum.build_index2time()
 
+        geometry_accum = SlotGeometryAccumulator()
+        for part_path in nc_parts:
+            geometry_accum.accumulate(shared_reader.reader_for(part_path))
+        slot_geometry = geometry_accum.build()
+        slot_geometry["sun_earth_distance"] = sun_earth_distance_au(timestamp)
+
         for plan in plans:
             self._intents_for_plan(
                 plan=plan,
                 nc_parts=nc_parts,
                 timestamp=timestamp,
                 index2time=index2time,
+                slot_geometry=slot_geometry,
                 shared_reader=shared_reader,
                 config=config,
                 product_type=product_type,
@@ -724,6 +739,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         product_type: str,
         batch_id: str,
         intents: list[WriteIntent | IndexedWrite],
+        slot_geometry: dict[str, float] | None = None,
     ) -> None:
         """Emit per-channel and spatial intents for one group."""
         res = plan.resolution
@@ -765,6 +781,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                 timestamp,
                 calibration_table,
                 nc_channels,
+                slot_geometry,
             )
         )
         nc_part_ranges = [
