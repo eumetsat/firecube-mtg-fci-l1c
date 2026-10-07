@@ -39,6 +39,7 @@ from firecube_mtg_fci_l1c._decode import (
     _IdentityRef,
     expand_pixel_time,
     list_fci_nc_parts,
+    load_channel_slice,
 )  # pyright: ignore[reportMissingImports]
 from firecube_mtg_fci_l1c._constants import (  # pyright: ignore[reportMissingImports]
     PRODUCT_TYPE_FDHSI,
@@ -53,6 +54,7 @@ def _write_nc_part(
     index_values: np.ndarray | None = None,
     time_values: np.ndarray | None = None,
     include_time_map: bool = True,
+    include_row_metadata: bool = True,
     scale_factor: float = 0.5,
     add_offset: float = 1.5,
 ) -> None:
@@ -84,8 +86,9 @@ def _write_nc_part(
                 ("y", "x"),
                 data=np.full((2, 3), base, dtype=np.uint16),
             )
-            radiance.attrs["start_position_row"] = start_row
-            radiance.attrs["end_position_row"] = end_row
+            if include_row_metadata:
+                radiance.attrs["start_position_row"] = start_row
+                radiance.attrs["end_position_row"] = end_row
             radiance.attrs["scale_factor"] = scale_factor
             radiance.attrs["add_offset"] = add_offset
 
@@ -955,3 +958,47 @@ def test_slot_geometry_accumulator_without_rows_is_nan() -> None:
         "platform_altitude",
     }
     assert all(np.isnan(value) for value in geometry.values())
+
+
+@pytest.mark.unit
+def test_load_channel_slice_maps_pixel_time_with_nan_for_unmapped_indices(
+    tmp_path: Path,
+):
+    part = tmp_path / "body-0001.nc"
+    _write_nc_part(part, channel_specs={"vis_04": (1, 2, 11)})
+
+    with NCPartReader(part) as reader:
+        time_map = reader.read_time_map()
+        payload = load_channel_slice(reader, "vis_04", time_map, np.dtype(np.float64))
+
+    assert time_map == {0: 0.0, 1: 60.0, 2: 120.0}
+    # index_map is [[0, 1, 99], [2, -1, 1]]; 99 and -1 have no time-map entry.
+    expected = np.asarray([[0.0, 60.0, np.nan], [120.0, np.nan, 60.0]])
+    assert payload.pixel_time is not None
+    np.testing.assert_array_equal(payload.pixel_time, expected)
+
+
+@pytest.mark.unit
+def test_nc_part_reader_rejects_file_that_is_not_hdf5(tmp_path: Path):
+    part = tmp_path / "garbage-body-0001.nc"
+    part.write_bytes(b"this is not an HDF5 container")
+
+    with pytest.raises(OSError):
+        with NCPartReader(part) as reader:
+            reader.available_channels()
+
+
+@pytest.mark.unit
+def test_nc_part_reader_missing_row_metadata_fails_loudly(tmp_path: Path):
+    part = tmp_path / "no-rows-body-0001.nc"
+    _write_nc_part(
+        part, channel_specs={"vis_04": (1, 2, 11)}, include_row_metadata=False
+    )
+
+    with NCPartReader(part) as reader:
+        # The channel data itself still decodes ...
+        radiance, _, _ = reader.read_channel_data("vis_04")
+        assert radiance.shape == (2, 3)
+        # ... but the row bounds cannot be recovered.
+        with pytest.raises(KeyError, match="start/end row metadata"):
+            reader._read_row_bounds(reader._open()["data/vis_04/measured"])
