@@ -52,7 +52,7 @@ Anchored on [`AGENTS.md`](../AGENTS.md) Code Style section, expanded with plans/
 
 ## Dependencies
 
-- **Runtime**: kept minimal (firecube, xarray, numpy, h5netcdf).
+- **Runtime**: kept minimal (firecube, xarray, numpy, h5netcdf, astropy).
 - **Dev**: pytest, ruff, mypy, matplotlib (notebooks), pyproj (projection CRS oracle tests).
 - **Never pin unreleased core versions.** `firecube>=X.Y.Z` may only reference a tagged PyPI release.
 - **`uv.lock` is regenerated automatically** by `uv sync`; do not hand-edit.

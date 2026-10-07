@@ -373,7 +373,7 @@ def test_fix_fillvalue_dry_run_then_apply_on_flat_store(
 
     assert dry_run.exit_code == 0, dry_run.output
     assert "Mode:  dry-run" in dry_run.output
-    assert "Would stamp _FillValue on 15 array(s):" in dry_run.output
+    assert "Would stamp _FillValue on 19 array(s):" in dry_run.output
     assert "  /counts: _FillValue = 65535" in dry_run.output
     assert "  /pixel_quality: _FillValue = 0" in dry_run.output
     assert "/x:" not in dry_run.output

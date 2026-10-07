@@ -56,6 +56,7 @@ Every resolution group, or the root of a flat store, contains:
 | `pixel_time` | `(time, y, x, channel)` | `float64`, ~7.9 GB per slot at 1 km | seconds since 2000-01-01 UTC; `pixel_time_dtype=float32` halves it, `include_pixel_time=false` drops it |
 | `slope`, `offset` | `(time, channel)` | negligible | radiometric calibration (see [formula](#radiometric-calibration)) |
 | `warm_slope`, `warm_offset` | `(time, channel)` | negligible | IR 3.8 dual-gain calibration for counts above 4095; only in groups with `ir_38` (FDHSI `data_2km`, HRFI `data_1km`), `NaN` for the other channels there (see [formula](#radiometric-calibration)) |
+| `subsatellite_latitude`, `subsatellite_longitude`, `platform_altitude`, `sun_earth_distance` | `(time,)` | negligible | satellite position and Sun–Earth distance per slot (see [below](#satellite-position-and-sunearth-distance)) |
 | `time` | `(time,)` | negligible | slot timestamp coordinate, anchored by `time_epoch`; stored as `datetime64[s]` |
 | `channel_name` | `(channel,)` | negligible | logical channel names such as `vis_06` and `ir_105` |
 | radiance conversion constants | `(time, channel)` | negligible | seven per-acquisition constants for brightness temperature and reflectance (see [below](#brightness-temperature-and-reflectance)) |
@@ -188,7 +189,36 @@ radiance_um = radiance * ds.radiance_unit_conversion_coefficient
 Reflectance for VIS/NIR channels is
 `pi * radiance * d**2 / (channel_effective_solar_irradiance * cos(sza))`,
 where `d` is the Sun–Earth distance in AU and `sza` is the solar zenith
-angle. Neither is stored yet.
+angle. `d` is stored as `sun_earth_distance` (see
+[Satellite position and Sun–Earth distance](#satellite-position-and-sunearth-distance)).
+The solar zenith angle is not stored; compute it from `latitude`,
+`longitude` and `pixel_time`.
+
+## Satellite position and Sun–Earth distance
+
+Each group stores one value per slot for:
+
+| Variable | Units | Source |
+|---|---|---|
+| `subsatellite_latitude` | degrees_north | `state/platform/subsatellite_latitude` in the L1C product |
+| `subsatellite_longitude` | degrees_east | `state/platform/subsatellite_longitude` in the L1C product |
+| `platform_altitude` | m | `state/platform/platform_altitude` in the L1C product |
+| `sun_earth_distance` | AU | computed for the slot time |
+
+The product records the satellite position about once per second of the
+repeat cycle. The store keeps the mean over the cycle; within a cycle the
+values vary by less than 0.03 degrees and 520 m. A slot is `NaN` if the
+product lacks them.
+
+`sun_earth_distance` is the distance from the Earth's centre to the Sun at
+the slot time, computed with astropy. It is not copied from the product:
+`state/celestial/earth_sun_distance` there holds the Sun–satellite distance,
+which differs by up to about 42 000 km (0.03 %). Over one repeat cycle the
+Sun–Earth distance changes by less than 300 km.
+
+```python
+reflectance = np.pi * radiance * ds.sun_earth_distance**2 / (E_sun * np.cos(np.deg2rad(sza)))
+```
 
 ## Projection
 
