@@ -343,7 +343,7 @@ class TestBuildWriteIntentsLogging:
         intents = ingestor.build_write_intents(batch, ctx)  # pyright: ignore[reportArgumentType]
 
         assert all(intent.kind == "static" for intent in intents)
-        assert any(intent.array == "channel_name" for intent in intents)
+        assert any(intent.array == "channel" for intent in intents)
         assert batch.metadata["plugin_failure_counters"]["files_processed"] == 0
         assert batch.metadata["plugin_failure_counters"]["files_failed"] == 1
         ingestor._log.exception.assert_called_once()

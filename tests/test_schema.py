@@ -148,9 +148,30 @@ def test_variables_count() -> None:
     )
 
 
-def test_channel_name_in_variables() -> None:
-    names = [v.name for v in VARIABLES]
-    assert "channel_name" in names
+def test_channel_coordinate_declared_as_text_without_fill_value() -> None:
+    specs = build_specs(MtgFciL1cConfig(channels="ir_105,ir_38"), "FDHSI")
+    group = next(g for g in specs if g.group == "data_2km")
+    channel = next(a for a in group.arrays if a.name == "channel")
+
+    assert channel.dimension_names == ("channel",)
+    assert channel.shape == (2,)
+    assert channel.time_indexed is False
+    assert isinstance(channel.dtype, np.dtypes.StringDType)
+    assert channel.fill_value is None
+    assert "channel" in group.coord_names
+
+    variable = next(v for v in VARIABLES if v.name == "channel")
+    assert variable.source is not None
+    ctx = VariableContext(
+        group="data_2km",
+        resolution="2km",
+        product_type="FDHSI",
+        config=MtgFciL1cConfig(),
+        dimsize=5568,
+        n_channels=2,
+        logical_channels=("ir_105", "ir_38"),
+    )
+    assert variable.source(ctx).tolist() == ["ir_105", "ir_38"]
 
 
 def test_variables_name_uniqueness() -> None:

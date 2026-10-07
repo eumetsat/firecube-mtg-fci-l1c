@@ -102,8 +102,8 @@ def test_flat_store_writes_arrays_at_root(
     root = zarr.open_group(str(tmp_path / "store.zarr"), mode="r")
     assert sorted(root.group_keys()) == []
     assert sorted(root.array_keys()) == [
+        "channel",
         "channel_effective_solar_irradiance",
-        "channel_name",
         "counts",
         "latitude",
         "longitude",

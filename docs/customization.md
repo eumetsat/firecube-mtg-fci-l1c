@@ -88,7 +88,7 @@ firecube ingest mtg_fci_l1c \
 ```
 fci-1km.zarr/
 ├── counts/  pixel_quality/  pixel_time/  slope/  offset/
-├── latitude/  longitude/  x/  y/  time/  channel_name/  spatial_ref/
+├── latitude/  longitude/  x/  y/  time/  channel/  spatial_ref/
 └── zarr.json
 ```
 

@@ -1,6 +1,6 @@
 # Channel Name (channel)
 
-The `channel_name` variable maps channel index `0..n-1` back to logical channel names like `vis_04` or `ir_105`. This is the worked example for adding a static 1D coordinate.
+The `channel` variable is the coordinate of the `channel` dimension. It holds the logical channel names like `vis_04` or `ir_105`, so xarray can select a channel by name. This is the worked example for adding a static 1D coordinate.
 
 ## Implementation
 
@@ -9,24 +9,29 @@ Both pieces live in `src/firecube_mtg_fci_l1c/_variables.py`.
 ### Source function
 
 ```python
-def _channel_name_source(ctx: VariableContext) -> np.ndarray:
-    return np.asarray(ctx.logical_channels, dtype="S16")
+_STRING_DTYPE = np.dtypes.StringDType()
+
+
+def _channel_source(ctx: VariableContext) -> np.ndarray:
+    return np.asarray(ctx.logical_channels, dtype=_STRING_DTYPE)
 ```
 
-`ctx.logical_channels` is a tuple of strings populated during the static phase. The source converts them to a fixed-width byte string array.
+`ctx.logical_channels` is a tuple of strings populated during the static phase. The source converts them to a variable-length string array, which Zarr v3 stores as its `string` data type.
 
 ### Variable entry
 
 ```python
 Variable(
-    name="channel_name",
+    name="channel",
     dims=("channel",),
-    dtype="S16",
-    fill_value=b"",
+    dtype=_STRING_DTYPE,
+    fill_value=None,
     attrs={"long_name": "FCI logical channel name"},
-    source=_channel_name_source,
+    source=_channel_source,
 ),
 ```
+
+The variable is named after its dimension, which makes it the dimension's coordinate. It declares no fill value: Firecube would otherwise stamp a `_FillValue` attribute, and xarray cannot decode that attribute for string variables.
 
 This is already in `VARIABLES`. The recipe below shows how to add a similar static 1D coordinate.
 

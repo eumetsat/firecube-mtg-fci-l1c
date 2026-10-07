@@ -99,7 +99,7 @@ The main arrays are:
 | `slope`, `offset` | `(time, channel)` | `radiance = counts * slope + offset` |
 | `latitude`, `longitude` | `(y, x)` | static, computed once per group |
 | `x`, `y` | `(x,)`, `(y,)` | GEOS projection angles |
-| `time`, `channel_name`, `spatial_ref` | `(time,)`, `(channel,)`, `()` | coordinates and CRS metadata |
+| `time`, `channel`, `spatial_ref` | `(time,)`, `(channel,)`, `()` | coordinates and CRS metadata |
 
 For a single resolution, add `--option resolutions=1km --option flat_store=true`
 to write these arrays at the store root instead, so `xr.open_zarr(store)` needs

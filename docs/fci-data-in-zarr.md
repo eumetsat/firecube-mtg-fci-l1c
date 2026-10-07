@@ -18,7 +18,8 @@ output.zarr/
 | `data_1km` | HRFI | 11136 × 11136 | 2 | `ir_38`, `ir_105` |
 | `data_2km` | FDHSI | 5568 × 5568 | 8 | `ir_38`, `wv_63`, `wv_73`, `ir_87`, `ir_97`, `ir_105`, `ir_123`, `ir_133` |
 
-Channel names are also stored per group in the `channel_name[c]` array.
+Channel names are the `channel` coordinate of each group, so a channel can be
+selected by name: `ds.sel(channel="ir_105")`.
 
 ```python
 import xarray as xr
@@ -35,7 +36,7 @@ at the store root:
 ```
 fci-1km.zarr/
 ├── counts/  pixel_quality/  pixel_time/  slope/  offset/
-└── latitude/  longitude/  x/  y/  time/  channel_name/  spatial_ref/
+└── latitude/  longitude/  x/  y/  time/  channel/  spatial_ref/
 ```
 
 ```python
@@ -57,7 +58,7 @@ Every resolution group, or the root of a flat store, contains:
 | `slope`, `offset` | `(time, channel)` | negligible | radiometric calibration (see [formula](#radiometric-calibration)) |
 | `warm_slope`, `warm_offset` | `(time, channel)` | negligible | IR 3.8 dual-gain calibration for counts above 4095; only in groups with `ir_38` (FDHSI `data_2km`, HRFI `data_1km`), `NaN` for the other channels there (see [formula](#radiometric-calibration)) |
 | `time` | `(time,)` | negligible | slot timestamp coordinate, anchored by `time_epoch`; stored as `datetime64[s]` |
-| `channel_name` | `(channel,)` | negligible | logical channel names such as `vis_06` and `ir_105` |
+| `channel` | `(channel,)` | negligible | coordinate of the `channel` dimension: logical channel names such as `vis_06` and `ir_105`, stored as text |
 | radiance conversion constants | `(time, channel)` | negligible | seven per-acquisition constants for brightness temperature and reflectance (see [below](#brightness-temperature-and-reflectance)) |
 | `x`, `y` | `(x,)`, `(y,)` | negligible | GEOS projection coordinates. Default units: metres (east-positive x, north-positive y). Use `--option projection_units=radian` for radian output. See [Projection units](customization.md#projection-units). |
 | `latitude`, `longitude` | `(y, x)` | `float32`, 1.9 GB / 475 MB / 120 MB per array at 500 m / 1 km / 2 km | static, computed once per group; `NaN` beyond Earth's limb |
@@ -121,7 +122,6 @@ radiometric range. Counts up to 4095 use `slope` and `offset`; counts above
 4095 use `warm_slope` and `warm_offset`:
 
 ```python
-ds = ds.assign_coords(channel=ds.channel_name.astype(str))
 ir38 = ds.sel(channel="ir_38")
 radiance = xr.where(
     ir38.counts > 4095,
@@ -169,7 +169,6 @@ import numpy as np
 import xarray as xr
 
 ds = xr.open_zarr(store, group="data_2km")
-ds = ds.assign_coords(channel=ds.channel_name.astype(str))
 
 radiance = ds.counts * ds.slope + ds.offset  # mW m-2 sr-1 (cm-1)-1
 

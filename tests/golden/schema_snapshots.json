@@ -1,13 +1,12 @@
 {
   "FDHSI__include_calibration=False_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "2053e99ff40c9a2b2d5578f94988f0c0e15b6b00e450a8842532b3000f144b8f",
+    "hash": "8972e9b0ac08f670485842b4bdd324e47032636551c49f23a7a4491892dfdbb9",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -15,10 +14,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -162,7 +161,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -172,8 +170,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -181,10 +178,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -328,7 +325,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -337,14 +333,13 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "160c36d9cd26e87980e36a35d6c7110a39a83d2f6e02d9b425f01ef948479d66",
+    "hash": "d148946b119ee0688971e1298231ea2588d627d04877f5296863e86f2973a01e",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -352,10 +347,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -537,7 +532,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -547,8 +541,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -556,10 +549,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -741,7 +734,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -750,14 +742,13 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "ebff199687553ef0e5211579b878bf13c1fdde3b4faa99486213187a29272fa0",
+    "hash": "d4ec3a0fbf837fe6c6238db5a3dc5be74cd9bcef7e929467257b82df3d014d19",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -765,10 +756,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -959,7 +950,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -969,8 +959,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -978,10 +967,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -1172,7 +1161,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -1181,14 +1169,13 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "d9238cbdcecaeee0a6b2c6090ca1a202c9242ab1b1ab66ccd62f2d3ee175b7f8",
+    "hash": "72ebad7450c864c66f9a38975b6ca79e2d6ddac8c6d6c93934a02f04d08921f5",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -1196,10 +1183,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -1428,7 +1415,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -1438,8 +1424,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -1447,10 +1432,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -1679,7 +1664,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -1688,14 +1672,13 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "68592cdb907f86b54df9cc86d22f0bebe8f60494a9fd34df7065406b75ed3f23",
+    "hash": "5ff9ad684b2e78b8811120060638029427cee04589aa64dbee013ec8973d9363",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -1703,10 +1686,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -1901,7 +1884,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -1913,8 +1895,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -1922,10 +1903,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -2120,7 +2101,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -2131,14 +2111,13 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "05a4a4af4ba9e26aceeec2141b200181d6a2fcc1d857f5e4b51bef99cbc7c10c",
+    "hash": "40e90737ce793cddde8b86d43d5820da632516ff98a0dddf73b25fcb554d2da7",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -2146,10 +2125,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -2383,7 +2362,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -2395,8 +2373,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -2404,10 +2381,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -2641,7 +2618,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -2652,14 +2628,13 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "74c582747ae497f5eafcedeb963c19e6a6028d9edc405ecc2bcfa62180219071",
+    "hash": "f1cdedc110fe528ff00f275b82f24cda38cfe9d1d33ecb97376ddaa109ad8cf7",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -2667,10 +2642,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -2913,7 +2888,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -2925,8 +2899,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -2934,10 +2907,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -3180,7 +3153,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -3191,14 +3163,13 @@
     ]
   },
   "FDHSI__include_calibration=False_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "736e257af65bf181eb7c2b707f5851a6b1090c9f17a3df9d36eee49b17334408",
+    "hash": "8cd60ad5bde62cb6717602faed95bf50d400dbec1c72e408fe59233e67f141fd",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -3206,10 +3177,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -3491,7 +3462,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -3503,8 +3473,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               8
@@ -3512,10 +3481,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               8
             ],
@@ -3797,7 +3766,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -3808,10 +3776,30 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "914352faade0d3444fc3bd9cfb0abefedf7e2250140b262dccb501646ecf0574",
+    "hash": "9eeb3b6ae9a16d5986ade00924efc54dc45bcd3c9bd52f1126a1d080051a7c9f",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -3836,27 +3824,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -4192,7 +4159,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -4200,6 +4166,26 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -4224,27 +4210,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -4630,7 +4595,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -4639,10 +4603,30 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "4742bf0c0cdff4c5ae5946995b3357e2fc4fe35d7303f67848abcbc7d221c75c",
+    "hash": "9098f1574af6147c4aef33ee4387e416779026778736730b0ea17dc31fbab374",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -4667,27 +4651,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -5061,7 +5024,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -5069,6 +5031,26 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -5093,27 +5075,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -5537,7 +5498,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -5546,10 +5506,30 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "181e9a0788de6fff0fcd037c851a9520e8096ea4b2984be1c356693d3c597fd3",
+    "hash": "d74ecc582ae576f19cc633fa8cba076fb97e89d19de7a479b9b04227fe5373d1",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -5574,27 +5554,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -5977,7 +5936,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -5985,6 +5943,26 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -6009,27 +5987,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -6462,7 +6419,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -6471,10 +6427,30 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "d9308c0827e686a0023957828ebacaffb87986719794b8cc5d72152ecf1e4d7c",
+    "hash": "b063c4dc4a90c64dda1cd1110cae90508c061747a64a7cadfbb29fffd9cb92c3",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -6499,27 +6475,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -6940,7 +6895,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -6948,6 +6902,26 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -6972,27 +6946,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -7463,7 +7416,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -7472,10 +7424,30 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "079a60224e82eb943e5f4b49d1e029453cf2ac7247c961f3f6dd21ac4fa90357",
+    "hash": "dde1ca0a7fcf308809f896445ea906d7e099c579e73bf1c20e8eb8c10d9d1178",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -7500,27 +7472,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -7907,7 +7858,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -7919,6 +7869,26 @@
         "arrays": [
           {
             "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
+          {
+            "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
@@ -7941,27 +7911,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -8398,7 +8347,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -8409,10 +8357,30 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "cd4a78d8218761c4a189849911dab2d5df7aa1922eef09b83100142d5cd66414",
+    "hash": "9fa027347c4156a254b2fd38e520eb42175284d09826af936fadcbbd986c8c47",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -8437,27 +8405,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -8883,7 +8830,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -8893,6 +8839,26 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -8917,27 +8883,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -9413,7 +9358,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -9424,10 +9368,30 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "3421ac11aad69d23a39917d6cd1511534fa4a9e1f6754af111d6d53b540bbbd4",
+    "hash": "37e89bbd8c2985ddde3be4e69eead3573df4fa80c2d2e7871ea15fe2a81b3b33",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -9452,27 +9416,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -9907,7 +9850,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -9917,6 +9859,26 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -9941,27 +9903,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -10446,7 +10387,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -10457,10 +10397,30 @@
     ]
   },
   "FDHSI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "784464a2890e40b9ab298cc9fdb382dec75b8cc0b1f02d96157b0a4d6e5325e7",
+    "hash": "c290228a68794c0d64ccd16b847ecbeb8c9df8d62ef2410c5c8b0519fdcaf840",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -10485,27 +10445,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -10979,7 +10918,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -10989,6 +10927,26 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              8
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              8
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -11013,27 +10971,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              8
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              8
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -11557,7 +11494,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -11568,14 +11504,13 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "6e7f8b0837e80cdecd7485698386a45bb4db8cf406a94baa79fb0c54f5835c65",
+    "hash": "1eb1326bab1b82e9b5e970a654cd599157cdd2545c80285d7eaa264c0cf680d2",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -11583,10 +11518,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -11730,7 +11665,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -11740,8 +11674,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -11749,10 +11682,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -11896,7 +11829,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -11905,14 +11837,13 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "a5307247e5783b0bf6f7a1fd0062054de2381eb2434a2e9589146afb15f41490",
+    "hash": "272776fe74271083fe3f5db0b82860e262ac57f8e17ea7a5f553bed6a7097e34",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -11920,10 +11851,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -12105,7 +12036,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -12115,8 +12045,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -12124,10 +12053,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -12309,7 +12238,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -12318,14 +12246,13 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "feff296b5c1648aef48f0d196a7a0882a922398386dac40a14413cb856b59ac7",
+    "hash": "7dc9f3b917c846f6016ab1fa190831306b0d11afbe31160a58255ab83df4582b",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -12333,10 +12260,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -12527,7 +12454,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -12537,8 +12463,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -12546,10 +12471,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -12740,7 +12665,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -12749,14 +12673,13 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "1bbbf7b9bc490dc8c7341d2caebbfa7c01eae403668ee6c560c397a620f8c9a6",
+    "hash": "2be637491cfcb3c71f62b78a0cc738cd6cc69427fc6e2707919003a5aea0a53f",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -12764,10 +12687,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -12996,7 +12919,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -13006,8 +12928,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -13015,10 +12936,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -13247,7 +13168,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -13256,14 +13176,13 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "2c457a5c5f0035ac0b191c6e08bfed843d0710523d4c915ed04525219dc5c481",
+    "hash": "4c7f178ca15cccfdc64ce4abf52464e0d504144afc8bfe75b412c99ab5a25be2",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -13271,10 +13190,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -13469,7 +13388,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -13481,8 +13399,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -13490,10 +13407,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -13688,7 +13605,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -13699,14 +13615,13 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "a002432f8d09c5028be5c88475576d8d3085c70877c085b58621431661a304f5",
+    "hash": "7f4f4a7369da92669d03a1c1b1c6db7d9661f72c3368301c568453644c58c33f",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -13714,10 +13629,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -13951,7 +13866,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -13963,8 +13877,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -13972,10 +13885,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -14209,7 +14122,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -14220,14 +14132,13 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "59112d205f06c9afe5cc58613b623dfdb19312c972a75989dd62e7d2e6db9a35",
+    "hash": "7f066b00dffd8574317cd5374da0d530e0407e478c3ab8b375d32b012c91e58d",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -14235,10 +14146,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -14481,7 +14392,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -14493,8 +14403,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -14502,10 +14411,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -14748,7 +14657,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -14759,14 +14667,13 @@
     ]
   },
   "HRFI__include_calibration=False_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "8a490f1d874138d7a08a451196babba011e35215427374fcf0864d31f19cb28e",
+    "hash": "feca1defaff03c616396c8994c994e3380e2ce8029358a326f6859715c5949bc",
     "normalized_spec": [
       {
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -14774,10 +14681,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -15059,7 +14966,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -15071,8 +14977,7 @@
         "arrays": [
           {
             "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
+              "long_name": "FCI logical channel name"
             },
             "chunks": [
               2
@@ -15080,10 +14985,10 @@
             "dimension_names": [
               "channel"
             ],
-            "dtype": "S16",
+            "dtype": "StringDType128",
             "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
+            "fill_value": null,
+            "name": "channel",
             "shape": [
               2
             ],
@@ -15365,7 +15270,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -15376,10 +15280,30 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "9a11280c4fd51fed946b7036288d44080b08a34e330444586b00478a0ca0bf68",
+    "hash": "525a092611931da50dca0347194ed772e641c332b9dcd9a94f4a26801b071781",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -15404,27 +15328,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -15810,7 +15713,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -15818,6 +15720,26 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -15842,27 +15764,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -16198,7 +16099,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -16207,10 +16107,30 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "a9f078f198955dabe57c24e79ef09241e50d6e861afd9b6109e3433f32b546b4",
+    "hash": "9a3a6affe07167a7b2e01dfcaa157aba70ffc9126fcbcae9d79fe5a15f2622ea",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -16235,27 +16155,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -16679,7 +16578,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -16687,6 +16585,26 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -16711,27 +16629,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -17105,7 +17002,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -17114,10 +17010,30 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "3d12551d44873fe888b7ecbfd68a73ca2e0b43c64141d457bd283e75918cb176",
+    "hash": "03d00f75a93fea22ca290076f4bb5f0f68b5e741d5b4573e4fe6db9239473a2c",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -17142,27 +17058,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -17595,7 +17490,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -17603,6 +17497,26 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -17627,27 +17541,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -18030,7 +17923,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -18039,10 +17931,30 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=False_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "a745c730609d0d8a6e6f55fc380282b822e69d939dee103f050fe7e9edba195f",
+    "hash": "6b52eb9c5bf50317613bedc6ea37ad2af2da77ba4732982d916319eeab284b66",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -18067,27 +17979,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -18558,7 +18449,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -18566,6 +18456,26 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -18590,27 +18500,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -19031,7 +18920,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "x",
           "y"
         ],
@@ -19040,10 +18928,30 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=False": {
-    "hash": "157648f04a61f2c9477adf43d90ca0d195e425653ee96f229cf9ed3dd39e8b83",
+    "hash": "cb510b4df06fadb83f08afe4e732ca6c12f6644310bce2e5f09a0e3fef2fa7b2",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -19068,27 +18976,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -19525,7 +19412,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -19537,6 +19423,26 @@
         "arrays": [
           {
             "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
+          {
+            "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
               "long_name": "Channel effective solar irradiance at 1 AU",
               "units": "mW m-2 (cm-1)-1"
@@ -19559,27 +19465,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -19966,7 +19851,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -19977,10 +19861,30 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=False_include_pixel_time=True": {
-    "hash": "67a6c6e13f247ba4e997b4af0049ab5197f46d169ebe9a755de22ee66d8a1ba0",
+    "hash": "70d228516bba4031049ce1a3c23fd572a1fab8626101340f5c535ef0752b8567",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -20005,27 +19909,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -20501,7 +20384,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -20511,6 +20393,26 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -20535,27 +20437,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -20981,7 +20862,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -20992,10 +20872,30 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=False": {
-    "hash": "b451ed5d9eb2158c4ad1777f476e53478f585bbf60795e69ba898dcf083e3b64",
+    "hash": "8973ea2874a4f0ebaf34d3845e9f14529dc6171a67358fb6e2664455458c3e65",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -21020,27 +20920,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -21525,7 +21404,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -21535,6 +21413,26 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -21559,27 +21457,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -22014,7 +21891,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -22025,10 +21901,30 @@
     ]
   },
   "HRFI__include_calibration=True_include_geolocation=True_include_pixel_quality=True_include_pixel_time=True": {
-    "hash": "3fe8e7dc2aa608577ffc98c609ca3fc2a36508d81b5e480a510ed6108bced5f9",
+    "hash": "44dc3212c30175689807a68e6a7d881dce42dc90b9f4b02df6c371be537bf740",
     "normalized_spec": [
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -22053,27 +21949,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -22597,7 +22472,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",
@@ -22607,6 +22481,26 @@
       },
       {
         "arrays": [
+          {
+            "attrs": {
+              "long_name": "FCI logical channel name"
+            },
+            "chunks": [
+              2
+            ],
+            "dimension_names": [
+              "channel"
+            ],
+            "dtype": "StringDType128",
+            "expected_time_count": null,
+            "fill_value": null,
+            "name": "channel",
+            "shape": [
+              2
+            ],
+            "shards": null,
+            "time_indexed": false
+          },
           {
             "attrs": {
               "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -22631,27 +22525,6 @@
             ],
             "shards": null,
             "time_indexed": true
-          },
-          {
-            "attrs": {
-              "long_name": "FCI logical channel name",
-              "units": "1"
-            },
-            "chunks": [
-              2
-            ],
-            "dimension_names": [
-              "channel"
-            ],
-            "dtype": "S16",
-            "expected_time_count": null,
-            "fill_value": "",
-            "name": "channel_name",
-            "shape": [
-              2
-            ],
-            "shards": null,
-            "time_indexed": false
           },
           {
             "attrs": {
@@ -23125,7 +22998,6 @@
         },
         "coord_names": [
           "channel",
-          "channel_name",
           "latitude",
           "longitude",
           "x",

@@ -40,7 +40,6 @@ EXPECTED_DATA_VARS = {
     "pixel_time",
     "slope",
     "offset",
-    "channel_name",
     "radiance_unit_conversion_coefficient",
     "radiance_to_bt_conversion_coefficient_wavenumber",
     "radiance_to_bt_conversion_coefficient_a",
@@ -50,7 +49,7 @@ EXPECTED_DATA_VARS = {
     "channel_effective_solar_irradiance",
     "spatial_ref",
 }
-EXPECTED_COORDS = {"time", "y", "x", "latitude", "longitude"}
+EXPECTED_COORDS = {"time", "y", "x", "channel", "latitude", "longitude"}
 
 
 @pytest.mark.parametrize(
@@ -69,12 +68,10 @@ EXPECTED_COORDS = {"time", "y", "x", "latitude", "longitude"}
             [1, 2],
             [1.0, 2.0],
             [0.0, 1.0],
-            [b"vis_04", b"vis_06"],
+            ["vis_04", "vis_06"],
             id="fdhsi-1km",
         ),
-        pytest.param(
-            "hrfi_zip", "500m", [1], [1.0], [0.0], [b"vis_06"], id="hrfi-500m"
-        ),
+        pytest.param("hrfi_zip", "500m", [1], [1.0], [0.0], ["vis_06"], id="hrfi-500m"),
     ],
 )
 def test_flat_store_opens_without_group_and_holds_the_ingested_data(
@@ -85,7 +82,7 @@ def test_flat_store_opens_without_group_and_holds_the_ingested_data(
     expected_counts: list[int],
     expected_slope: list[float],
     expected_offset: list[float],
-    expected_channels: list[bytes],
+    expected_channels: list[str],
 ) -> None:
     source_zip: Path = request.getfixturevalue(zip_fixture)
 
@@ -113,7 +110,7 @@ def test_flat_store_opens_without_group_and_holds_the_ingested_data(
             )
         np.testing.assert_array_equal(ds["slope"].values, [expected_slope])
         np.testing.assert_array_equal(ds["offset"].values, [expected_offset])
-        assert ds["channel_name"].values.tolist() == expected_channels
+        assert ds["channel"].values.tolist() == expected_channels
 
         np.testing.assert_array_equal(
             ds["time"].values, np.array(["2024-01-01T00:00:00"], dtype="datetime64[ns]")

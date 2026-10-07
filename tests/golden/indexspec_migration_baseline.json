@@ -1,6 +1,6 @@
 {
   "fdhsi_defaults": {
-    "hash": "1ccebc43547d017c98542382265bc5f9c36149f97abe514d8851f3965bb2b80c",
+    "hash": "c48916af78e3d05bd7db49153e41ddf86f486ae7895e91271e76eb05d1c799ad",
     "structure": {
       "attrs": {
         "firecube_resolved_index": "{\"groups\":{\"data_1km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null},\"data_2km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null}},\"name\":\"eumetsat_repeat_cycle_v1\",\"schema_version\":\"v1\"}",
@@ -9,6 +9,23 @@
       "groups": {
         "data_1km": {
           "arrays": {
+            "channel": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "FCI logical channel name"
+              },
+              "chunks": [
+                2
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "StringDType()",
+              "fill_value": "",
+              "shape": [
+                2
+              ]
+            },
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -27,24 +44,6 @@
               "fill_value": "nan",
               "shape": [
                 1,
-                2
-              ]
-            },
-            "channel_name": {
-              "attrs": {
-                "firecube_static_written": true,
-                "long_name": "FCI logical channel name",
-                "units": "1"
-              },
-              "chunks": [
-                2
-              ],
-              "dimension_names": [
-                "channel"
-              ],
-              "dtype": "|S16",
-              "fill_value": "",
-              "shape": [
                 2
               ]
             },
@@ -447,6 +446,23 @@
         },
         "data_2km": {
           "arrays": {
+            "channel": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "FCI logical channel name"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "StringDType()",
+              "fill_value": "",
+              "shape": [
+                1
+              ]
+            },
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -465,24 +481,6 @@
               "fill_value": "nan",
               "shape": [
                 1,
-                1
-              ]
-            },
-            "channel_name": {
-              "attrs": {
-                "firecube_static_written": true,
-                "long_name": "FCI logical channel name",
-                "units": "1"
-              },
-              "chunks": [
-                1
-              ],
-              "dimension_names": [
-                "channel"
-              ],
-              "dtype": "|S16",
-              "fill_value": "",
-              "shape": [
                 1
               ]
             },
@@ -929,7 +927,7 @@
     }
   },
   "hrfi_defaults": {
-    "hash": "cb10abb34068e2803383635f2489106470ca9ad2180869a7f33fb83b871f5afb",
+    "hash": "3e62b63c9ab1e4e21c26ec794a065f07b2359b2bac730ddf4c574733e50850b4",
     "structure": {
       "attrs": {
         "firecube_resolved_index": "{\"groups\":{\"data_1km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null},\"data_500m\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null}},\"name\":\"eumetsat_repeat_cycle_v1\",\"schema_version\":\"v1\"}",
@@ -938,6 +936,23 @@
       "groups": {
         "data_1km": {
           "arrays": {
+            "channel": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "FCI logical channel name"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "StringDType()",
+              "fill_value": "",
+              "shape": [
+                1
+              ]
+            },
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -956,24 +971,6 @@
               "fill_value": "nan",
               "shape": [
                 1,
-                1
-              ]
-            },
-            "channel_name": {
-              "attrs": {
-                "firecube_static_written": true,
-                "long_name": "FCI logical channel name",
-                "units": "1"
-              },
-              "chunks": [
-                1
-              ],
-              "dimension_names": [
-                "channel"
-              ],
-              "dtype": "|S16",
-              "fill_value": "",
-              "shape": [
                 1
               ]
             },
@@ -1418,6 +1415,23 @@
         },
         "data_500m": {
           "arrays": {
+            "channel": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "FCI logical channel name"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "StringDType()",
+              "fill_value": "",
+              "shape": [
+                1
+              ]
+            },
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -1436,24 +1450,6 @@
               "fill_value": "nan",
               "shape": [
                 1,
-                1
-              ]
-            },
-            "channel_name": {
-              "attrs": {
-                "firecube_static_written": true,
-                "long_name": "FCI logical channel name",
-                "units": "1"
-              },
-              "chunks": [
-                1
-              ],
-              "dimension_names": [
-                "channel"
-              ],
-              "dtype": "|S16",
-              "fill_value": "",
-              "shape": [
                 1
               ]
             },

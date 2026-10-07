@@ -91,12 +91,12 @@ CASES = [
         id="flat-complete",
     ),
     pytest.param(
-        {"": {**_all_marked(*STATIC), "channel_name": False}},
+        {"": {**_all_marked(*STATIC), "channel": False}},
         "",
         "slots",
         1,
-        "missing firecube_static_written on: /channel_name",
-        id="flat-unmarked-channel-name",
+        "missing firecube_static_written on: /channel",
+        id="flat-unmarked-channel",
     ),
     pytest.param(
         {"": _all_marked("x", "y", "counts")},

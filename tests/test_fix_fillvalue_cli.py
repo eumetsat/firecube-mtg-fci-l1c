@@ -395,8 +395,8 @@ def test_fix_fillvalue_dry_run_then_apply_on_flat_store(
     # NaN float fills are stored base64-encoded, as xarray expects for Zarr v3.
     assert root["latitude"].attrs["_FillValue"] == "AAAAAAAA+H8="
     assert root["slope"].attrs["_FillValue"] == "AAAAAAAA+H8="
-    # No schema fill (x, y) or non-numeric dtype (time, channel_name): untouched.
-    for name in ("x", "y", "time", "channel_name"):
+    # No schema fill (x, y, channel) or non-numeric dtype (time): untouched.
+    for name in ("x", "y", "time", "channel"):
         assert "_FillValue" not in dict(root[name].attrs), name
 
     ds: Any = xr.open_zarr(str(store_path), consolidated=False, mask_and_scale=True)
