@@ -52,6 +52,9 @@ __all__ = [
     "TIME_COORD_NAME",
 ]
 
+# Variable-length UTF-8 text; stored as the Zarr v3 ``string`` data type.
+_STRING_DTYPE = np.dtypes.StringDType()
+
 # Time coordinate name. Wired to the ingestor's time_dim_name. Change here only.
 TIME_COORD_NAME = "time"
 
@@ -239,9 +242,9 @@ def _time_source(ctx: VariableContext) -> None:
     return None
 
 
-def _channel_name_source(ctx: VariableContext) -> np.ndarray:
-    """Return channel names as a fixed-width byte string array."""
-    return np.asarray(ctx.logical_channels, dtype="S16")
+def _channel_source(ctx: VariableContext) -> np.ndarray:
+    """Return channel names as variable-length strings."""
+    return np.asarray(ctx.logical_channels, dtype=_STRING_DTYPE)
 
 
 def _calibration_field(ctx: VariableContext, field: str) -> np.ndarray | None:
@@ -572,17 +575,14 @@ VARIABLES: list[Variable] = [
         source=_time_source,
     ),
     Variable(
-        name="channel_name",
+        name="channel",
         dims=("channel",),
-        dtype="S16",
-        fill_value=b"",
-        attrs={
-            "long_name": "FCI logical channel name",
-            # CF-1.8 §3.1: units required on data variables; "1" is the
-            # conventional placeholder for dimensionless / label quantities.
-            "units": "1",
-        },
-        source=_channel_name_source,
+        dtype=_STRING_DTYPE,
+        # No fill value: Firecube would stamp a _FillValue attribute, which
+        # xarray cannot decode for string variables.
+        fill_value=None,
+        attrs={"long_name": "FCI logical channel name"},
+        source=_channel_source,
     ),
     # Radiance conversion constants, read per product like slope/offset. Names,
     # long_names and comments follow data/<channel>/measured in the L1C files.

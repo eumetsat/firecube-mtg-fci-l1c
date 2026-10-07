@@ -311,7 +311,7 @@ def test_backward_compatible_fdhsi(tmp_path: Path, fdhsi_zip: Path):
         "pixel_time",
         "slope",
         "offset",
-        "channel_name",
+        "channel",
     ]:
         assert var in grp
     # lat/lon attrs come from declarative variable attrs and reach the store.
@@ -324,30 +324,49 @@ def test_backward_compatible_fdhsi(tmp_path: Path, fdhsi_zip: Path):
 
 @pytest.mark.integration
 @pytest.mark.plugin
-def test_channel_name_written(tmp_path: Path, fdhsi_zip: Path):
-    """channel_name array is written to Zarr store with correct values."""
+def test_channel_coordinate_written_as_text_and_selectable_by_name(
+    tmp_path: Path, fdhsi_zip: Path
+):
+    """Channel names are the text coordinate of the channel dimension."""
     out = _run_ingest(fdhsi_zip.parent, tmp_path)
     root = zarr.open_group(str(out), mode="r")
     data_1km = cast(Any, root["data_1km"])
 
-    arr = data_1km["channel_name"]
+    arr = data_1km["channel"]
     assert arr.shape == (2,)
-    values = np.asarray(arr[:])
-    assert values.dtype.kind == "S"
-    assert len(values) == arr.shape[0]
-    assert values.tolist() == [b"vis_04", b"vis_06"]
+    assert arr.metadata.dimension_names == ("channel",)
+    # Zarr v3 variable-length UTF-8, not fixed-width bytes.
+    assert arr.metadata.to_dict()["data_type"] == "string"
+    assert np.asarray(arr[:]).tolist() == ["vis_04", "vis_06"]
+    # xarray cannot decode a _FillValue attribute on string variables.
+    assert "_FillValue" not in dict(arr.attrs)
+    assert "channel_name" not in data_1km
+
+    ds = xr.open_zarr(str(out), group="data_1km", consolidated=False)
+    try:
+        assert "channel" in ds.indexes
+        assert ds["channel"].values.tolist() == ["vis_04", "vis_06"]
+        # small_fci_layout fills channel i with counts i + 1.
+        selected = ds["counts"].sel(channel="vis_06").isel(time=0)
+        np.testing.assert_array_equal(selected.values, np.full((4, 4), 2))
+        with pytest.raises(KeyError):
+            ds["counts"].sel(channel="ir_105")
+    finally:
+        ds.close()
 
 
 @pytest.mark.integration
 @pytest.mark.plugin
-def test_channel_name_static_replay_is_idempotent(tmp_path: Path, fdhsi_zip: Path):
-    """Replaying a static bytes coordinate must not break resume/idempotency."""
+def test_channel_coordinate_static_replay_is_idempotent(
+    tmp_path: Path, fdhsi_zip: Path
+):
+    """Replaying the static text coordinate must not break resume/idempotency."""
     src = fdhsi_zip.parent
 
     out = _run_ingest(src, tmp_path, options={"include_geolocation": False})
     root = zarr.open_group(str(out), mode="r")
     data_1km = cast(Any, root["data_1km"])
-    first = np.asarray(data_1km["channel_name"][:]).copy()
+    first = np.asarray(data_1km["channel"][:]).copy()
 
     _run_ingest(
         src,
@@ -361,7 +380,8 @@ def test_channel_name_static_replay_is_idempotent(tmp_path: Path, fdhsi_zip: Pat
 
     root = zarr.open_group(str(out), mode="r")
     data_1km = cast(Any, root["data_1km"])
-    np.testing.assert_array_equal(np.asarray(data_1km["channel_name"][:]), first)
+    np.testing.assert_array_equal(np.asarray(data_1km["channel"][:]), first)
+    assert first.tolist() == ["vis_04", "vis_06"]
 
 
 @pytest.mark.integration

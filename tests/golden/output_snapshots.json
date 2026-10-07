@@ -1,6 +1,6 @@
 {
   "fdhsi_defaults": {
-    "hash": "1a43a8b7a2db7e84b8aaad3ae0143060d0a075723861e9e1ede2b0cd8a3c7eca",
+    "hash": "873cb5d7d09d50d70953df7398b6ded144370e6de50c1032f2308f25cb53fc67",
     "options": {},
     "product_type": "FDHSI",
     "structure": {
@@ -11,6 +11,24 @@
       "groups": {
         "data_1km": {
           "arrays": {
+            "channel": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "FCI logical channel name"
+              },
+              "chunks": [
+                2
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "StringDType()",
+              "fill_value": "",
+              "has_static_marker": true,
+              "shape": [
+                2
+              ]
+            },
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -30,25 +48,6 @@
               "has_static_marker": false,
               "shape": [
                 1,
-                2
-              ]
-            },
-            "channel_name": {
-              "attrs": {
-                "firecube_static_written": true,
-                "long_name": "FCI logical channel name",
-                "units": "1"
-              },
-              "chunks": [
-                2
-              ],
-              "dimension_names": [
-                "channel"
-              ],
-              "dtype": "|S16",
-              "fill_value": "",
-              "has_static_marker": true,
-              "shape": [
                 2
               ]
             },
@@ -541,6 +540,24 @@
         },
         "data_2km": {
           "arrays": {
+            "channel": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "FCI logical channel name"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "StringDType()",
+              "fill_value": "",
+              "has_static_marker": true,
+              "shape": [
+                1
+              ]
+            },
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -560,25 +577,6 @@
               "has_static_marker": false,
               "shape": [
                 1,
-                1
-              ]
-            },
-            "channel_name": {
-              "attrs": {
-                "firecube_static_written": true,
-                "long_name": "FCI logical channel name",
-                "units": "1"
-              },
-              "chunks": [
-                1
-              ],
-              "dimension_names": [
-                "channel"
-              ],
-              "dtype": "|S16",
-              "fill_value": "",
-              "has_static_marker": true,
-              "shape": [
                 1
               ]
             },
@@ -1117,7 +1115,7 @@
     }
   },
   "hrfi_defaults": {
-    "hash": "6b7301723fdb2d753e96fe2cf6d52348b16feb6ff339cd2520e396c3787f1b61",
+    "hash": "5248a85146be2f791fd9a9c54425ee9c6150bb29cadee1edfe19973b6d9d1242",
     "options": {},
     "product_type": "HRFI",
     "structure": {
@@ -1128,6 +1126,24 @@
       "groups": {
         "data_1km": {
           "arrays": {
+            "channel": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "FCI logical channel name"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "StringDType()",
+              "fill_value": "",
+              "has_static_marker": true,
+              "shape": [
+                1
+              ]
+            },
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -1147,25 +1163,6 @@
               "has_static_marker": false,
               "shape": [
                 1,
-                1
-              ]
-            },
-            "channel_name": {
-              "attrs": {
-                "firecube_static_written": true,
-                "long_name": "FCI logical channel name",
-                "units": "1"
-              },
-              "chunks": [
-                1
-              ],
-              "dimension_names": [
-                "channel"
-              ],
-              "dtype": "|S16",
-              "fill_value": "",
-              "has_static_marker": true,
-              "shape": [
                 1
               ]
             },
@@ -1702,6 +1699,24 @@
         },
         "data_500m": {
           "arrays": {
+            "channel": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "FCI logical channel name"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "StringDType()",
+              "fill_value": "",
+              "has_static_marker": true,
+              "shape": [
+                1
+              ]
+            },
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
@@ -1721,25 +1736,6 @@
               "has_static_marker": false,
               "shape": [
                 1,
-                1
-              ]
-            },
-            "channel_name": {
-              "attrs": {
-                "firecube_static_written": true,
-                "long_name": "FCI logical channel name",
-                "units": "1"
-              },
-              "chunks": [
-                1
-              ],
-              "dimension_names": [
-                "channel"
-              ],
-              "dtype": "|S16",
-              "fill_value": "",
-              "has_static_marker": true,
-              "shape": [
                 1
               ]
             },
