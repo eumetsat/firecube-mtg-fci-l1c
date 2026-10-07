@@ -48,6 +48,10 @@ EXPECTED_DATA_VARS = {
     "radiance_to_bt_conversion_constant_c1",
     "radiance_to_bt_conversion_constant_c2",
     "channel_effective_solar_irradiance",
+    "subsatellite_latitude",
+    "subsatellite_longitude",
+    "platform_altitude",
+    "sun_earth_distance",
     "spatial_ref",
 }
 EXPECTED_COORDS = {"time", "y", "x", "latitude", "longitude"}
@@ -160,7 +164,7 @@ def test_flat_root_arrays_equal_the_grouped_arrays_from_the_same_input(
     grouped = grouped_root["data_1km"]
 
     assert sorted(flat_root.array_keys()) == sorted(grouped.array_keys())
-    assert len(list(flat_root.array_keys())) == 19
+    assert len(list(flat_root.array_keys())) == 23
 
     for name in sorted(flat_root.array_keys()):
         flat_array = flat_root[name]
