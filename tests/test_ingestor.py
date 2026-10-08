@@ -165,7 +165,7 @@ class TestIndexSpecAndInspectItem:
 
 
 class TestBuildWriteIntentsLogging:
-    def test_logs_exception_when_nc_part_read_fails(self, monkeypatch):
+    def test_logs_exception_when_nc_part_read_fails(self, monkeypatch, tmp_path):
         import datetime
 
         import firecube_mtg_fci_l1c.ingestor as ingestor_mod
@@ -201,28 +201,19 @@ class TestBuildWriteIntentsLogging:
             def close(self):
                 return None
 
-        class FakeReader:
-            def __init__(self, part_path):
-                self.part_path = part_path
+        def failing_row_range(_self, _item, resolution):
+            raise RuntimeError(f"row range unreadable for {resolution}")
 
-            def __enter__(self):
-                return self
-
-            def __exit__(self, exc_type, exc, tb):
-                return False
-
-            def has_time_map(self):
-                return False
-
-            def read_row_range(self, res):
-                raise RuntimeError(f"failed for {res}")
-
+        # A real, readable nc_part: only the row-range read is made to fail.
+        part = tmp_path / "nc_part.nc"
+        _write_disk_rows_chunk(part, (0, 4))
+        monkeypatch.setattr(
+            ingestor_mod.SharedNcPartReader, "read_row_range", failing_row_range
+        )
         scratch_mod: Any = types.ModuleType("firecube_mtg_fci_l1c._scratch")
         scratch_mod.BatchScratch = FakeScratch
         monkeypatch.setitem(sys.modules, "firecube_mtg_fci_l1c._scratch", scratch_mod)
-        monkeypatch.setattr(
-            ingestor_mod, "list_fci_nc_parts", lambda _dir: [Path("/tmp/nc_part.nc")]
-        )
+        monkeypatch.setattr(ingestor_mod, "list_fci_nc_parts", lambda _dir: [part])
         monkeypatch.setattr(
             ingestor_mod,
             "extract_slot_time_from_path",
@@ -244,11 +235,19 @@ class TestBuildWriteIntentsLogging:
 
         intents = ingestor.build_write_intents(batch, ctx)  # pyright: ignore[reportArgumentType]
 
-        assert all(intent.kind == "static" for intent in intents)
+        assert {intent.kind for intent in intents} == {"static"}
         assert any(intent.array == "channel" for intent in intents)
-        assert batch.metadata["plugin_failure_counters"]["files_processed"] == 0
-        assert batch.metadata["plugin_failure_counters"]["files_failed"] == 1
-        ingestor._log.exception.assert_called_once()
+        assert batch.metadata["plugin_failure_counters"] == {
+            "files_processed": 0,
+            "files_failed": 1,
+            "zip_errors": ["input.zip: row range unreadable for 1km"],
+        }
+        ingestor._log.exception.assert_called_once_with(
+            "nc_part processing failed for %s", "input.zip"
+        )
+        ingestor._log.warning.assert_called_once()
+        warning_args = ingestor._log.warning.call_args.args
+        assert "row range unreadable for 1km" in str(warning_args[2])
 
 
 class TestVariableDispatch:
@@ -892,49 +891,61 @@ def _emit_with_rows(
 
 
 class TestPartialCoverage:
-    def test_stripe_edge_chunk_is_written_only_for_its_covered_rows(self):
-        # BODY chunk 32 of FDHSI 1 km holds disk rows [8649, 8908); with the
-        # default 278-row chunks it meets output chunks [8618, 8896) and
-        # [8896, 9174).
-        emitted = _emit_with_rows({"body-32": (8649, 8908)}, dimsize=11136)
+    @pytest.mark.parametrize(
+        ("part_rows", "dimsize", "chunk_y", "expected_writes"),
+        [
+            pytest.param(
+                # BODY chunk 32 of FDHSI 1 km holds disk rows [8649, 8908); with
+                # the default 278-row chunks it meets output chunks [8618, 8896)
+                # and [8896, 9174).
+                {"body-32": (8649, 8908)},
+                11136,
+                None,
+                [
+                    ((8649, 8896), list(range(8649, 8896))),
+                    ((8896, 8908), list(range(8896, 8908))),
+                ],
+                id="stripe-edge-chunk",
+            ),
+            pytest.param(
+                # Parts 1 and 3 present, part 2 missing; one 12-row output chunk.
+                {"body-1": (0, 4), "body-3": (8, 12)},
+                12,
+                12,
+                [((0, 4), [0, 1, 2, 3]), ((8, 12), [8, 9, 10, 11])],
+                id="gap-inside-one-output-chunk",
+            ),
+            pytest.param(
+                # Three parts tile 12 rows; 5-row chunks straddle both part
+                # boundaries. Same writes as before partial coverage existed.
+                {"body-1": (0, 4), "body-2": (4, 8), "body-3": (8, 12)},
+                12,
+                5,
+                [
+                    ((0, 5), [0, 1, 2, 3, 4]),
+                    ((5, 10), [5, 6, 7, 8, 9]),
+                    ((10, 12), [10, 11]),
+                ],
+                id="full-scene-across-part-boundaries",
+            ),
+            pytest.param(
+                {"body-2": (4, 8)},
+                12,
+                4,
+                [((4, 8), [4, 5, 6, 7])],
+                id="chunks-meeting-no-part",
+            ),
+        ],
+    )
+    def test_each_array_is_written_only_for_covered_rows(
+        self, part_rows, dimsize, chunk_y, expected_writes
+    ):
+        emitted = _emit_with_rows(part_rows, dimsize=dimsize, zarr_chunk_y=chunk_y)
 
         assert sorted(emitted) == ["counts", "pixel_quality", "pixel_time"]
         for array, writes in emitted.items():
-            assert [y for y, _rows in writes] == [(8649, 8896), (8896, 8908)], array
-            assert writes[0][1] == list(range(8649, 8896))
-            assert writes[1][1] == list(range(8896, 8908))
-
-    def test_gap_inside_one_output_chunk_gives_one_write_per_covered_run(self):
-        # Parts 1 and 3 present, part 2 missing; one 12-row output chunk.
-        emitted = _emit_with_rows(
-            {"body-1": (0, 4), "body-3": (8, 12)}, dimsize=12, zarr_chunk_y=12
-        )
-
-        for writes in emitted.values():
-            assert writes == [((0, 4), [0, 1, 2, 3]), ((8, 12), [8, 9, 10, 11])]
-
-    def test_full_scene_writes_whole_chunks_across_part_boundaries(self):
-        # Three parts tile 12 rows; 5-row chunks straddle both part
-        # boundaries. Same writes as before partial coverage existed.
-        emitted = _emit_with_rows(
-            {"body-1": (0, 4), "body-2": (4, 8), "body-3": (8, 12)},
-            dimsize=12,
-            zarr_chunk_y=5,
-        )
-
-        assert sorted(emitted) == ["counts", "pixel_quality", "pixel_time"]
-        for writes in emitted.values():
-            assert writes == [
-                ((0, 5), [0, 1, 2, 3, 4]),
-                ((5, 10), [5, 6, 7, 8, 9]),
-                ((10, 12), [10, 11]),
-            ]
-
-    def test_output_chunks_meeting_no_part_get_no_write(self):
-        emitted = _emit_with_rows({"body-2": (4, 8)}, dimsize=12, zarr_chunk_y=4)
-
-        for writes in emitted.values():
-            assert writes == [((4, 8), [4, 5, 6, 7])]
+            assert len(writes) == len(expected_writes), array
+            assert writes == expected_writes, array
 
     @pytest.mark.parametrize(
         "part_rows",
@@ -956,10 +967,22 @@ class TestPartialCoverage:
             _spatial_intents_for_rows(part_rows, dimsize=8, zarr_chunk_y=8)
 
 
-def _write_disk_rows_chunk(path: Path, rows: tuple[int, int]) -> None:
+def _write_disk_rows_chunk(
+    path: Path,
+    rows: tuple[int, int],
+    *,
+    index: int = 1,
+    time: float = 60.0,
+    latitude: float | None = None,
+    scale_factor: float = 1.0,
+    pixel_index: int | None = None,
+) -> None:
     """Write a ``vis_04`` BODY chunk for disk rows ``[start, stop)``, 2 columns.
 
-    Pixels of disk row ``r`` hold ``r``; the root table maps index 1 to 60 s.
+    Pixels of disk row ``r`` hold ``r``. The root table maps ``index`` to
+    ``time`` seconds and, with ``latitude``, to a sub-satellite latitude;
+    ``scale_factor`` is the calibration slope. Pixels point at ``index``
+    unless ``pixel_index`` names another root-table row.
     """
     import h5netcdf
 
@@ -967,8 +990,15 @@ def _write_disk_rows_chunk(path: Path, rows: tuple[int, int]) -> None:
     per_row = np.repeat(np.arange(start, stop)[:, None], 2, axis=1)
     with h5netcdf.File(path, "w") as ds:
         ds.dimensions["n_time"] = 1
-        ds.create_variable("index", ("n_time",), data=np.array([1], np.uint16))
-        ds.create_variable("time", ("n_time",), data=np.array([60.0]))
+        ds.create_variable("index", ("n_time",), data=np.array([index], np.uint16))
+        ds.create_variable("time", ("n_time",), data=np.array([time]))
+        if latitude is not None:
+            platform = ds.create_group("state").create_group("platform")
+            platform.create_variable(
+                "subsatellite_latitude",
+                ("n_time",),
+                data=np.array([latitude], np.float32),
+            )
         measured = (
             ds.create_group("data").create_group("vis_04").create_group("measured")
         )
@@ -977,7 +1007,7 @@ def _write_disk_rows_chunk(path: Path, rows: tuple[int, int]) -> None:
         radiance = measured.create_variable(
             "effective_radiance", ("y", "x"), data=per_row.astype(np.uint16)
         )
-        radiance.attrs["scale_factor"] = 1.0
+        radiance.attrs["scale_factor"] = scale_factor
         radiance.attrs["add_offset"] = 0.0
         measured.create_variable("start_position_row", (), data=np.int32(start + 1))
         measured.create_variable("end_position_row", (), data=np.int32(stop))
@@ -985,18 +1015,25 @@ def _write_disk_rows_chunk(path: Path, rows: tuple[int, int]) -> None:
             "pixel_quality", ("y", "x"), data=np.zeros(per_row.shape, np.uint8)
         )
         measured.create_variable(
-            "index_map", ("y", "x"), data=np.ones(per_row.shape, np.uint16)
+            "index_map",
+            ("y", "x"),
+            data=np.full(per_row.shape, pixel_index or index, np.uint16),
         )
 
 
-def _stripe_bundle(tmp_path: Path, rows_by_chunk: dict[int, tuple[int, int]]):
+def _stripe_bundle(
+    tmp_path: Path,
+    rows_by_chunk: dict[int, tuple[int, int]],
+    root_tables: dict[int, dict[str, Any]] | None = None,
+):
+    """Write BODY chunk files; ``root_tables`` gives per-chunk writer overrides."""
     from firecube_mtg_fci_l1c._data import group_chunks_into_bundles
     from tests.test_integration import _chunk_name
 
     paths = []
     for number, rows in rows_by_chunk.items():
         path = tmp_path / _chunk_name("BODY", "20240101000002", 1, number)
-        _write_disk_rows_chunk(path, rows)
+        _write_disk_rows_chunk(path, rows, **(root_tables or {}).get(number, {}))
         paths.append(str(path))
     (bundle,) = group_chunks_into_bundles(paths)
     return bundle
@@ -1362,35 +1399,6 @@ def _stripe_parts(tmp_path: Path, numbers: Iterable[int]) -> Any:
     return _stripe_bundle(tmp_path, {n: _STRIPE_TABLE[n - 1] for n in numbers})
 
 
-class _ReadSpy:
-    """Record the BODY chunk numbers each NCPartReader method was called for."""
-
-    METHODS = (
-        "read_channel_data",
-        "read_time_map",
-        "read_slot_geometry",
-        "read_calibration",
-    )
-
-    def __init__(self, monkeypatch) -> None:
-        from firecube_mtg_fci_l1c._decode import NCPartReader
-
-        self.chunks: dict[str, set[int]] = {name: set() for name in self.METHODS}
-        for name in self.METHODS:
-            monkeypatch.setattr(
-                NCPartReader, name, self._recording(name, getattr(NCPartReader, name))
-            )
-
-    def _recording(self, name: str, method: Any) -> Any:
-        from firecube_mtg_fci_l1c._data import parse_chunk_name
-
-        def record(reader: Any, *args: Any, **kwargs: Any) -> Any:
-            self.chunks[name].add(parse_chunk_name(reader.path).chunk_number)
-            return method(reader, *args, **kwargs)
-
-        return record
-
-
 def _region_rows(regions: list[Any], array: str) -> list[tuple[tuple, list[int]]]:
     """Return ``(y_slice, disk rows of the data)`` of one array's region writes."""
     return [
@@ -1402,21 +1410,62 @@ def _region_rows(regions: list[Any], array: str) -> list[tuple[tuple, list[int]]
 
 @pytest.mark.usefixtures("stripe_grid")
 class TestStripeReadPath:
-    def test_parts_outside_the_window_get_no_pixel_read_but_root_tables(
+    def test_parts_outside_the_window_feed_root_tables_but_their_pixels_are_never_read(
         self, tmp_path, monkeypatch
     ):
-        bundle = _stripe_parts(tmp_path, range(1, 7))
-        spy = _ReadSpy(monkeypatch)
+        from firecube_mtg_fci_l1c._data import parse_chunk_name
+        from firecube_mtg_fci_l1c._decode import NCPartReader
 
-        regions, counters = _build_scene_intents(bundle, **_STRIPE_OPTIONS)
+        outside = {1, 6}
+        read_channel_data = NCPartReader.read_channel_data
+
+        def guarded(reader: Any, channel: str) -> Any:
+            number = parse_chunk_name(reader.path).chunk_number
+            if number in outside:
+                raise AssertionError(f"pixels of out-of-window BODY {number} read")
+            return read_channel_data(reader, channel)
+
+        monkeypatch.setattr(NCPartReader, "read_channel_data", guarded)
+        # BODY 1 (first) and 6 (last) lie outside the window. Each carries
+        # distinctive root-table values: BODY 1 a calibration slope, a latitude
+        # and time row 7; BODY 6 a latitude and a later time for row 1, which
+        # wins over rows 2-5. BODY 4's pixels point at BODY 1's row 7.
+        bundle = _stripe_bundle(
+            tmp_path,
+            {n: _STRIPE_TABLE[n - 1] for n in range(1, 7)},
+            root_tables={
+                1: {"index": 7, "time": 70.0, "latitude": 10.0, "scale_factor": 0.5},
+                4: {"pixel_index": 7},
+                6: {"index": 1, "time": 600.0, "latitude": 30.0},
+            },
+        )
+
+        writes, counters = _scene_writes(bundle, **_STRIPE_OPTIONS)
 
         assert counters["files_failed"] == 0
-        assert regions
-        assert spy.chunks["read_channel_data"] == {2, 3, 4, 5}
-        assert spy.chunks["read_time_map"] == {1, 2, 3, 4, 5, 6}
-        assert spy.chunks["read_slot_geometry"] == {1, 2, 3, 4, 5, 6}
-        # Calibration is attributes only; the first part in scene order has it.
-        assert spy.chunks["read_calibration"] == {1}
+        regions = [(a, y, d) for kind, a, y, d in writes if kind == "region"]
+        slots = {a: d for kind, a, _y, d in writes if kind == "slot"}
+        # Pixels still come from the in-window parts.
+        assert [y for y, _rows in _region_rows(regions, "counts")] == [
+            (0, 3),
+            (3, 6),
+            (6, 9),
+            (9, 12),
+        ]
+        # Time map: row 1 from BODY 6, row 7 from BODY 1 (via BODY 4's pixels).
+        pixel_time = [
+            (y, d[:, 0].tolist()) for name, y, d in regions if name == "pixel_time"
+        ]
+        assert pixel_time == [
+            ((0, 3), [600.0, 600.0, 600.0]),
+            ((3, 6), [600.0, 600.0, 600.0]),
+            ((6, 9), [70.0, 70.0, 70.0]),
+            ((9, 12), [70.0, 600.0, 600.0]),
+        ]
+        # Slot geometry: mean of BODY 1's and BODY 6's latitudes.
+        assert float(slots["subsatellite_latitude"]) == 20.0
+        # Calibration comes from the first part in scene order, BODY 1.
+        np.testing.assert_array_equal(slots["slope"], [0.5])
 
     def test_region_y_slices_are_relative_to_the_window_start(self, tmp_path):
         bundle = _stripe_parts(tmp_path, range(1, 7))

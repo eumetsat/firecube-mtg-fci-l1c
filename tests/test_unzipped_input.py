@@ -229,6 +229,18 @@ def test_rows_comparator_detects_one_changed_value_in_the_last_slab(
 def test_rows_comparator_rejects_other_dtype_fill_dims_and_attrs():
     full, stripe, _ = _make_arrays(("time", "y", "x"), (2, 8, 3), y0=0, ny=4)
 
+    other_dtype = zarr.create_array(
+        zarr.storage.MemoryStore(),
+        shape=stripe.shape,
+        dtype="float64",
+        dimension_names=("time", "y", "x"),
+        fill_value=float("nan"),
+        attributes={"units": "K"},
+    )
+    other_dtype[...] = stripe[...]
+    with pytest.raises(AssertionError, match=r"dtype float32 vs float64"):
+        assert_rows_equal(full, other_dtype, 0)
+
     other_fill = zarr.create_array(
         zarr.storage.MemoryStore(),
         shape=stripe.shape,
