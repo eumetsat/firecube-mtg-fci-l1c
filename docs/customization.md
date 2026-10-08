@@ -435,17 +435,17 @@ firecube ingest mtg_fci_l1c \
   --target file:///path/to/output.zarr \
   --output-format zarr --write-mode staged \
   --option product_type=FDHSI \
-  --option zarr_chunk_overrides='{"data_1km":[1,556,11136,1]}' \
-  --option zarr_shard_overrides='{"data_1km":[1,11676,11136,1]}'
+  --option zarr_shard_overrides='{"data_1km":[1,11398,11136,1]}'
 ```
 
-This produces `data_1km/counts` chunks of `(1, 556, 11136, 1)` and shards of
-shape `(1, 11676, 11136, 1)`: one full disk per `(time, channel)` pair, with 21
-inner chunks along Y. 556 is the largest chunk height accepted at 1 km, and the
-shard height must be a whole multiple of the chunk height, so it is rounded up
-from 11136 to 21 chunks.
+This produces `data_1km/counts` chunks of `(1, 278, 11136, 1)` (the default) and
+shards of shape `(1, 11398, 11136, 1)`: one full disk per `(time, channel)` pair,
+with 41 inner chunks along Y. The shard height must be a whole multiple of the
+chunk height, so it is rounded up from 11136 to 41 chunks. Keep the default chunk
+height: larger heights pass config validation but can make an output chunk meet
+three BODY chunk files, which the plugin rejects.
 
-Full recipes for 500 m and 2 km, the resulting data sizes (992 MB / 248 MB / 62 MB
+Full recipes for 500 m and 2 km, the resulting data sizes (968 / 242 / 61 MiB
 for uint16), and the tradeoffs are in
 [Performance Tuning → Chunk and Shard Tuning](performance-tuning.md#chunk-and-shard-tuning).
 

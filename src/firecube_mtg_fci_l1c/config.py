@@ -154,11 +154,13 @@ class MtgFciL1cConfig(BasePluginConfig):
       cross-check against ``zarr_shard_overrides`` for divisibility. Run at schema
       build time when dimsize is known.
 
-    Example (one full disk per shard; X stays full row):
-        zarr_chunk_overrides={"data_1km": (1, 556, 11136, 1)}
-        zarr_shard_overrides={"data_1km": (1, 11676, 11136, 1)}
-        # 556 is the 1km maximum (MAX_CHUNK_Y_PER_RESOLUTION); the shard is
-        # 21 chunks along Y (11676 >= 11136 disk rows), 1 along X.
+    Example (one full disk per shard; X stays full row): override only the
+    shard and keep the default 278-row chunk at 1km:
+        zarr_shard_overrides={"data_1km": (1, 11398, 11136, 1)}
+        # 41 default chunks along Y (41 * 278 = 11398 >= 11136 disk rows),
+        # 1 along X. Chunk heights above the default (up to
+        # MAX_CHUNK_Y_PER_RESOLUTION) pass validation but can make an output
+        # chunk meet three BODY chunk files, which ingest rejects.
 
     Trade-off: chunks larger than the nc_part row count (default 278 for
     1km) cause read-modify-write during streaming ingest. Cheap in

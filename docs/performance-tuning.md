@@ -63,8 +63,10 @@ An FCI L1C repeat cycle holds 40 BODY chunks. The default chunk Y-dim is the
 nominal height of one BODY chunk at that resolution, and a chunk spans the full
 grid width. BODY chunk heights are not uniform (at 1 km they range from 258 to
 300 rows), so an output chunk is assembled from one or two chunk files and
-written once; the plugin refuses a chunk height above twice the nominal one
-(`zarr_chunk_y` and `zarr_chunk_overrides` are checked against it):
+written once. Config validation accepts a chunk height up to twice the nominal
+one, but heights above the defaults can make an output chunk meet three BODY
+chunk files, which the plugin rejects when it assembles the scene (`Output
+chunk y=(...) intersects 3 nc_parts; max supported is 2.`). Keep the defaults:
 
 | Resolution | Array size (y=x) | Default chunk Y |
 |---|---|---|
@@ -78,10 +80,10 @@ groups ~21 chunks along Y, giving a shard shape of approximately
 
 ### When to override chunks
 
-- **Larger Y chunks** up to the cap (`zarr_chunk_y=556` at 1 km, twice the
-  default 278) halve the chunk count along Y. A chunk of that height is
-  assembled from up to two chunk files. Larger values are rejected when the
-  config is created.
+- **Larger Y chunks** than the defaults are not recommended. They pass config
+  validation (up to twice the default), but on the real BODY chunk layout the
+  maximum heights (556 at 1 km, 278 at 2 km, 1112 at 500 m) make an output chunk
+  meet three BODY chunk files and the scene fails.
 - **Smaller Y chunks** enable finer spatial subsetting but multiply object count.
 
 ### When to override shards
@@ -92,16 +94,17 @@ groups ~21 chunks along Y, giving a shard shape of approximately
 
 ### Full-disk-per-shard recipe
 
-| Resolution | Chunk override | Shard override |
+| Resolution | Chunk (default, no override) | Shard override |
 |---|---|---|
-| 500m | `(1, 1112, 22272, 1)` | `(1, 23352, 22272, 1)` |
-| 1km | `(1, 556, 11136, 1)` | `(1, 11676, 11136, 1)` |
-| 2km | `(1, 278, 5568, 1)` | `(1, 5838, 5568, 1)` |
+| 500m | `(1, 556, 22272, 1)` | `(1, 22796, 22272, 1)` |
+| 1km | `(1, 278, 11136, 1)` | `(1, 11398, 11136, 1)` |
+| 2km | `(1, 139, 5568, 1)` | `(1, 5699, 5568, 1)` |
 
-The chunk height is the largest the plugin accepts. The shard height must be a
-whole multiple of it, so it is rounded up to cover the grid: 21 chunks along Y
-(for example `21 * 556 = 11676` rows at 1 km, for 11136 rows). The 21st chunk
-covers only the last 16 rows at 1 km (32 at 500 m, 8 at 2 km).
+Override only the shard and keep the default chunk height. The shard height
+must be a whole multiple of the chunk height, so it is rounded up to cover the
+grid: 41 chunks along Y (for example `41 * 278 = 11398` rows at 1 km, for 11136
+rows). The 41st chunk holds only the last 16 rows at 1 km (32 at 500 m, 8 at
+2 km); the rest of that chunk is padding.
 
 ```bash
 firecube ingest mtg_fci_l1c \
@@ -109,8 +112,7 @@ firecube ingest mtg_fci_l1c \
   --target file:///path/to/output.zarr \
   --output-format zarr --write-mode staged \
   --option product_type=FDHSI \
-  --option zarr_chunk_overrides='{"data_1km":[1,556,11136,1]}' \
-  --option zarr_shard_overrides='{"data_1km":[1,11676,11136,1]}'
+  --option zarr_shard_overrides='{"data_1km":[1,11398,11136,1]}'
 ```
 
 Override keys are always `data_<res>`, also for a store written with
@@ -121,13 +123,13 @@ Override keys are always `data_<res>`, also for a store written with
 
 | Resolution | Full-disk shard | Uncompressed disk data (uint16) |
 |---|---|---|
-| 500m | `(1, 23352, 22272, 1)` | ~992 MB |
-| 1km | `(1, 11676, 11136, 1)` | ~248 MB |
-| 2km | `(1, 5838, 5568, 1)` | ~62 MB |
+| 500m | `(1, 22796, 22272, 1)` | ~968 MiB |
+| 1km | `(1, 11398, 11136, 1)` | ~242 MiB |
+| 2km | `(1, 5699, 5568, 1)` | ~61 MiB |
 
 Sizes are for the 22272, 11136 and 5568 grid rows; the padding in the last
 chunk adds up to one chunk of rows. For float64 `pixel_time` at 500m the data
-would be ~3.96 GB. Disable
+would be ~3.8 GiB. Disable
 `pixel_time` via `--option include_pixel_time=false` if this is too large.
 
 ### Known caveats
