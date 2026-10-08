@@ -14,10 +14,11 @@
 
 """Tests for MTG FCI L1C ingestor."""
 
-from typing import Any
+from typing import Any, cast
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
+import re
 import sys
 import types
 
@@ -25,6 +26,7 @@ import numpy as np
 import pytest
 
 from firecube.core.api import IndexSpec, ItemInfo, RegularTimeAxis
+from firecube.ingestor.api import ConfigurationError
 from firecube_mtg_fci_l1c._decode import ChannelCalibration
 
 
@@ -519,7 +521,8 @@ class TestVariableDispatch:
 
             def read_row_range(self, res):
                 if res == "1km":
-                    return (0, 2)
+                    # Two consecutive parts; overlapping rows would fail the scene.
+                    return (0, 2) if self.part_path.name == "part-a.nc" else (2, 4)
                 raise KeyError(res)
 
             def read_slot_geometry(self):
@@ -585,6 +588,7 @@ class TestVariableDispatch:
 
         intents = ingestor.build_write_intents(batch, ctx)  # pyright: ignore[reportArgumentType]
 
+        assert batch.metadata["plugin_failure_counters"]["files_failed"] == 0
         slope_intents = [intent for intent in intents if intent.array == "slope"]
         offset_intents = [intent for intent in intents if intent.array == "offset"]
         assert len(slope_intents) == 1
@@ -884,3 +888,464 @@ class TestBundleMaterialisationFailure:
         ]
         assert calls == list(bundle.members)
         assert {getattr(intent, "kind", None) for intent in intents} == {"static"}
+
+
+# --- Partial coverage of output chunks ----------------------------------------
+
+
+class _RowPayloadReader:
+    """Fake shared reader: every pixel of disk row ``r`` holds ``r``.
+
+    ``rows`` maps each part to its disk rows, as the scene's row metadata
+    would; payloads are 2 columns wide.
+    """
+
+    def __init__(self, rows: dict[Path, tuple[int, int]]) -> None:
+        self.rows = rows
+
+    def decode_spatial(self, part, _channel, _index2time, pixel_time_dtype):
+        from firecube_mtg_fci_l1c._decode import ChannelSlicePayload
+
+        start, stop = self.rows[Path(part)]
+        per_row = np.repeat(np.arange(start, stop)[:, None], 2, axis=1)
+        return ChannelSlicePayload(
+            counts=per_row.astype(np.uint16),
+            pixel_quality=(per_row % 7).astype(np.uint8),
+            pixel_time=(per_row * 10.0).astype(pixel_time_dtype),
+        )
+
+
+def _spatial_intents_for_rows(
+    part_rows: dict[str, tuple[int, int]],
+    *,
+    dimsize: int,
+    zarr_chunk_y: int | None = None,
+) -> list[Any]:
+    """Emit, without dispatching, FDHSI 1 km spatial intents for ``part_rows``."""
+    from firecube_mtg_fci_l1c._decode import ChunkOwnedAssembler
+    from firecube_mtg_fci_l1c._group_plan import GroupPlan
+    from firecube_mtg_fci_l1c.ingestor import (
+        BatchResources,
+        MtgFciL1cConfig,
+        MtgFciL1cIngestor,
+    )
+
+    rows = {Path(f"/tmp/{name}.nc"): span for name, span in part_rows.items()}
+    config = MtgFciL1cConfig(
+        product_type="FDHSI",
+        zarr_chunk_y=zarr_chunk_y,
+        include_geolocation=False,
+    )
+    plan = GroupPlan(
+        product_type="FDHSI",
+        resolution="1km",
+        group="data_1km",
+        dimsize=dimsize,
+        logical_channels=("vis_04",),
+        nc_channels=("vis_04",),
+    )
+    ingestor = MtgFciL1cIngestor()
+    with ingestor._batch_resources_lock:
+        ingestor._batch_resources["batch-1"] = BatchResources(
+            chunk_owned_cache=ChunkOwnedAssembler(_RowPayloadReader(rows))  # type: ignore[arg-type]
+        )
+    intents = ingestor._emit_spatial_intents(
+        "batch-1",
+        plan,
+        0,
+        list(rows.items()),
+        {0: 0.0},
+        np.dtype(np.float64),
+        config,
+    )
+    return intents
+
+
+def _emit_with_rows(
+    part_rows: dict[str, tuple[int, int]],
+    *,
+    dimsize: int,
+    zarr_chunk_y: int | None = None,
+) -> dict[str, list[tuple[tuple[int, int], list[int]]]]:
+    """Emit and dispatch FDHSI 1 km spatial intents for ``part_rows``.
+
+    Returns, per array, each intent's ``(y_slice, disk rows of its data)``
+    in emission order. Data rows are read from the dispatched payload.
+    """
+    intents = _spatial_intents_for_rows(
+        part_rows, dimsize=dimsize, zarr_chunk_y=zarr_chunk_y
+    )
+    emitted: dict[str, list[tuple[tuple[int, int], list[int]]]] = {}
+    for intent in intents:
+        data = np.asarray(intent.data())
+        assert data.shape[0] == intent.y_slice.stop - intent.y_slice.start
+        if intent.array == "pixel_time":
+            data = data / 10.0
+        elif intent.array == "pixel_quality":
+            # r % 7 cannot be inverted; check it against the counts rows.
+            counts_rows = np.arange(*emitted["counts"][-1][0])
+            np.testing.assert_array_equal(data[:, 0], counts_rows % 7)
+            data = np.repeat(counts_rows[:, None], 2, axis=1)
+        emitted.setdefault(intent.array, []).append(
+            (
+                (intent.y_slice.start, intent.y_slice.stop),
+                data[:, 0].astype(int).tolist(),
+            )
+        )
+    return emitted
+
+
+class TestPartialCoverage:
+    def test_stripe_edge_chunk_is_written_only_for_its_covered_rows(self):
+        # BODY chunk 32 of FDHSI 1 km holds disk rows [8649, 8908); with the
+        # default 278-row chunks it meets output chunks [8618, 8896) and
+        # [8896, 9174).
+        emitted = _emit_with_rows({"body-32": (8649, 8908)}, dimsize=11136)
+
+        assert sorted(emitted) == ["counts", "pixel_quality", "pixel_time"]
+        for array, writes in emitted.items():
+            assert [y for y, _rows in writes] == [(8649, 8896), (8896, 8908)], array
+            assert writes[0][1] == list(range(8649, 8896))
+            assert writes[1][1] == list(range(8896, 8908))
+
+    def test_gap_inside_one_output_chunk_gives_one_write_per_covered_run(self):
+        # Parts 1 and 3 present, part 2 missing; one 12-row output chunk.
+        emitted = _emit_with_rows(
+            {"body-1": (0, 4), "body-3": (8, 12)}, dimsize=12, zarr_chunk_y=12
+        )
+
+        for writes in emitted.values():
+            assert writes == [((0, 4), [0, 1, 2, 3]), ((8, 12), [8, 9, 10, 11])]
+
+    def test_full_scene_writes_whole_chunks_across_part_boundaries(self):
+        # Three parts tile 12 rows; 5-row chunks straddle both part
+        # boundaries. Same writes as before partial coverage existed.
+        emitted = _emit_with_rows(
+            {"body-1": (0, 4), "body-2": (4, 8), "body-3": (8, 12)},
+            dimsize=12,
+            zarr_chunk_y=5,
+        )
+
+        assert sorted(emitted) == ["counts", "pixel_quality", "pixel_time"]
+        for writes in emitted.values():
+            assert writes == [
+                ((0, 5), [0, 1, 2, 3, 4]),
+                ((5, 10), [5, 6, 7, 8, 9]),
+                ((10, 12), [10, 11]),
+            ]
+
+    def test_output_chunks_meeting_no_part_get_no_write(self):
+        emitted = _emit_with_rows({"body-2": (4, 8)}, dimsize=12, zarr_chunk_y=4)
+
+        for writes in emitted.values():
+            assert writes == [((4, 8), [4, 5, 6, 7])]
+
+    @pytest.mark.parametrize(
+        "part_rows",
+        [
+            pytest.param({"body-1": (0, 5), "body-2": (4, 8)}, id="overlap"),
+            pytest.param(
+                {"body-1": (0, 2), "body-2": (2, 4), "body-3": (4, 8)},
+                id="three-parts",
+            ),
+        ],
+    )
+    def test_overlapping_or_three_parts_in_one_chunk_are_rejected_at_emission(
+        self, part_rows
+    ):
+        from firecube_mtg_fci_l1c._decode import AssemblyPreconditionError
+
+        # No payload is dispatched: emission itself must refuse.
+        with pytest.raises(AssemblyPreconditionError):
+            _spatial_intents_for_rows(part_rows, dimsize=8, zarr_chunk_y=8)
+
+
+def _write_disk_rows_chunk(path: Path, rows: tuple[int, int]) -> None:
+    """Write a ``vis_04`` BODY chunk for disk rows ``[start, stop)``, 2 columns.
+
+    Pixels of disk row ``r`` hold ``r``; the root table maps index 1 to 60 s.
+    """
+    import h5netcdf
+
+    start, stop = rows
+    per_row = np.repeat(np.arange(start, stop)[:, None], 2, axis=1)
+    with h5netcdf.File(path, "w") as ds:
+        ds.dimensions["n_time"] = 1
+        ds.create_variable("index", ("n_time",), data=np.array([1], np.uint16))
+        ds.create_variable("time", ("n_time",), data=np.array([60.0]))
+        measured = (
+            ds.create_group("data").create_group("vis_04").create_group("measured")
+        )
+        measured.dimensions["y"] = stop - start
+        measured.dimensions["x"] = 2
+        radiance = measured.create_variable(
+            "effective_radiance", ("y", "x"), data=per_row.astype(np.uint16)
+        )
+        radiance.attrs["scale_factor"] = 1.0
+        radiance.attrs["add_offset"] = 0.0
+        measured.create_variable("start_position_row", (), data=np.int32(start + 1))
+        measured.create_variable("end_position_row", (), data=np.int32(stop))
+        measured.create_variable(
+            "pixel_quality", ("y", "x"), data=np.zeros(per_row.shape, np.uint8)
+        )
+        measured.create_variable(
+            "index_map", ("y", "x"), data=np.ones(per_row.shape, np.uint16)
+        )
+
+
+def _stripe_bundle(tmp_path: Path, rows_by_chunk: dict[int, tuple[int, int]]):
+    from firecube_mtg_fci_l1c._data import group_chunks_into_bundles
+    from tests.test_integration import _chunk_name
+
+    paths = []
+    for number, rows in rows_by_chunk.items():
+        path = tmp_path / _chunk_name("BODY", "20240101000002", 1, number)
+        _write_disk_rows_chunk(path, rows)
+        paths.append(str(path))
+    (bundle,) = group_chunks_into_bundles(paths)
+    return bundle
+
+
+def _build_scene_intents(bundle: Any, **options: Any) -> tuple[list[Any], dict]:
+    """Run build_write_intents on one bundle (FDHSI 1 km, vis_04 only).
+
+    Region payloads are resolved before batch cleanup; returns the region
+    intents as ``(array, y_slice, data)`` and the failure counters.
+    """
+    from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig, MtgFciL1cIngestor
+
+    ingestor = MtgFciL1cIngestor()
+    ingestor.plugin_config = MtgFciL1cConfig(
+        product_type="FDHSI",
+        resolutions="1km",
+        channels="vis_04",
+        time_epoch="2024-01-01",
+        include_geolocation=False,
+        **options,
+    )
+    batch: Any = SimpleNamespace(items=[bundle], metadata={}, batch_id="batch_0000")
+    ctx: Any = SimpleNamespace(
+        run_id="run-1", option=lambda *_a: None, materialize=Path
+    )
+    try:
+        intents = ingestor.build_write_intents(batch, ctx)
+        regions = [
+            (i.array, (i.y_slice.start, i.y_slice.stop), np.asarray(i.data()))
+            for i in intents
+            if getattr(i, "_kind", None) == "region"
+        ]
+    finally:
+        ingestor.cleanup_batch_data(batch, ctx)
+    return regions, batch.metadata["plugin_failure_counters"]
+
+
+class TestPartialChunkOption:
+    def test_fill_writes_the_covered_rows_of_a_real_chunk_file(self, tmp_path):
+        bundle = _stripe_bundle(tmp_path, {32: (8649, 8908)})
+
+        regions, counters = _build_scene_intents(bundle)
+
+        assert counters == {"files_processed": 1, "files_failed": 0, "zip_errors": []}
+        counts = [(y, data) for array, y, data in regions if array == "counts"]
+        assert [y for y, _data in counts] == [(8649, 8896), (8896, 8908)]
+        np.testing.assert_array_equal(counts[0][1][:, 0], np.arange(8649, 8896))
+        np.testing.assert_array_equal(counts[1][1][:, 0], np.arange(8896, 8908))
+        pixel_time = [data for array, _y, data in regions if array == "pixel_time"]
+        assert [data.shape for data in pixel_time] == [(247, 2), (12, 2)]
+        assert all(np.all(data == 60.0) for data in pixel_time)
+
+    def test_fill_splits_a_chunk_around_a_missing_middle_chunk(self, tmp_path):
+        # BODY 30 [8133, 8391) and 32 [8649, 8908), 31 missing. The 556-row
+        # output chunk [8340, 8896) holds the end of 30, all of 31's rows and
+        # the start of 32.
+        bundle = _stripe_bundle(tmp_path, {30: (8133, 8391), 32: (8649, 8908)})
+
+        regions, counters = _build_scene_intents(bundle, zarr_chunk_y=556)
+
+        assert counters["files_failed"] == 0
+        counts = [(y, data) for array, y, data in regions if array == "counts"]
+        assert [y for y, _data in counts] == [
+            (8133, 8340),
+            (8340, 8391),
+            (8649, 8896),
+            (8896, 8908),
+        ]
+        for (y_start, y_stop), data in counts:
+            np.testing.assert_array_equal(data[:, 0], np.arange(y_start, y_stop))
+
+    def test_error_names_the_scene_group_and_missing_chunk(self, tmp_path):
+        bundle = _stripe_bundle(tmp_path, {32: (8649, 8908)})
+
+        with pytest.raises(ConfigurationError) as excinfo:
+            _build_scene_intents(bundle, partial_chunk="error")
+
+        message = str(excinfo.value)
+        assert bundle.uri in message
+        assert "'data_1km'" in message
+        assert "rows [8618, 8649)" in message
+        assert "missing BODY chunk(s) 31" in message
+        assert "partial_chunk=fill" in message
+
+    def test_error_names_every_chunk_missing_around_and_between_parts(self, tmp_path):
+        # Gaps with 556-row chunks: [7784, 8133) -> BODY 28, 29;
+        # [8391, 8649) -> 31; [8908, 9452) -> 33, 34.
+        bundle = _stripe_bundle(tmp_path, {30: (8133, 8391), 32: (8649, 8908)})
+
+        with pytest.raises(ConfigurationError) as excinfo:
+            _build_scene_intents(bundle, partial_chunk="error", zarr_chunk_y=556)
+
+        assert "missing BODY chunk(s) 28, 29, 31, 33, 34" in str(excinfo.value)
+
+    @pytest.mark.parametrize("partial_chunk", ["fill", "error"])
+    def test_full_disk_scene_writes_every_output_chunk_whole(
+        self, tmp_path, partial_chunk
+    ):
+        from firecube_mtg_fci_l1c._constants import BODY_CHUNK_ROWS
+
+        rows = dict(enumerate(BODY_CHUNK_ROWS["FDHSI"]["1km"], start=1))
+        bundle = _stripe_bundle(tmp_path, rows)
+
+        regions, counters = _build_scene_intents(bundle, partial_chunk=partial_chunk)
+
+        assert counters["files_failed"] == 0
+        counts = [(y, data) for array, y, data in regions if array == "counts"]
+        expected_slices = [(start, start + 278) for start in range(0, 11120, 278)]
+        assert [y for y, _data in counts] == [*expected_slices, (11120, 11136)]
+        disk = np.concatenate([data for _y, data in counts])
+        np.testing.assert_array_equal(disk[:, 0], np.arange(11136))
+
+
+def _write_body_2_only(directory: Path) -> None:
+    """Write BODY 2 (rows 2-3 of the 4-row small grid) of cycle 1, values 7."""
+    from tests.test_integration import _chunk_name, _write_chunk_netcdf
+
+    directory.mkdir()
+    _write_chunk_netcdf(
+        directory / _chunk_name("BODY", "20240101000002", 1, 2),
+        rows=(2, 4),
+        value=7,
+        index=[1],
+        times=[30.0],
+    )
+
+
+_LAYOUTS = [
+    pytest.param({}, "group 'data_1km'", id="nested"),
+    pytest.param(
+        {"flat_store": True, "resolutions": "1km"}, "the root group", id="flat"
+    ),
+]
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+@pytest.mark.parametrize(("layout", "where"), _LAYOUTS)
+def test_partial_chunk_error_fails_the_run_before_the_store_is_written(
+    tmp_path: Path, small_fci_layout: list[int], layout: dict, where: str
+):
+    from tests._store_files import store_files
+    from tests.test_integration import _run_ingest
+
+    src = tmp_path / "loose"
+    _write_body_2_only(src)
+    workspace = tmp_path / "out"
+    workspace.mkdir()
+
+    # Core fails the batch on the plugin's ConfigurationError and ends the
+    # run with PipelineFailedBatchesError (a RuntimeError) carrying it.
+    with pytest.raises(
+        RuntimeError,
+        match=r"does not cover output chunks it would write: "
+        + re.escape(where)
+        + r" \(1km\) rows \[0, 2\)",
+    ):
+        _run_ingest(
+            src,
+            workspace,
+            {"partial_chunk": "error", "include_geolocation": False, **layout},
+        )
+
+    # Core opens the store and records the failed run under .firecube/; no
+    # group, array or chunk is written.
+    target = workspace / "out.zarr"
+    assert sorted(store_files(target)) == ["zarr.json"]
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+def test_partial_chunk_error_batch_leaves_static_coordinates_to_later_batches(
+    tmp_path: Path, small_fci_layout: list[int]
+):
+    import zarr
+
+    from tests.test_integration import _run_ingest, _write_scene_chunks
+
+    # Batch 0 is the partial cycle 1 and fails; batch 1 is the complete
+    # cycle 2 and must still write the static coordinates.
+    src = tmp_path / "loose"
+    _write_body_2_only(src)
+    _write_scene_chunks(src, start="20240101001003", cycle=2, values=(7, 8))
+    reference_src = tmp_path / "reference"
+    _write_scene_chunks(reference_src, start="20240101001003", cycle=2, values=(7, 8))
+    workspace = tmp_path / "out"
+    workspace.mkdir()
+    reference_workspace = tmp_path / "reference_out"
+    reference_workspace.mkdir()
+    options = {
+        "partial_chunk": "error",
+        "include_geolocation": False,
+        "pipeline_batch_size": 1,
+        "pipeline_workers": 1,
+    }
+
+    with pytest.raises(RuntimeError, match="does not cover output chunks"):
+        _run_ingest(src, workspace, options)
+    reference = _run_ingest(reference_src, reference_workspace, options)
+
+    root = cast(Any, zarr.open_group(str(workspace / "out.zarr"), mode="r"))
+    reference_root = cast(Any, zarr.open_group(str(reference), mode="r"))
+    for group_name, channels in [
+        ("data_1km", ["vis_04", "vis_06"]),
+        ("data_2km", ["ir_38"]),
+    ]:
+        group = root[group_name]
+        assert group["channel"][:].tolist() == channels
+        for axis in ("x", "y"):
+            expected = np.asarray(reference_root[group_name][axis][:])
+            assert np.count_nonzero(expected) == expected.size
+            np.testing.assert_array_equal(np.asarray(group[axis][:]), expected)
+    counts = np.asarray(root["data_1km"]["counts"][:])
+    np.testing.assert_array_equal(counts[1, :2, :, 0], np.full((2, 4), 7))
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+@pytest.mark.parametrize(("layout", "where"), _LAYOUTS)
+def test_partial_chunk_fill_leaves_uncovered_rows_at_the_fill_value(
+    tmp_path: Path, small_fci_layout: list[int], layout: dict, where: str
+):
+    import zarr
+
+    from tests.test_integration import _run_ingest
+
+    del where
+    src = tmp_path / "loose"
+    _write_body_2_only(src)
+
+    out = _run_ingest(src, tmp_path, {"include_geolocation": False, **layout})
+
+    root = cast(Any, zarr.open_group(str(out), mode="r"))
+    groups = (
+        [(root, 0, 7)]
+        if layout
+        else [
+            (root["data_1km"], 0, 7),
+            (root["data_2km"], 0, 9),
+        ]
+    )
+    for group, channel, value in groups:
+        counts = group["counts"]
+        slot = np.asarray(counts[0, :, :, channel])
+        assert counts.fill_value == np.iinfo(np.uint16).max
+        np.testing.assert_array_equal(slot[:2], np.full((2, 4), 65535))
+        np.testing.assert_array_equal(slot[2:], np.full((2, 4), value))

@@ -626,41 +626,111 @@ def test_assembler_bounded_cache_assembled_entries_max_one(tmp_path: Path):
     assert len(assembler._assembled_cache) <= 1
 
 
-@pytest.mark.unit
-def test_assembler_rejects_non_contiguous_nc_parts(tmp_path: Path):
-    from firecube_mtg_fci_l1c._group_plan import GroupPlan
-    from firecube_mtg_fci_l1c.config import MtgFciL1cConfig
-    from firecube_mtg_fci_l1c.ingestor import MtgFciL1cIngestor
+def _write_rows_part(path: Path, rows: tuple[int, int]) -> None:
+    """Write a ``vis_04`` nc_part for disk rows ``[start, stop)``, 3 columns.
 
-    config = MtgFciL1cConfig(
-        product_type="FDHSI",
-        resolutions="1km",
-        zarr_chunk_y=4,
-        include_pixel_time=False,
-    )
-    plan = GroupPlan(
-        product_type="FDHSI",
-        resolution="1km",
-        group="data_1km",
-        dimsize=4,
-        logical_channels=("vis_04",),
-        nc_channels=("vis_04",),
-    )
-    nc_part_ranges = [
-        (tmp_path / "part-1.nc", (0, 2)),
-        (tmp_path / "part-2.nc", (3, 4)),
-    ]
-
-    with pytest.raises(AssemblyPreconditionError):
-        MtgFciL1cIngestor()._emit_spatial_intents(
-            "batch-1",
-            plan,
-            0,
-            nc_part_ranges,
-            None,
-            np.dtype(np.float32),
-            config,
+    Every pixel of disk row ``r`` holds ``counts == r``, ``pixel_quality ==
+    r % 7`` and ``index_map == r``; the root table maps index ``r`` to
+    ``10.0 * r``. Any row of an assembled payload therefore names the disk
+    row it came from.
+    """
+    start, stop = rows
+    disk_rows = np.arange(start, stop)
+    with h5netcdf.File(path, "w") as ds:
+        ds.dimensions["n_time"] = len(disk_rows)
+        ds.create_variable("index", ("n_time",), data=disk_rows.astype(np.int64))
+        ds.create_variable("time", ("n_time",), data=disk_rows * 10.0)
+        measured = (
+            ds.create_group("data").create_group("vis_04").create_group("measured")
         )
+        measured.dimensions["y"] = len(disk_rows)
+        measured.dimensions["x"] = 3
+        per_row = np.repeat(disk_rows[:, None], 3, axis=1)
+        radiance = measured.create_variable(
+            "effective_radiance", ("y", "x"), data=per_row.astype(np.uint16)
+        )
+        radiance.attrs["start_position_row"] = start + 1
+        radiance.attrs["end_position_row"] = stop
+        measured.create_variable(
+            "pixel_quality", ("y", "x"), data=(per_row % 7).astype(np.uint8)
+        )
+        measured.create_variable("index_map", ("y", "x"), data=per_row.astype(np.int32))
+
+
+def _rows_of(payload: ChannelSlicePayload) -> list[int]:
+    """Return the disk row each payload row came from, checking every array."""
+    rows = payload.counts[:, 0].astype(int).tolist()
+    expected = np.repeat(np.asarray(rows)[:, None], 3, axis=1)
+    np.testing.assert_array_equal(payload.counts, expected)
+    np.testing.assert_array_equal(payload.pixel_quality, expected % 7)
+    assert payload.pixel_time is not None
+    np.testing.assert_array_equal(payload.pixel_time, expected * 10.0)
+    return rows
+
+
+@pytest.mark.unit
+def test_assembler_returns_exactly_the_rows_of_a_sub_range(tmp_path: Path):
+    part_a = tmp_path / "body-a.nc"
+    part_b = tmp_path / "body-b.nc"
+    _write_rows_part(part_a, (100, 105))
+    _write_rows_part(part_b, (105, 109))
+    ranges = {part_a: (100, 105), part_b: (105, 109)}
+    index2time = {row: row * 10.0 for row in range(100, 109)}
+    variables = frozenset({"counts", "pixel_quality", "pixel_time"})
+
+    with SharedNcPartReader() as shared:
+        assembler = ChunkOwnedAssembler(shared)
+
+        def rows(parts: list[Path], y_range: tuple[int, int]) -> list[int]:
+            payload = assembler.assemble(
+                parts,
+                "vis_04",
+                index2time,
+                np.dtype(np.float64),
+                "data_1km",
+                0,
+                y_range,
+                variables,
+                {part: ranges[part] for part in parts},
+            )
+            return _rows_of(payload)
+
+        # A run across the part boundary, a run inside one part, then the
+        # whole chunk: each answer holds its own rows, none is served from
+        # the run cached before it.
+        assert rows([part_a, part_b], (103, 107)) == [103, 104, 105, 106]
+        assert rows([part_b], (105, 107)) == [105, 106]
+        assert rows([part_a, part_b], (100, 109)) == list(range(100, 109))
+        assert rows([part_a], (101, 102)) == [101]
+
+
+@pytest.mark.unit
+def test_assembler_rejects_rows_its_parts_do_not_cover(tmp_path: Path):
+    part_a = tmp_path / "body-a.nc"
+    part_c = tmp_path / "body-c.nc"
+    _write_rows_part(part_a, (0, 4))
+    _write_rows_part(part_c, (6, 9))
+    ranges = {part_a: (0, 4), part_c: (6, 9)}
+
+    with SharedNcPartReader() as shared:
+        assembler = ChunkOwnedAssembler(shared)
+        for parts, y_range in (
+            ([part_a, part_c], (2, 8)),  # rows 4-5 belong to no part
+            ([part_a], (2, 6)),  # the part ends at row 4
+            ([part_c, part_a], (0, 9)),  # out of row order
+        ):
+            with pytest.raises(AssemblyPreconditionError):
+                assembler.assemble(
+                    parts,
+                    "vis_04",
+                    None,
+                    np.dtype(np.float32),
+                    "data_1km",
+                    0,
+                    y_range,
+                    frozenset({"counts"}),
+                    {part: ranges[part] for part in parts},
+                )
 
 
 @pytest.mark.unit

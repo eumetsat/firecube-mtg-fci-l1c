@@ -57,6 +57,7 @@ from firecube.core.api import (  # pyright: ignore[reportMissingImports]  # type
 )
 
 from ._constants import (
+    BODY_CHUNK_ROWS,
     CONSTANTS,
     PRODUCT_TYPE_FDHSI,
     PRODUCT_TYPE_HRFI,
@@ -197,27 +198,109 @@ def _intersecting_part_ranges(
     return sorted(intersecting, key=lambda item: item[1][0])
 
 
-def _validate_contiguous_part_ranges(
+@dataclasses.dataclass(frozen=True)
+class CoveredRun:
+    """Contiguous rows of one output chunk and the nc_parts that hold them."""
+
+    rows: tuple[int, int]
+    parts: tuple[tuple[Path, tuple[int, int]], ...]
+
+
+@dataclasses.dataclass(frozen=True)
+class ChunkCoverage:
+    """Rows of one output chunk that the present nc_parts cover, and the gaps."""
+
+    y_range: tuple[int, int]
+    runs: tuple[CoveredRun, ...]
+    gaps: tuple[tuple[int, int], ...]
+
+
+def _chunk_coverage(
     intersecting: list[tuple[Path, tuple[int, int]]],
     y_range: tuple[int, int],
-) -> None:
-    """Raise when intersecting nc_parts do not cover the output chunk exactly."""
+) -> ChunkCoverage:
+    """Split an output chunk into covered runs and uncovered gaps.
+
+    ``intersecting`` holds the nc_parts whose rows meet ``y_range``, sorted
+    by first row. Raises :class:`AssemblyPreconditionError` for an empty or
+    reversed part row range, for parts that overlap inside the chunk, and
+    for more than two parts in one chunk.
+    """
+    if len(intersecting) > 2:
+        raise AssemblyPreconditionError(
+            f"Output chunk y={y_range} intersects {len(intersecting)} nc_parts; "
+            "max supported is 2. Reduce zarr_chunk_y or file an issue."
+        )
     y_start, y_end = y_range
     cursor = y_start
-    for _part_path, (part_start, part_end) in intersecting:
+    runs: list[CoveredRun] = []
+    gaps: list[tuple[int, int]] = []
+    run_start: int | None = None
+    run_parts: list[tuple[Path, tuple[int, int]]] = []
+    for part_path, (part_start, part_end) in intersecting:
+        if part_end <= part_start:
+            raise AssemblyPreconditionError(
+                f"nc_part {part_path.name} has an empty row range "
+                f"{part_start}-{part_end}."
+            )
         clipped_start = max(part_start, y_start)
         clipped_end = min(part_end, y_end)
-        if clipped_start != cursor:
+        if clipped_start < cursor:
             raise AssemblyPreconditionError(
-                f"Output chunk y={y_range} has a gap before row {clipped_start}; "
-                "nc_part row ranges must be contiguous."
+                f"Output chunk y={y_range}: nc_part {part_path.name} rows "
+                f"{part_start}-{part_end} overlap the previous part before row "
+                f"{cursor}."
             )
+        if clipped_start > cursor:
+            gaps.append((cursor, clipped_start))
+            if run_start is not None:
+                runs.append(CoveredRun((run_start, cursor), tuple(run_parts)))
+            run_start, run_parts = None, []
+        if run_start is None:
+            run_start = clipped_start
+        run_parts.append((part_path, (part_start, part_end)))
         cursor = clipped_end
-    if cursor != y_end:
-        raise AssemblyPreconditionError(
-            f"Output chunk y={y_range} is only covered through row {cursor}; "
-            "nc_part row ranges must be contiguous."
-        )
+    if run_start is not None:
+        runs.append(CoveredRun((run_start, cursor), tuple(run_parts)))
+    if cursor < y_end:
+        gaps.append((cursor, y_end))
+    return ChunkCoverage(y_range=y_range, runs=tuple(runs), gaps=tuple(gaps))
+
+
+def _group_coverage(
+    nc_part_ranges: list[tuple[Path, tuple[int, int]]],
+    dimsize: int,
+    chunk_y: int,
+) -> list[ChunkCoverage]:
+    """Return the coverage of every output chunk that meets at least one part."""
+    coverages: list[ChunkCoverage] = []
+    for y_range in _output_chunk_ranges(dimsize, chunk_y):
+        intersecting = _intersecting_part_ranges(nc_part_ranges, y_range)
+        if intersecting:
+            coverages.append(_chunk_coverage(intersecting, y_range))
+    return coverages
+
+
+def _missing_body_chunks(
+    product_type: str,
+    resolution: str,
+    dimsize: int,
+    gaps: Iterable[tuple[int, int]],
+) -> list[int] | None:
+    """Return the BODY chunk numbers whose rows meet ``gaps``.
+
+    ``None`` when the row table does not describe this grid (its rows do not
+    end at ``dimsize``), so no chunk number can be named.
+    """
+    table = BODY_CHUNK_ROWS.get(product_type, {}).get(resolution)
+    if not table or table[-1][1] != dimsize:
+        return None
+    missing: set[int] = set()
+    for gap_start, gap_end in gaps:
+        for number, (row_start, row_end) in enumerate(table, start=1):
+            if row_start < gap_end and row_end > gap_start:
+                missing.add(number)
+    return sorted(missing)
 
 
 @register_ingestor("mtg_fci_l1c")
@@ -554,12 +637,20 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         pixel_time_dtype: np.dtype,
         config: MtgFciL1cConfig,
     ) -> list[IndexedWrite]:
-        """Emit one lazy spatial projection per variable, channel, and chunk."""
+        """Emit one lazy spatial projection per variable, channel, and covered run.
+
+        A fully covered output chunk is one run, written whole. A partly
+        covered chunk gets one region write per contiguous covered run, so
+        rows no nc_part covers are never written: they keep the array fill
+        value, or what an earlier ingest wrote there. Output chunks that meet
+        no nc_part get no write. ``partial_chunk="error"`` is enforced per
+        scene in :meth:`_intents_for_scene` before any intent is emitted.
+        """
         from ._variables import VARIABLES, VariableContext, variable_enabled
 
         intents: list[IndexedWrite] = []
         chunk_y = config.get_group_chunk_shape(plan.resolution)[1]
-        chunk_ranges = _output_chunk_ranges(plan.dimsize, chunk_y)
+        coverages = _group_coverage(nc_part_ranges, plan.dimsize, chunk_y)
         for ch_idx, nc_channel in enumerate(plan.nc_channels):
             base_ctx = VariableContext(
                 group=plan.group,
@@ -604,14 +695,10 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                 variable_sources.append((variable.name, variable.source))
 
             variable_set = frozenset(name for name, _source in variable_sources)
-            for y_range in chunk_ranges:
-                intersecting = _intersecting_part_ranges(nc_part_ranges, y_range)
-                if not intersecting:
-                    continue
-                _validate_contiguous_part_ranges(intersecting, y_range)
-                chunk_parts = [part_path for part_path, _part_range in intersecting]
-                part_row_ranges = dict(intersecting)
-                y_slice = slice(*y_range)
+            for run in (run for coverage in coverages for run in coverage.runs):
+                run_parts = [part_path for part_path, _part_range in run.parts]
+                part_row_ranges = dict(run.parts)
+                y_slice = slice(*run.rows)
                 ctx = dataclasses.replace(base_ctx, y_slice=y_slice)
                 for variable_name, variable_source in variable_sources:
                     intents.append(
@@ -624,13 +711,13 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                                 batch_id,
                                 self._batch_resources,
                                 self._batch_resources_lock,
-                                chunk_parts,
+                                run_parts,
                                 nc_channel,
                                 index2time,
                                 pixel_time_dtype,
                                 plan.group,
                                 timestamp,
-                                y_range,
+                                run.rows,
                                 variable_set,
                                 part_row_ranges,
                                 variable_source,
@@ -671,8 +758,6 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
 
         # Core grows time-indexed arrays from emitted slots; the plugin never
         # opens the store to resize arrays.
-
-        intents.extend(self._emit_static_intents(config, product_type, plans))
 
         has_zips = any(not isinstance(item, SceneBundle) for item in batch.items)
 
@@ -732,6 +817,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                     # list_fci_nc_parts gives the same files from a ZIP;
                     # later parts win on shared root-table rows.
                     self._intents_for_scene(
+                        label=label,
                         timestamp=item.coordinate,
                         nc_parts=[Path(ctx.materialize(m)) for m in item.members],
                         plans=plans,
@@ -759,6 +845,12 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                             batch_id=batch.batch_id,
                             intents=intents,
                         )
+            except ConfigurationError:
+                # A configuration error (partial_chunk="error" on a partial
+                # scene) is not a per-scene failure: it fails the whole batch
+                # before the batch writes anything, and core ends the run
+                # failed. Other batches of the run are still processed.
+                raise
             except Exception as exc:  # noqa: BLE001 - preserve legacy continue-on-error behavior
                 self._log.warning("Failed to process %s: %s", label, exc)
                 self._log.exception("nc_part processing failed for %s", label)
@@ -775,7 +867,11 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             "zip_errors": zip_errors,
         }
 
-        return intents
+        # Static intents claim the run-wide static guard, so they are emitted
+        # only once the batch can no longer raise: a batch that fails would
+        # discard them and leave the claim behind for every later batch.
+        static_intents = self._emit_static_intents(config, product_type, plans)
+        return [*static_intents, *intents]
 
     def _intents_for_zip(
         self,
@@ -804,6 +900,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             return f"Could not extract timestamp from {zip_name}"
 
         self._intents_for_scene(
+            label=zip_name,
             timestamp=timestamp,
             nc_parts=nc_parts,
             plans=plans,
@@ -818,6 +915,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
     def _intents_for_scene(
         self,
         *,
+        label: str,
         timestamp: Any,
         nc_parts: list[Path],
         plans: list[GroupPlan],
@@ -829,10 +927,18 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
     ) -> None:
         """Decode one scene's nc_parts and extend ``intents`` per resolution group.
 
-        ``nc_parts`` are local files in BODY-then-TRAIL chunk order.
-        Intents are appended incrementally so a mid-scene failure preserves
-        what was already emitted (legacy continue-on-error behavior).
+        ``nc_parts`` are local files in BODY-then-TRAIL chunk order; ``label``
+        names the scene in errors. Every group's row coverage is checked
+        before the scene emits any intent. Intents are then appended
+        incrementally so a mid-scene failure preserves what was already
+        emitted (legacy continue-on-error behavior).
         """
+        part_ranges = {
+            plan.group: self._read_part_ranges(plan, nc_parts, shared_reader)
+            for plan in plans
+        }
+        self._check_partial_coverage(label, plans, part_ranges, config)
+
         index2time: dict[int, float] | None = None
         if config.include_pixel_time:
             time_accum = TimeMapAccumulator()
@@ -850,7 +956,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         for plan in plans:
             self._intents_for_plan(
                 plan=plan,
-                nc_parts=nc_parts,
+                nc_part_ranges=part_ranges[plan.group],
                 timestamp=timestamp,
                 index2time=index2time,
                 slot_geometry=slot_geometry,
@@ -861,11 +967,73 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                 intents=intents,
             )
 
+    @staticmethod
+    def _read_part_ranges(
+        plan: GroupPlan,
+        nc_parts: list[Path],
+        shared_reader: SharedNcPartReader,
+    ) -> list[tuple[Path, tuple[int, int]]]:
+        """Return ``(part, rows)`` of the nc_parts holding the group's resolution.
+
+        Parts keep their ``nc_parts`` order; parts without the resolution (a
+        TRAIL) are left out.
+        """
+        part_ranges: list[tuple[Path, tuple[int, int]]] = []
+        for part_path in nc_parts:
+            try:
+                rows = shared_reader.read_row_range(part_path, plan.resolution)
+            except KeyError:
+                continue
+            part_ranges.append((part_path, rows))
+        return part_ranges
+
+    @staticmethod
+    def _check_partial_coverage(
+        label: str,
+        plans: list[GroupPlan],
+        part_ranges: dict[str, list[tuple[Path, tuple[int, int]]]],
+        config: MtgFciL1cConfig,
+    ) -> None:
+        """Validate every group's coverage; raise for gaps with ``partial_chunk="error"``.
+
+        Overlapping parts and more than two parts in one output chunk raise
+        :class:`AssemblyPreconditionError` in either mode. Rows of a written
+        output chunk that no part covers raise :class:`ConfigurationError`
+        naming the scene, the group and the missing BODY chunks when
+        ``partial_chunk`` is ``"error"``; with ``"fill"`` they are left
+        unwritten by :meth:`_emit_spatial_intents`.
+        """
+        problems: list[str] = []
+        for plan in plans:
+            chunk_y = config.get_group_chunk_shape(plan.resolution)[1]
+            coverages = _group_coverage(part_ranges[plan.group], plan.dimsize, chunk_y)
+            gaps = [gap for coverage in coverages for gap in coverage.gaps]
+            if not gaps or config.partial_chunk != "error":
+                continue
+            rows = ", ".join(f"[{start}, {stop})" for start, stop in gaps)
+            missing = _missing_body_chunks(
+                plan.product_type, plan.resolution, plan.dimsize, gaps
+            )
+            chunks = (
+                f"; missing BODY chunk(s) {', '.join(str(n) for n in missing)}"
+                if missing
+                else ""
+            )
+            where = f"group {plan.group!r}" if plan.group else "the root group"
+            problems.append(f"{where} ({plan.resolution}) rows {rows}{chunks}")
+        if problems:
+            raise ConfigurationError(
+                f"Scene {label} does not cover output chunks it would write: "
+                + "; ".join(problems)
+                + ". Add the missing chunk files, or set --option "
+                "partial_chunk=fill to write only the covered rows."
+            )
+
     def _intents_for_plan(
         self,
         *,
         plan: GroupPlan,
-        nc_parts: list[Path],
+        nc_part_ranges: list[tuple[Path, tuple[int, int]]],
         timestamp: Any,
         index2time: dict[int, float] | None,
         shared_reader: SharedNcPartReader,
@@ -875,26 +1043,17 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         intents: list[WriteIntent | IndexedWrite],
         slot_geometry: dict[str, float] | None = None,
     ) -> None:
-        """Emit per-channel and spatial intents for one group."""
-        res = plan.resolution
-        logical_channels = list(plan.logical_channels)
-        nc_channels = list(plan.nc_channels)
+        """Emit per-channel and spatial intents for one group.
 
-        row_ranges: dict[int, tuple[int, int]] = {}
-        for part_idx, part_path in enumerate(nc_parts):
-            try:
-                row_ranges[part_idx] = shared_reader.read_row_range(part_path, res)
-            except KeyError:
-                continue
-
-        if not row_ranges:
+        ``nc_part_ranges`` holds the scene's parts that carry this group's
+        resolution, in scene order, with their rows.
+        """
+        if not nc_part_ranges:
             return
 
         calibration_table: dict[str, ChannelCalibration] = {}
         if config.include_calibration:
-            for part_idx, part_path in enumerate(nc_parts):
-                if part_idx not in row_ranges:
-                    continue
+            for part_path, _rows in nc_part_ranges:
                 for ch in plan.nc_channels:
                     if ch in calibration_table:
                         continue
@@ -910,18 +1069,14 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             self._emit_time_channel_intents(
                 config,
                 product_type,
-                res,
-                logical_channels,
+                plan.resolution,
+                list(plan.logical_channels),
                 timestamp,
                 calibration_table,
-                nc_channels,
+                list(plan.nc_channels),
                 slot_geometry,
             )
         )
-        nc_part_ranges = [
-            (nc_parts[part_idx], row_ranges[part_idx])
-            for part_idx in sorted(row_ranges)
-        ]
         intents.extend(
             self._emit_spatial_intents(
                 batch_id,
