@@ -30,7 +30,7 @@ import xarray as xr
 import zarr
 from firecube.core.api import RESERVED_ARRAY_ATTRS
 
-from test_integration import _run_ingest
+from tests._support import _run_ingest
 
 pytestmark = [pytest.mark.integration, pytest.mark.plugin]
 

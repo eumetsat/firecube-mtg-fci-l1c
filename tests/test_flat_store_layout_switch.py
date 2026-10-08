@@ -30,7 +30,7 @@ import pytest
 import zarr
 
 from _store_files import store_files
-from test_integration import _make_fdhsi_zip_at, _run_ingest
+from tests._support import _make_fdhsi_zip_at, _run_ingest
 
 pytestmark = [pytest.mark.integration, pytest.mark.plugin]
 

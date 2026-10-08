@@ -164,6 +164,29 @@ class TestIndexSpecAndInspectItem:
         assert info is None
 
 
+class _FakeScratch:
+    """Scratch stand-in: no real extraction, deterministic ``/tmp/<stem>`` dirs."""
+
+    def __init__(self, *_args, **_kwargs):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+    def extract_zip(self, zip_path):
+        return Path(f"/tmp/{Path(zip_path).stem}")
+
+    def extract_zips_parallel(self, zip_paths, *, max_workers=4):
+        del max_workers
+        return {Path(p): self.extract_zip(p) for p in zip_paths}, {}
+
+    def close(self):
+        return None
+
+
 class TestBuildWriteIntentsLogging:
     def test_logs_exception_when_nc_part_read_fails(self, monkeypatch, tmp_path):
         import datetime
@@ -181,26 +204,6 @@ class TestBuildWriteIntentsLogging:
         )
         ingestor._log = MagicMock()
 
-        class FakeScratch:
-            def __init__(self, *_args, **_kwargs):
-                pass
-
-            def __enter__(self):
-                return self
-
-            def __exit__(self, exc_type, exc, tb):
-                return False
-
-            def extract_zip(self, zip_path):
-                return Path(f"/tmp/{Path(zip_path).stem}")
-
-            def extract_zips_parallel(self, zip_paths, *, max_workers=4):
-                del max_workers
-                return {Path(p): self.extract_zip(p) for p in zip_paths}, {}
-
-            def close(self):
-                return None
-
         def failing_row_range(_self, _item, resolution):
             raise RuntimeError(f"row range unreadable for {resolution}")
 
@@ -211,7 +214,7 @@ class TestBuildWriteIntentsLogging:
             ingestor_mod.SharedNcPartReader, "read_row_range", failing_row_range
         )
         scratch_mod: Any = types.ModuleType("firecube_mtg_fci_l1c._scratch")
-        scratch_mod.BatchScratch = FakeScratch
+        scratch_mod.BatchScratch = _FakeScratch
         monkeypatch.setitem(sys.modules, "firecube_mtg_fci_l1c._scratch", scratch_mod)
         monkeypatch.setattr(ingestor_mod, "list_fci_nc_parts", lambda _dir: [part])
         monkeypatch.setattr(
@@ -381,26 +384,6 @@ class TestVariableDispatch:
 
         from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig, MtgFciL1cIngestor
 
-        class FakeScratch:
-            def __init__(self, *_args, **_kwargs):
-                pass
-
-            def __enter__(self):
-                return self
-
-            def __exit__(self, exc_type, exc, tb):
-                return False
-
-            def extract_zip(self, zip_path):
-                return Path(f"/tmp/{Path(zip_path).stem}")
-
-            def extract_zips_parallel(self, zip_paths, *, max_workers=4):
-                del max_workers
-                return {Path(p): self.extract_zip(p) for p in zip_paths}, {}
-
-            def close(self):
-                return None
-
         class FakeReader:
             def __init__(self, part_path):
                 self.part_path = Path(part_path)
@@ -441,7 +424,7 @@ class TestVariableDispatch:
                 return None
 
         scratch_mod: Any = types.ModuleType("firecube_mtg_fci_l1c._scratch")
-        scratch_mod.BatchScratch = FakeScratch
+        scratch_mod.BatchScratch = _FakeScratch
         monkeypatch.setitem(sys.modules, "firecube_mtg_fci_l1c._scratch", scratch_mod)
         monkeypatch.setattr(
             ingestor_mod,
@@ -1028,7 +1011,7 @@ def _stripe_bundle(
 ):
     """Write BODY chunk files; ``root_tables`` gives per-chunk writer overrides."""
     from firecube_mtg_fci_l1c._data import group_chunks_into_bundles
-    from tests.test_integration import _chunk_name
+    from tests._support import _chunk_name
 
     paths = []
     for number, rows in rows_by_chunk.items():
@@ -1211,7 +1194,7 @@ class TestRootTableFailureVsCoverage:
 
 def _write_body_2_only(directory: Path) -> None:
     """Write BODY 2 (rows 2-3 of the 4-row small grid) of cycle 1, values 7."""
-    from tests.test_integration import _chunk_name, _write_chunk_netcdf
+    from tests._support import _chunk_name, _write_chunk_netcdf
 
     directory.mkdir()
     _write_chunk_netcdf(
@@ -1238,7 +1221,7 @@ def test_partial_chunk_error_fails_the_run_before_the_store_is_written(
     tmp_path: Path, small_fci_layout: list[int], layout: dict, where: str
 ):
     from tests._store_files import store_files
-    from tests.test_integration import _run_ingest
+    from tests._support import _run_ingest
 
     src = tmp_path / "loose"
     _write_body_2_only(src)
@@ -1272,7 +1255,7 @@ def test_partial_chunk_error_batch_leaves_static_coordinates_to_later_batches(
 ):
     import zarr
 
-    from tests.test_integration import _run_ingest, _write_scene_chunks
+    from tests._support import _run_ingest, _write_scene_chunks
 
     # Batch 0 is the partial cycle 1 and fails; batch 1 is the complete
     # cycle 2 and must still write the static coordinates.
@@ -1320,7 +1303,7 @@ def test_partial_chunk_fill_leaves_uncovered_rows_at_the_fill_value(
 ):
     import zarr
 
-    from tests.test_integration import _run_ingest
+    from tests._support import _run_ingest
 
     del where
     src = tmp_path / "loose"
@@ -1353,7 +1336,7 @@ def test_partial_chunk_change_does_not_bypass_the_resume_conflict(
     import zarr
     from firecube.ingestor.api import ResumeConflictError
 
-    from tests.test_integration import _run_ingest, _write_scene_chunks
+    from tests._support import _run_ingest, _write_scene_chunks
 
     first = tmp_path / "first"
     _write_scene_chunks(first, start="20240101000002", cycle=1, values=(5, 6))

@@ -45,7 +45,7 @@ import zarr
 sys.path.insert(0, str(Path(__file__).parent))
 from _store_compare import assert_rows_equal, assert_stores_bitwise_equal  # noqa: E402
 from _store_files import store_files  # noqa: E402
-from test_integration import _run_ingest  # noqa: E402
+from tests._support import _run_ingest  # noqa: E402
 from test_unzipped_input import _chunk_file_name  # noqa: E402
 
 pytestmark = [pytest.mark.integration, pytest.mark.plugin]

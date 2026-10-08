@@ -22,12 +22,9 @@ to raise ``"Key 'units' already exists in attrs"``. The fix is to drop
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pytest
-
-sys.path.insert(0, str(Path(__file__).parent))
 
 
 @pytest.mark.integration
@@ -40,7 +37,7 @@ def test_time_attrs_do_not_contain_units_or_calendar_after_ingest(
     """
     import xarray as xr
 
-    from test_integration import _run_ingest
+    from tests._support import _run_ingest
 
     store_path = _run_ingest(fdhsi_zip.parent, tmp_path, options={})
     ds = xr.open_zarr(str(store_path), group="data_1km", consolidated=False)
@@ -70,7 +67,7 @@ def test_open_then_write_roundtrip_does_not_raise(
     """
     import xarray as xr
 
-    from test_integration import _run_ingest
+    from tests._support import _run_ingest
 
     store_path = _run_ingest(fdhsi_zip.parent, tmp_path, options={})
     ds = xr.open_zarr(str(store_path), group="data_1km", consolidated=False)

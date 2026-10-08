@@ -35,7 +35,7 @@ import pytest
 import zarr
 
 from _small_grid_cli import install_firecube_shim
-from test_integration import _make_fdhsi_zip_at
+from tests._support import _make_fdhsi_zip_at
 
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts" / "fci-ingest.sh"
 

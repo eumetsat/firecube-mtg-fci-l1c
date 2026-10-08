@@ -35,7 +35,7 @@ from click.testing import CliRunner
 
 from _store_files import store_files
 from firecube_mtg_fci_l1c.plugin_cli import cli
-from test_integration import _run_ingest
+from tests._support import _run_ingest
 
 
 def _build_synthetic_store(

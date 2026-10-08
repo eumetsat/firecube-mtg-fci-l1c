@@ -18,9 +18,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.test_integration import _make_fdhsi_zip_at, _run_ingest
-
-pytest_plugins = ["tests.test_integration"]
+from tests._support import _make_fdhsi_zip_at, _run_ingest
 
 
 @pytest.mark.integration

@@ -52,7 +52,6 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-import sys
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -61,13 +60,12 @@ import numpy as np
 import pytest
 import zarr
 
-sys.path.insert(0, str(Path(__file__).parent))
-from test_integration import (  # noqa: E402
+from tests._support import (
     _make_fdhsi_zip_at,
     _make_zip_with_nc_part,
     _run_ingest,
 )
-from firecube_mtg_fci_l1c._constants import (  # noqa: E402
+from firecube_mtg_fci_l1c._constants import (
     PRODUCT_TYPE_FDHSI,
     PRODUCT_TYPE_HRFI,
 )

@@ -25,6 +25,7 @@ from firecube_mtg_fci_l1c._data import extract_timestamp_from_path
 from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig
 
 from firecube.ingestor.api import IngestContext
+from tests._small_grid import SMALL_CONSTANTS
 
 
 @pytest.fixture
@@ -32,18 +33,12 @@ def small_fci_layout_fdhsi(monkeypatch):
     from firecube_mtg_fci_l1c import _constants as const_mod
 
     constants_backup = copy.deepcopy(const_mod.CONSTANTS)
-    const_mod.CONSTANTS[PRODUCT_TYPE_FDHSI] = {
-        "1km": {
-            "channels": ["vis_04", "vis_06"],
-            "dimsize": 4,
-            "nc_channels": ["vis_04", "vis_06"],
-        },
-        "2km": {"channels": ["ir_38"], "dimsize": 4, "nc_channels": ["ir_38"]},
-    }
-    const_mod.CONSTANTS[PRODUCT_TYPE_HRFI] = {
-        "500m": {"channels": ["vis_06"], "dimsize": 4, "nc_channels": ["vis_06_hr"]},
-        "1km": {"channels": ["ir_38"], "dimsize": 4, "nc_channels": ["ir_38_hr"]},
-    }
+    const_mod.CONSTANTS[PRODUCT_TYPE_FDHSI] = copy.deepcopy(
+        SMALL_CONSTANTS[PRODUCT_TYPE_FDHSI]
+    )
+    const_mod.CONSTANTS[PRODUCT_TYPE_HRFI] = copy.deepcopy(
+        SMALL_CONSTANTS[PRODUCT_TYPE_HRFI]
+    )
 
     yield
 

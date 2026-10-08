@@ -43,7 +43,7 @@ from test_golden_output import (  # noqa: E402
     _capture_zarr_structure,
     _hash,
 )
-from test_integration import _run_ingest  # noqa: E402
+from tests._support import _run_ingest  # noqa: E402
 
 _SENSING_START = "20240101000000"
 _SENSING_END = "20240101000934"
