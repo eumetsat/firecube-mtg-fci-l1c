@@ -26,6 +26,7 @@ from firecube.ingestor.api import (  # pyright: ignore[reportMissingImports]
 from ._constants import (
     CHUNK_DEFAULTS_BY_RESOLUTION,
     CONSTANTS,
+    BODY_CHUNK_COUNT,
     FCI_DATA_EPOCH,
     PRODUCT_TYPE_FDHSI,
     VALID_RESOLUTIONS,
@@ -56,6 +57,8 @@ _VALID_PIXEL_TIME_DTYPES: frozenset[str] = frozenset(
 )
 
 _VALID_PROJECTION_UNITS: frozenset[str] = frozenset({"meter", "metre", "radian"})
+
+_VALID_PARTIAL_CHUNK: frozenset[str] = frozenset({"fill", "error"})
 
 
 def _default_template_config() -> ZarrTemplateConfig:
@@ -192,6 +195,22 @@ class MtgFciL1cConfig(BasePluginConfig):
     length directly rather than derive it from an end date.
     """
 
+    partial_chunk: str = "fill"
+    """What to do when the input files do not cover every row of the target.
+
+    ``fill`` leaves rows that no input file covers unwritten: they keep the
+    array fill value, and rows written by earlier ingests survive. ``error``
+    fails the scene before any write.
+    """
+
+    body_chunks: list[int] | None = None
+    """Inclusive ``[first, last]`` range of BODY chunk numbers to ingest.
+
+    Chunk numbers are 1-based; both FDHSI and HRFI have 40. Restricts the
+    scene to the stripe of rows those chunks cover. ``None`` means the full
+    disk. Pass as a JSON list, e.g. ``--option 'body_chunks=[32, 40]'``.
+    """
+
     _template_config: ZarrTemplateConfig = field(
         default_factory=_default_template_config,
         init=False,
@@ -217,12 +236,49 @@ class MtgFciL1cConfig(BasePluginConfig):
         the per-array chunk shape is checked later, at schema build time,
         where the chunk shape for each group is known.
         """
+        self._validate_partial_chunk()
+        self._validate_body_chunks()
         self._validate_zarr_shard_target_bytes()
         self._validate_pixel_time_dtype()
         self._validate_projection_units()
         self._validate_zarr_chunk_y()
         self._validate_zarr_shard_overrides()
         self._validate_zarr_chunk_overrides()
+
+    def _validate_partial_chunk(self) -> None:
+        if self.partial_chunk not in _VALID_PARTIAL_CHUNK:
+            raise ValueError(
+                f"partial_chunk must be one of {sorted(_VALID_PARTIAL_CHUNK)!r}, "
+                f"got {self.partial_chunk!r}"
+            )
+
+    def _validate_body_chunks(self) -> None:
+        if self.body_chunks is None:
+            return
+        value = self.body_chunks
+        if (
+            not isinstance(value, (list, tuple))
+            or len(value) != 2
+            or any(isinstance(n, bool) or not isinstance(n, int) for n in value)
+        ):
+            raise ValueError(
+                f"body_chunks must be [first, last], two integers, got {value!r}"
+            )
+        first, last = value
+        # Both products have the same count; with no product_type use the common bound.
+        if self.product_type is None:
+            bound = min(BODY_CHUNK_COUNT.values())
+        elif self.product_type in BODY_CHUNK_COUNT:
+            bound = BODY_CHUNK_COUNT[self.product_type]
+        else:
+            raise ValueError(
+                f"Unsupported product type: {self.product_type!r}. "
+                f"Expected one of {sorted(BODY_CHUNK_COUNT)}"
+            )
+        if not 1 <= first <= last <= bound:
+            raise ValueError(
+                f"body_chunks {value!r} must satisfy 1 <= first <= last <= {bound}"
+            )
 
     def _validate_zarr_shard_target_bytes(self) -> None:
         if self.zarr_shard_target_bytes <= 0:

@@ -183,3 +183,77 @@ def test_zarr_chunk_overrides_rejects_time_not_one() -> None:
 def test_zarr_chunk_overrides_rejects_channel_not_one() -> None:
     with pytest.raises(ValueError, match="channel dim must be 1"):
         MtgFciL1cConfig(zarr_chunk_overrides={"data_1km": (1, 100, 100, 2)})
+
+
+def test_partial_chunk_and_body_chunks_defaults() -> None:
+    cfg = MtgFciL1cConfig()
+    assert cfg.partial_chunk == "fill"
+    assert cfg.body_chunks is None
+
+
+@pytest.mark.parametrize("value", ["fill", "error"])
+def test_partial_chunk_accepts_allowed_values(value: str) -> None:
+    assert MtgFciL1cConfig(partial_chunk=value).partial_chunk == value
+
+
+@pytest.mark.parametrize("value", ["skip", "FILL", ""])
+def test_partial_chunk_rejects_other_values(value: str) -> None:
+    with pytest.raises(ValueError, match=r"partial_chunk.*\['error', 'fill'\]"):
+        MtgFciL1cConfig(partial_chunk=value)
+
+
+def test_partial_chunk_rejected_via_option_parsing() -> None:
+    with pytest.raises(ValueError, match="partial_chunk"):
+        MtgFciL1cConfig.from_options({"partial_chunk": "skip"})
+
+
+@pytest.mark.parametrize("product_type", [None, "FDHSI", "HRFI"])
+def test_body_chunks_accepts_valid_range_up_to_last_chunk(
+    product_type: str | None,
+) -> None:
+    cfg = MtgFciL1cConfig(product_type=product_type, body_chunks=[32, 40])
+    assert cfg.body_chunks == [32, 40]
+
+
+@pytest.mark.parametrize("pair", [[1, 1], [40, 40], [1, 40]])
+def test_body_chunks_accepts_boundary_ranges(pair: list[int]) -> None:
+    assert MtgFciL1cConfig(body_chunks=pair).body_chunks == pair
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        [40, 32],  # reversed
+        [0, 5],  # below range
+        [-1, 5],
+        [1, 41],  # just past the last chunk
+        [41, 41],
+        [32],  # wrong length
+        [],
+        [1, 2, 3],
+        [1.5, 3],  # non-int
+        ["1", "3"],
+        [True, 3],  # bool is not a chunk number
+        [None, 3],
+    ],
+)
+@pytest.mark.parametrize("product_type", [None, "FDHSI", "HRFI"])
+def test_body_chunks_rejects_invalid(bad: list, product_type: str | None) -> None:
+    with pytest.raises(ValueError, match="body_chunks"):
+        MtgFciL1cConfig(product_type=product_type, body_chunks=bad)
+
+
+def test_body_chunks_json_string_arrives_as_int_list() -> None:
+    cfg = MtgFciL1cConfig.from_options({"body_chunks": "[32, 40]"})
+    assert cfg.body_chunks == [32, 40]
+    assert all(type(n) is int for n in cfg.body_chunks)
+
+
+def test_body_chunks_none_string_arrives_as_none() -> None:
+    assert MtgFciL1cConfig.from_options({"body_chunks": "none"}).body_chunks is None
+
+
+@pytest.mark.parametrize("raw", ["[40, 32]", "[1, 41]", "[32]", '["a", "b"]'])
+def test_body_chunks_invalid_json_rejected_via_option_parsing(raw: str) -> None:
+    with pytest.raises(ValueError, match="body_chunks"):
+        MtgFciL1cConfig.from_options({"body_chunks": raw})
