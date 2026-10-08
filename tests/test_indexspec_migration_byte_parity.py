@@ -67,7 +67,10 @@ from test_integration import (  # noqa: E402
     _make_zip_with_nc_part,
     _run_ingest,
 )
-from firecube_mtg_fci_l1c._constants import PRODUCT_TYPE_HRFI  # noqa: E402
+from firecube_mtg_fci_l1c._constants import (  # noqa: E402
+    PRODUCT_TYPE_FDHSI,
+    PRODUCT_TYPE_HRFI,
+)
 
 BASELINE_FILE = Path(__file__).parent / "golden" / "indexspec_migration_baseline.json"
 
@@ -168,11 +171,12 @@ def _capture_case(
     tmp_path: Path,
     case_name: str,
     src_dir: Path,
+    product_type: str,
 ) -> dict[str, Any]:
     """Run one ingest and return its structure snapshot + hash."""
     workspace = tmp_path / case_name
     workspace.mkdir()
-    out = _run_ingest(src_dir, workspace)
+    out = _run_ingest(src_dir, workspace, product_type=product_type)
     structure = _capture_zarr_structure(out)
     return {"hash": _hash(structure), "structure": structure}
 
@@ -190,8 +194,12 @@ def _build_snapshots(
     _hrfi_zip_at(hrfi_src, "20240101000000")
 
     return {
-        "fdhsi_defaults": _capture_case(tmp_path, "fdhsi_defaults", fdhsi_src),
-        "hrfi_defaults": _capture_case(tmp_path, "hrfi_defaults", hrfi_src),
+        "fdhsi_defaults": _capture_case(
+            tmp_path, "fdhsi_defaults", fdhsi_src, PRODUCT_TYPE_FDHSI
+        ),
+        "hrfi_defaults": _capture_case(
+            tmp_path, "hrfi_defaults", hrfi_src, PRODUCT_TYPE_HRFI
+        ),
     }
 
 

@@ -14,9 +14,10 @@
 
 """MTG FCI L1C DirectZarr ingestion plugin.
 
-Each batch extracts ZIPs, discovers BODY/TRAIL nc_parts, optionally builds the
-pixel-time lookup table, and emits Firecube ``WriteIntent`` objects. Core owns
-the actual Zarr writes and time-axis growth.
+A scene arrives either as one ZIP or as a bundle of loose BODY/TRAIL chunk
+files. Each batch materialises its inputs through Firecube, extracts ZIPs,
+optionally builds the pixel-time lookup table, and emits Firecube
+``WriteIntent`` objects. Core owns the actual Zarr writes and time-axis growth.
 """
 
 # mypy: disable-error-code=import-untyped
@@ -25,8 +26,9 @@ from __future__ import annotations
 
 import dataclasses
 import logging
+import posixpath
 import threading
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, cast
@@ -34,6 +36,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, cast
 import numpy as np  # pyright: ignore[reportMissingImports]
 
 from firecube.ingestor.api import (  # pyright: ignore[reportMissingImports]  # type: ignore[import-untyped]
+    ConfigurationError,
     DirectZarrIngestor,
     PipelineBatch,
     PipelineRunState,
@@ -56,15 +59,18 @@ from firecube.core.api import (  # pyright: ignore[reportMissingImports]  # type
 from ._constants import (
     CONSTANTS,
     PRODUCT_TYPE_FDHSI,
+    PRODUCT_TYPE_HRFI,
     REPEAT_CYCLE_MINUTES,
     REPEAT_CYCLES_PER_DAY,
     dimsize_for,
 )
 from ._data import (
+    SceneBundle,
+    classify_items,
     detect_product_type,
     extract_slot_time_from_path,
+    group_chunks_into_bundles,
     is_valid_fci_zip,
-    validate_no_mixed_products,
 )
 from .geolocation import LatLonProvider
 from ._ephemeris import sun_earth_distance_au
@@ -153,6 +159,23 @@ def _assemble_and_extract(
     return result
 
 
+def _item_name(item: Any) -> str:
+    """Return the file name of a local path or remote URI item.
+
+    Plain string handling: ``Path`` would collapse ``s3://b/x`` into
+    ``s3:/b/x``.
+    """
+    return posixpath.basename(str(item))
+
+
+def _item_product_type(item: Any) -> str | None:
+    """Return the product type named in an item's file name, if any."""
+    try:
+        return detect_product_type(_item_name(item))
+    except ValueError:
+        return None
+
+
 def _output_chunk_ranges(dimsize: int, chunk_y: int) -> list[tuple[int, int]]:
     """Return half-open output chunk y-ranges for one resolution group."""
     return [
@@ -199,7 +222,7 @@ def _validate_contiguous_part_ranges(
 
 @register_ingestor("mtg_fci_l1c")
 class MtgFciL1cIngestor(DirectZarrIngestor):
-    """DirectZarr ingestor for MTG FCI L1C ZIP inputs."""
+    """DirectZarr ingestor for MTG FCI L1C ZIPs and loose chunk files."""
 
     PRODUCT_NAME: ClassVar[str] = "mtg_fci_l1c"
     name = "mtg_fci_l1c"
@@ -220,8 +243,9 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         ``time_slots`` / ``time_end`` values raise instead of being
         silently swallowed.
         """
+        del ctx
         config: MtgFciL1cConfig = self.plugin_config  # type: ignore[assignment]
-        product_type = self._detect_product_type(ctx)
+        product_type = self._require_product_type()
         validate_effective_resolutions(config, product_type)
         return self._build_index_spec(product_type)
 
@@ -255,9 +279,15 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         )
 
     def inspect_item(self, item: Any, ctx: PluginContext) -> ItemInfo | None:
-        """Extract the time coordinate label from an input item path."""
+        """Return the time coordinate label of a ZIP item or a chunk bundle.
+
+        A ZIP is labelled with its sensing start floored to the minute; a
+        chunk bundle with the nominal start of its repeat cycle.
+        """
         del ctx
-        timestamp = extract_slot_time_from_path(Path(str(item)))
+        if isinstance(item, SceneBundle):
+            return ItemInfo(coordinate=item.coordinate)
+        timestamp = extract_slot_time_from_path(Path(_item_name(item)))
         if timestamp is None:
             return None
         return ItemInfo(coordinate=timestamp)
@@ -309,7 +339,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         template_config = cast(ZarrTemplateConfig | None, self.template_config)
         if "zarr_sharding" in ctx.options and template_config is not None:
             config.template_config.zarr_sharding = template_config.zarr_sharding
-        product_type = self._detect_product_type(ctx)
+        product_type = self._require_product_type()
         if product_type not in CONSTANTS:
             raise ValueError(
                 f"Unsupported product type: {product_type!r}. "
@@ -318,24 +348,65 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         validate_effective_resolutions(config, product_type)
         return build_all_specs(config, product_type)
 
-    def _detect_product_type(self, ctx: PluginContext) -> str:
-        """Resolve configured or source-inferred FCI product type."""
+    def _require_product_type(self) -> str:
+        """Return the configured product type; raise when it is not set.
+
+        Core resolves the index and schema from configuration alone, before
+        any input is listed, so the product type cannot come from the input.
+        """
         config: MtgFciL1cConfig = self.plugin_config  # type: ignore[assignment]
-        if config.product_type is not None:
-            return config.product_type
+        if config.product_type is None:
+            raise ConfigurationError(
+                "product_type is required. Pass "
+                f"--option product_type={PRODUCT_TYPE_FDHSI} or "
+                f"--option product_type={PRODUCT_TYPE_HRFI}."
+            )
+        return config.product_type
 
-        source = Path(ctx.source) if hasattr(ctx, "source") else None
-        if source is not None and source.exists():
-            try:
-                files = sorted(source.glob("*.zip")) if source.is_dir() else [source]
-                if files:
-                    return validate_no_mixed_products(files)
-            except Exception as exc:
-                self._log.warning(
-                    "Unable to infer product_type from source %s: %s", source, exc
-                )
+    def discover_source_files(self, ctx: PluginContext) -> Iterable[Any]:
+        """Return ZIP items and per-cycle bundles of loose chunk files.
 
-        return PRODUCT_TYPE_FDHSI
+        Core discovery lists the source (local or remote) and applies
+        ``--input-filters``. ZIP items are returned unchanged and in core's
+        order; chunk files are grouped into one :class:`SceneBundle` per
+        repeat cycle. Other files are dropped. ZIPs and chunks in one source,
+        or items of the other product type, are configuration errors.
+        """
+        product_type = self._require_product_type()
+        items = list(super().discover_source_files(ctx))
+        try:
+            zips, chunks, _ignored = classify_items(items)
+        except ValueError as exc:
+            raise ConfigurationError(
+                f"{exc} Keep the chunk files with --input-filters '[\"!*.zip\"]' "
+                "or the ZIP files with --input-filters '[\"!*.nc\"]'."
+            ) from exc
+
+        foreign = [
+            _item_name(item)
+            for item in (*zips, *chunks)
+            if _item_product_type(item) != product_type
+        ]
+        if foreign:
+            other = (
+                PRODUCT_TYPE_HRFI
+                if product_type == PRODUCT_TYPE_FDHSI
+                else PRODUCT_TYPE_FDHSI
+            )
+            shown = ", ".join(repr(name) for name in foreign[:3])
+            more = f" and {len(foreign) - 3} more" if len(foreign) > 3 else ""
+            raise ConfigurationError(
+                f"{len(foreign)} input file(s) are not {product_type} products "
+                f"(product_type={product_type}): {shown}{more}. Exclude them "
+                f"with --input-filters '[\"!*{other}*\"]', or set "
+                f"--option product_type to match the input."
+            )
+
+        try:
+            bundles = group_chunks_into_bundles(chunks)
+        except ValueError as exc:
+            raise ConfigurationError(str(exc)) from exc
+        return [*zips, *bundles]
 
     def _emit_static_intents(
         self,
@@ -574,13 +645,15 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
     def build_write_intents(
         self, batch: PipelineBatch, ctx: PluginContext
     ) -> list[WriteIntent | IndexedWrite]:
-        """Extract ZIP contents and emit write intents via phase emitters."""
+        """Materialise the batch's scenes and emit write intents per scene.
+
+        A ZIP item is materialised and extracted into per-batch scratch; a
+        chunk bundle has each member materialised and is read in place.
+        """
         from ._scratch import BatchScratch
 
         config: MtgFciL1cConfig = self.plugin_config  # type: ignore[assignment]
-        product_type = batch.metadata.get("product_type")
-        if product_type is None:
-            product_type = self._detect_product_type(ctx)
+        product_type = self._require_product_type()
         batch.metadata["product_type"] = product_type
 
         plans = resolve_group_plans(config, product_type)
@@ -601,11 +674,14 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
 
         intents.extend(self._emit_static_intents(config, product_type, plans))
 
+        has_zips = any(not isinstance(item, SceneBundle) for item in batch.items)
+
         # Reader and scratch are registered (not `with`-scoped) so cached
         # file handles stay open until core dispatches the deferred callable
         # payloads; teardown happens in cleanup_batch_data, or at the next
-        # on_pipeline_start for batches whose cleanup never ran.
-        core_scratch = BatchScratch(scratch_dir, scratch_id)
+        # on_pipeline_start for batches whose cleanup never ran. Chunk
+        # bundles are read in place, so only a batch with ZIPs gets scratch.
+        core_scratch = BatchScratch(scratch_dir, scratch_id) if has_zips else None
         shared_reader = SharedNcPartReader()
         chunk_owned_cache = ChunkOwnedAssembler(shared_reader)
         with self._batch_resources_lock:
@@ -620,47 +696,77 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             # close() hands removal off to a daemon thread.
             self._batch_registry.register(batch.batch_id, chunk_owned_cache)
             self._batch_registry.register(batch.batch_id, shared_reader)
-            self._batch_registry.register(batch.batch_id, core_scratch)
+            if core_scratch is not None:
+                self._batch_registry.register(batch.batch_id, core_scratch)
 
-        # Extract the whole batch up front and in parallel; deferred payload
-        # dispatch reads nc_parts until batch cleanup, so peak scratch usage
-        # is unchanged, only the extraction wall time shrinks.
-        zip_paths = [
-            Path(item) if not isinstance(item, Path) else item for item in batch.items
-        ]
-        engine_config = getattr(self, "engine_config", None)
-        extract_workers = int(getattr(engine_config, "extract_workers", 4) or 4)
-        extracted_dirs, extract_failures = core_scratch.extract_zips_parallel(
-            zip_paths, max_workers=extract_workers
-        )
-
-        for zip_path in zip_paths:
-            failure = extract_failures.get(zip_path)
-            if failure is not None:
-                self._log.warning("Failed to extract %s: %s", zip_path, failure)
-                zip_errors.append(f"{zip_path.name}: {failure}")
-                files_failed += 1
+        # Materialise and extract every ZIP of the batch up front, extraction
+        # in parallel; deferred payload dispatch reads nc_parts until batch
+        # cleanup, so peak scratch usage is unchanged, only the extraction
+        # wall time shrinks. Keys are batch positions: the materialised path
+        # of a local item is resolved and can differ from the item's name.
+        zip_sources: dict[int, Path] = {}
+        zip_failures: dict[int, str] = {}
+        for position, item in enumerate(batch.items):
+            if isinstance(item, SceneBundle):
                 continue
             try:
-                zip_error = self._intents_for_zip(
-                    zip_path=zip_path,
-                    zip_dir=extracted_dirs[zip_path],
-                    plans=plans,
-                    shared_reader=shared_reader,
-                    config=config,
-                    product_type=product_type,
-                    batch_id=batch.batch_id,
-                    intents=intents,
-                )
-                if zip_error is None:
-                    files_processed += 1
+                zip_sources[position] = Path(ctx.materialize(item))
+            except Exception as exc:  # noqa: BLE001 - continue-on-error per scene
+                zip_failures[position] = f"cannot materialise: {exc}"
+        extracted_dirs: dict[Path, Path] = {}
+        extract_failures: dict[Path, str] = {}
+        if core_scratch is not None and zip_sources:
+            engine_config = getattr(self, "engine_config", None)
+            extract_workers = int(getattr(engine_config, "extract_workers", 4) or 4)
+            extracted_dirs, extract_failures = core_scratch.extract_zips_parallel(
+                list(dict.fromkeys(zip_sources.values())),
+                max_workers=extract_workers,
+            )
+
+        for position, item in enumerate(batch.items):
+            label = item.uri if isinstance(item, SceneBundle) else _item_name(item)
+            scene_error: str | None = None
+            try:
+                if isinstance(item, SceneBundle):
+                    # Members are in BODY-then-TRAIL chunk order, the order
+                    # list_fci_nc_parts gives the same files from a ZIP;
+                    # later parts win on shared root-table rows.
+                    self._intents_for_scene(
+                        timestamp=item.coordinate,
+                        nc_parts=[Path(ctx.materialize(m)) for m in item.members],
+                        plans=plans,
+                        shared_reader=shared_reader,
+                        config=config,
+                        product_type=product_type,
+                        batch_id=batch.batch_id,
+                        intents=intents,
+                    )
                 else:
-                    zip_errors.append(zip_error)
-                    files_failed += 1
+                    failure = zip_failures.get(position)
+                    if failure is None:
+                        failure = extract_failures.get(zip_sources[position])
+                    if failure is not None:
+                        self._log.warning("Failed to extract %s: %s", item, failure)
+                        scene_error = f"{label}: {failure}"
+                    else:
+                        scene_error = self._intents_for_zip(
+                            zip_name=label,
+                            zip_dir=extracted_dirs[zip_sources[position]],
+                            plans=plans,
+                            shared_reader=shared_reader,
+                            config=config,
+                            product_type=product_type,
+                            batch_id=batch.batch_id,
+                            intents=intents,
+                        )
             except Exception as exc:  # noqa: BLE001 - preserve legacy continue-on-error behavior
-                self._log.warning("Failed to process %s: %s", zip_path, exc)
-                self._log.exception("nc_part processing failed for %s", zip_path)
-                zip_errors.append(f"{zip_path.name}: {exc}")
+                self._log.warning("Failed to process %s: %s", label, exc)
+                self._log.exception("nc_part processing failed for %s", label)
+                scene_error = f"{label}: {exc}"
+            if scene_error is None:
+                files_processed += 1
+            else:
+                zip_errors.append(scene_error)
                 files_failed += 1
 
         batch.metadata["plugin_failure_counters"] = {
@@ -674,7 +780,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
     def _intents_for_zip(
         self,
         *,
-        zip_path: Path,
+        zip_name: str,
         zip_dir: Path,
         plans: list[GroupPlan],
         shared_reader: SharedNcPartReader,
@@ -685,19 +791,48 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
     ) -> str | None:
         """Decode one extracted ZIP and extend ``intents`` per resolution group.
 
-        Intents are appended incrementally so a mid-ZIP failure preserves
-        what was already emitted (legacy continue-on-error behavior).
+        The time label is the ZIP's sensing start floored to the minute.
         Returns ``None`` on success, or an error string when the ZIP cannot
         be decoded at all.
         """
         nc_parts = list_fci_nc_parts(zip_dir)
         if not nc_parts:
-            return f"No nc_parts found in {zip_path.name}"
+            return f"No nc_parts found in {zip_name}"
 
-        timestamp = cast(Any, extract_slot_time_from_path(zip_path))
+        timestamp = cast(Any, extract_slot_time_from_path(Path(zip_name)))
         if timestamp is None:
-            return f"Could not extract timestamp from {zip_path.name}"
+            return f"Could not extract timestamp from {zip_name}"
 
+        self._intents_for_scene(
+            timestamp=timestamp,
+            nc_parts=nc_parts,
+            plans=plans,
+            shared_reader=shared_reader,
+            config=config,
+            product_type=product_type,
+            batch_id=batch_id,
+            intents=intents,
+        )
+        return None
+
+    def _intents_for_scene(
+        self,
+        *,
+        timestamp: Any,
+        nc_parts: list[Path],
+        plans: list[GroupPlan],
+        shared_reader: SharedNcPartReader,
+        config: MtgFciL1cConfig,
+        product_type: str,
+        batch_id: str,
+        intents: list[WriteIntent | IndexedWrite],
+    ) -> None:
+        """Decode one scene's nc_parts and extend ``intents`` per resolution group.
+
+        ``nc_parts`` are local files in BODY-then-TRAIL chunk order.
+        Intents are appended incrementally so a mid-scene failure preserves
+        what was already emitted (legacy continue-on-error behavior).
+        """
         index2time: dict[int, float] | None = None
         if config.include_pixel_time:
             time_accum = TimeMapAccumulator()
@@ -725,7 +860,6 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                 batch_id=batch_id,
                 intents=intents,
             )
-        return None
 
     def _intents_for_plan(
         self,
@@ -895,32 +1029,48 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         }
 
     def filter_item(self, item: Any, ctx: PluginContext) -> bool:
-        """Filter files to ensure they are valid FCI L1C ZIPs."""
-        path = Path(item)
-        return is_valid_fci_zip(path)
+        """Keep chunk bundles and file items named like FCI L1C ZIPs."""
+        del ctx
+        if isinstance(item, SceneBundle):
+            return True
+        return is_valid_fci_zip(Path(_item_name(item)))
+
+    def item_size_bytes(self, item: Any) -> int | None:
+        """Return a ZIP's size, or a bundle's summed member sizes.
+
+        ``None`` when any size is unknown, for example for remote items.
+        """
+        file_size = super().item_size_bytes
+        if not isinstance(item, SceneBundle):
+            return file_size(item)
+        total = 0
+        for member in item.members:
+            size = file_size(member)
+            if size is None:
+                return None
+            total += size
+        return total
 
     def get_batch_groups(self, items: Sequence[Any], ctx: PluginContext) -> list[str]:
         """Return resolution write-groups for a batch of FCI items.
 
         Canonical batch-group hook (``get_batch_groups(items, ctx)``); invoked
-        at batch-planning time with the batch's item list. The product type is
-        resolved from config, then inferred from the batch items or source.
+        at batch-planning time with the batch's item list. The groups follow
+        the configured product type.
         """
+        del items, ctx
         config: MtgFciL1cConfig = self.plugin_config  # type: ignore[assignment]
-        product_type = config.product_type
-        if product_type is None and items:
-            try:
-                product_type = detect_product_type(str(items[0]))
-            except (ValueError, IndexError):
-                product_type = None
-        if product_type is None:
-            product_type = self._detect_product_type(ctx)
+        product_type = self._require_product_type()
         return [p.group for p in resolve_group_plans(config, product_type)]
 
     def _aggregate_metrics(
         self, ctx: RuntimeIngestContext, state: PipelineRunState
     ) -> dict[str, Any]:
-        """Aggregate default metrics plus per-ZIP success/failure counters."""
+        """Aggregate default metrics plus per-scene success/failure counters.
+
+        A scene is one ZIP or one chunk bundle; the ``zip_errors`` key keeps
+        its name for both.
+        """
         merged = dict(self.default_aggregate_metrics(ctx, state))
 
         files_processed = 0

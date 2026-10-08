@@ -11,10 +11,10 @@ authors = [
     { name = "Anna-Lena Erdmann", email = "anna-lena.erdmann@eumetsat.int" }
 ]
 dependencies = [
-    # The plugin uses the 0.1.5+ core surface (TimeAxis, extract_all_from_zip,
-    # static-owner suppression flags, zarr compare/validate additions) and is
-    # tested against 0.1.7.
-    "firecube>=0.1.5",
+    # The plugin uses the 0.1.7 core surface: source discovery and
+    # ctx.materialize through the configured storage driver, TimeAxis,
+    # extract_all_from_zips, and static-owner suppression flags.
+    "firecube>=0.1.7",
     "xarray>=2026.4.0",
     "numpy>=2.4",
     "h5netcdf>=1.8",

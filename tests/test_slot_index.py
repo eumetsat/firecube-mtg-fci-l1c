@@ -39,7 +39,7 @@ from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig
 
 def _ingestor(**config_kwargs) -> MtgFciL1cIngestor:
     ing = MtgFciL1cIngestor()
-    ing.plugin_config = MtgFciL1cConfig(**config_kwargs)
+    ing.plugin_config = MtgFciL1cConfig(**{"product_type": "FDHSI", **config_kwargs})
     return ing
 
 

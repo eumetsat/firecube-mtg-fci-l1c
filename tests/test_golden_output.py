@@ -141,7 +141,7 @@ def _snapshot_case(
 
     workspace = tmp_path / name
     workspace.mkdir()
-    out = _run_ingest(source_dir, workspace, options=options)
+    out = _run_ingest(source_dir, workspace, options=options, product_type=product_type)
     structure = _capture_zarr_structure(out)
     _assert_matches_declared_topology(structure, expected)
 

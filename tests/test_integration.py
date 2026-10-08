@@ -17,6 +17,7 @@ from __future__ import annotations
 import copy
 import datetime
 import zipfile
+from types import SimpleNamespace
 from pathlib import Path
 from typing import Any, cast
 
@@ -155,7 +156,11 @@ def _make_zip_with_nc_part(
 
 
 def _run_ingest(
-    source: Path, workspace: Path, options: dict[str, object] | None = None
+    source: Path,
+    workspace: Path,
+    options: dict[str, object] | None = None,
+    *,
+    product_type: str = PRODUCT_TYPE_FDHSI,
 ) -> Path:
     output_name = "out.zarr"
     target_path = workspace / output_name
@@ -171,6 +176,7 @@ def _run_ingest(
             # Fixtures use 2024-01-01 timestamps (pre-dating real FCI data); anchor
             # the deterministic slot index there so they map to compact slots 0,1,...
             "time_epoch": "2024-01-01",
+            "product_type": product_type,
             **(options or {}),
         },
     )
@@ -248,7 +254,7 @@ def test_fdhsi_groups_created(tmp_path: Path, fdhsi_zip: Path):
 @pytest.mark.integration
 @pytest.mark.plugin
 def test_hrfi_groups_created(tmp_path: Path, hrfi_zip: Path):
-    out = _run_ingest(hrfi_zip.parent, tmp_path)
+    out = _run_ingest(hrfi_zip.parent, tmp_path, product_type=PRODUCT_TYPE_HRFI)
     root = zarr.open_group(str(out), mode="r")
     assert "data_500m" in root
     assert "data_1km" in root
@@ -940,6 +946,7 @@ def test_reused_ingestor_emits_static_for_each_target(
                 "force_reingest": True,
                 "write_mode": "direct",
                 "time_epoch": "2024-01-01",
+                "product_type": PRODUCT_TYPE_FDHSI,
                 "resolutions": "1km",
             },
         )
@@ -1225,7 +1232,7 @@ def test_zarr_metadata_invariants(tmp_path: Path, fdhsi_zip: Path, hrfi_zip: Pat
     # Given: an HRFI ingest
     hrfi_ws = tmp_path / "hrfi_ws"
     hrfi_ws.mkdir()
-    _run_ingest(hrfi_zip.parent, hrfi_ws)
+    _run_ingest(hrfi_zip.parent, hrfi_ws, product_type=PRODUCT_TYPE_HRFI)
     root_hrfi = zarr.open_group(str(hrfi_ws / "out.zarr"), mode="r")
 
     # Then: only HRFI groups exist
@@ -1271,6 +1278,7 @@ def test_partial_failure_metrics_preserved(tmp_path: Path, small_fci_layout: lis
             "force_reingest": True,
             "write_mode": "direct",
             "time_epoch": "2024-01-01",
+            "product_type": PRODUCT_TYPE_FDHSI,
         },
     )
     result = ingestor.run(ctx)
@@ -1402,3 +1410,234 @@ def test_cf_advisor_zero_errors_per_group(
             f"CF advisor reported {report.summary.errors} errors for {product_type}/{group} "
             f"(include_geolocation={include_geolocation}):\n{_format_errors(report)}"
         )
+
+
+# --- Loose chunk input ------------------------------------------------------
+
+
+def _chunk_name(kind: str, start: str, cycle: int, number: int) -> str:
+    """Real-shaped FDHSI chunk file name (pattern taken from a 2025 product)."""
+    return (
+        "W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI1+FCI-1C-RRAD-FDHSI-FD--"
+        f"CHK-{kind}---NC4E_C_EUMT_{start}_IDPFI_OPE_{start}_{start}_N__O_"
+        f"{cycle:04d}_{number:04d}.nc"
+    )
+
+
+def _write_chunk_netcdf(
+    path: Path,
+    *,
+    rows: tuple[int, int] | None,
+    value: int,
+    index: list[int],
+    times: list[float],
+) -> None:
+    """Write one chunk: BODY rows ``[start, stop)`` of every channel, or a TRAIL.
+
+    A TRAIL (``rows=None``) carries only the root ``index``/``time`` table.
+    Every pixel's ``index_map`` is 1, so ``pixel_time`` reads ``time`` at
+    index 1 from whichever part wins that row of the root table.
+    """
+    with h5netcdf.File(path, "w") as ds:
+        ds.dimensions["n_time"] = len(index)
+        ds.create_variable("index", ("n_time",), data=np.asarray(index, np.uint16))
+        ds.create_variable("time", ("n_time",), data=np.asarray(times, np.float64))
+        if rows is None:
+            return
+        n_rows = rows[1] - rows[0]
+        data_group = ds.create_group("data")
+        for i, channel in enumerate(["vis_04", "vis_06", "ir_38"]):
+            measured = data_group.create_group(channel).create_group("measured")
+            measured.dimensions["y"] = n_rows
+            measured.dimensions["x"] = 4
+            radiance = measured.create_variable(
+                "effective_radiance",
+                ("y", "x"),
+                data=np.full((n_rows, 4), value + i, dtype=np.uint16),
+            )
+            radiance.attrs["scale_factor"] = float(i + 1)
+            radiance.attrs["add_offset"] = float(i)
+            measured.create_variable(
+                "start_position_row", (), data=np.int32(rows[0] + 1)
+            )
+            measured.create_variable("end_position_row", (), data=np.int32(rows[1]))
+            measured.create_variable(
+                "pixel_quality", ("y", "x"), data=np.zeros((n_rows, 4), np.uint8)
+            )
+            measured.create_variable(
+                "index_map", ("y", "x"), data=np.ones((n_rows, 4), np.uint16)
+            )
+
+
+def _write_scene_chunks(
+    directory: Path, *, start: str, cycle: int, values: tuple[int, int]
+) -> list[Path]:
+    """Write BODY 1 (rows 0-1), BODY 2 (rows 2-3) and TRAIL 41 of one cycle.
+
+    BODY 1 and BODY 2 both carry root index 1 with different times, so the
+    stored ``pixel_time`` shows which part was read last.
+    """
+    directory.mkdir(parents=True, exist_ok=True)
+    specs = [
+        ("BODY", 1, (0, 2), values[0], [0, 1], [10.0, 20.0]),
+        ("BODY", 2, (2, 4), values[1], [1, 2], [30.0, 40.0]),
+        ("TRAIL", 41, None, 0, [2], [50.0]),
+    ]
+    paths = []
+    for kind, number, rows, value, index, times in specs:
+        path = directory / _chunk_name(kind, start, cycle, number)
+        _write_chunk_netcdf(path, rows=rows, value=value, index=index, times=times)
+        paths.append(path)
+    return paths
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+def test_loose_chunks_of_two_cycles_ingest_into_two_slots(
+    tmp_path: Path, small_fci_layout: list[int]
+):
+    src = tmp_path / "loose"
+    _write_scene_chunks(src, start="20240101000002", cycle=1, values=(5, 6))
+    _write_scene_chunks(src, start="20240101001003", cycle=2, values=(7, 8))
+    # Not a chunk: discovered by suffix, then ignored.
+    (src / "notes.nc").write_bytes(b"not netcdf")
+
+    out = _run_ingest(src, tmp_path, options={"include_geolocation": False})
+
+    data_1km = cast(Any, zarr.open_group(str(out), mode="r")["data_1km"])
+    assert data_1km["time"][:].tolist() == [
+        datetime.datetime(2024, 1, 1, 0, 0),
+        datetime.datetime(2024, 1, 1, 0, 10),
+    ]
+    counts = np.asarray(data_1km["counts"][:])
+    # (slot, rows, channel) -> BODY value + channel offset.
+    np.testing.assert_array_equal(counts[0, :2, :, 0], np.full((2, 4), 5))
+    np.testing.assert_array_equal(counts[0, 2:, :, 0], np.full((2, 4), 6))
+    np.testing.assert_array_equal(counts[1, :2, :, 1], np.full((2, 4), 8))
+    np.testing.assert_array_equal(counts[1, 2:, :, 1], np.full((2, 4), 9))
+    counts_2km = np.asarray(
+        cast(Any, zarr.open_group(str(out), mode="r"))["data_2km"]["counts"][:]
+    )
+    np.testing.assert_array_equal(
+        counts_2km[1, :, :, 0], [[9] * 4] * 2 + [[10] * 4] * 2
+    )
+
+
+def _intent_signature(intent: Any) -> tuple[Any, ...]:
+    """Identity and resolved payload of one intent, comparable across runs."""
+    data = intent.data() if callable(intent.data) else intent.data
+    array = np.asarray(data)
+    if array.dtype.kind in "biufcmM":
+        payload: Any = array.tobytes()
+    else:
+        payload = repr(array.tolist())
+    slot = getattr(intent, "coordinate", getattr(intent, "ts_index", None))
+    y_slice = intent.y_slice
+    return (
+        type(intent).__name__,
+        getattr(intent, "kind", None),
+        intent.group,
+        intent.array,
+        slot,
+        None if y_slice is None else (y_slice.start, y_slice.stop),
+        intent.channel_index,
+        array.dtype.str,
+        array.shape,
+        payload,
+    )
+
+
+class _RecordingMaterializer:
+    def __init__(self) -> None:
+        self.calls: list[Any] = []
+
+    def __call__(self, item: Any) -> Path:
+        self.calls.append(item)
+        return Path(str(item))
+
+
+class _ForbiddenScratch:
+    def __init__(self, *_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("a chunk-bundle batch must not create ZIP scratch")
+
+
+def _build_intent_signatures(
+    item: Any, scratch_dir: Path, materializer: _RecordingMaterializer
+) -> list[tuple[Any, ...]]:
+    ingestor = MtgFciL1cIngestor()
+    ingestor.plugin_config = MtgFciL1cConfig(
+        product_type=PRODUCT_TYPE_FDHSI,
+        time_epoch="2024-01-01",
+        include_geolocation=False,
+        scratch_dir=str(scratch_dir),
+    )
+    batch: Any = SimpleNamespace(items=[item], metadata={}, batch_id="batch_0000")
+    ctx: Any = SimpleNamespace(
+        run_id="run-1", option=lambda *_args: None, materialize=materializer
+    )
+    try:
+        intents = ingestor.build_write_intents(batch, ctx)
+        assert batch.metadata["plugin_failure_counters"] == {
+            "files_processed": 1,
+            "files_failed": 0,
+            "zip_errors": [],
+        }
+        return [_intent_signature(intent) for intent in intents]
+    finally:
+        ingestor.cleanup_batch_data(batch, ctx)
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+def test_chunk_bundle_and_zip_of_the_same_files_give_identical_intents(
+    tmp_path: Path, small_fci_layout: list[int], monkeypatch
+):
+    import firecube_mtg_fci_l1c._scratch as scratch_mod
+    from firecube_mtg_fci_l1c._data import SceneBundle
+
+    loose = tmp_path / "loose"
+    parts = _write_scene_chunks(loose, start="20240101000002", cycle=1, values=(5, 6))
+    zips = tmp_path / "zips"
+    zips.mkdir()
+    zip_path = zips / (
+        "W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI1+FCI-1C-RRAD-FDHSI-FD--x-x---x_C_EUMT_"
+        "20240101000318_IDPFI_OPE_20240101000002_20240101000934_N__O_0001_0000.zip"
+    )
+    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_STORED) as zf:
+        for part in reversed(parts):  # archive order must not matter
+            zf.write(part, arcname=part.name)
+
+    discoverer = MtgFciL1cIngestor()
+    discoverer.plugin_config = MtgFciL1cConfig(product_type=PRODUCT_TYPE_FDHSI)
+    bundles = list(
+        discoverer.discover_source_files(cast(Any, SimpleNamespace(source=str(loose))))
+    )
+    assert len(bundles) == 1 and isinstance(bundles[0], SceneBundle)
+    bundle = bundles[0]
+
+    zip_materializer = _RecordingMaterializer()
+    zip_signatures = _build_intent_signatures(
+        str(zip_path), tmp_path / "zip-scratch", zip_materializer
+    )
+
+    bundle_materializer = _RecordingMaterializer()
+    with monkeypatch.context() as patch:
+        patch.setattr(scratch_mod, "BatchScratch", _ForbiddenScratch)
+        bundle_signatures = _build_intent_signatures(
+            bundle, tmp_path / "bundle-scratch", bundle_materializer
+        )
+
+    assert zip_materializer.calls == [str(zip_path)]
+    assert bundle_materializer.calls == [str(part) for part in parts]
+    assert not (tmp_path / "bundle-scratch").exists()
+    # Index 1 is in BODY 1 (time 20) and BODY 2 (time 30); BODY 2 is read
+    # later, as from the ZIP, so it wins.
+    pixel_times = [
+        np.frombuffer(sig[9], dtype=sig[7])
+        for sig in bundle_signatures
+        if sig[0] == "IndexedWrite" and sig[3] == "pixel_time"
+    ]
+    assert pixel_times
+    for values in pixel_times:
+        np.testing.assert_array_equal(values, np.full(values.shape, 30.0))
+    assert bundle_signatures == zip_signatures

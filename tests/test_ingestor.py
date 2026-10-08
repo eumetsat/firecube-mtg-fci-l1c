@@ -338,7 +338,10 @@ class TestBuildWriteIntentsLogging:
         )
 
         ctx: Any = SimpleNamespace(
-            run_id="run-1", source="/tmp", option=lambda *_args: None
+            run_id="run-1",
+            source="/tmp",
+            option=lambda *_args: None,
+            materialize=Path,
         )
 
         intents = ingestor.build_write_intents(batch, ctx)  # pyright: ignore[reportArgumentType]
@@ -574,7 +577,10 @@ class TestVariableDispatch:
             batch_id="batch-1",
         )
         ctx: Any = SimpleNamespace(
-            run_id="run-1", source="/tmp", option=lambda *_args: None
+            run_id="run-1",
+            source="/tmp",
+            option=lambda *_args: None,
+            materialize=Path,
         )
 
         intents = ingestor.build_write_intents(batch, ctx)  # pyright: ignore[reportArgumentType]
@@ -611,3 +617,270 @@ class TestGetBatchGroups:
         ctx: Any = SimpleNamespace(source="/tmp", option=lambda *_args: None)
         groups = ingestor.get_batch_groups([], ctx)  # pyright: ignore[reportArgumentType]
         assert groups == ["data_1km", "data_2km"]
+
+
+# --- Loose chunk discovery and the product_type contract -------------------
+
+
+def _fci_chunk(product: str, kind: str, start: str, cycle: int, number: int) -> str:
+    """Real-shaped chunk file name (pattern taken from a 2025 FDHSI product)."""
+    return (
+        f"W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI1+FCI-1C-RRAD-{product}-FD--"
+        f"CHK-{kind}---NC4E_C_EUMT_{start}_IDPFI_OPE_{start}_{start}_N__O_"
+        f"{cycle:04d}_{number:04d}.nc"
+    )
+
+
+def _fci_zip(product: str, start: str, cycle: int) -> str:
+    return (
+        f"W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI1+FCI-1C-RRAD-{product}-FD--x-x---x_C_EUMT_"
+        f"{start}_IDPFI_OPE_{start}_{start}_N__O_{cycle:04d}_0000.zip"
+    )
+
+
+def _touch(directory: Path, names: list[str], size: int = 0) -> list[Path]:
+    directory.mkdir(parents=True, exist_ok=True)
+    paths = []
+    for name in names:
+        path = directory / name
+        path.write_bytes(b"x" * size)
+        paths.append(path)
+    return paths
+
+
+def _ingestor_for(product_type: str | None):
+    from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig, MtgFciL1cIngestor
+
+    ingestor = MtgFciL1cIngestor()
+    ingestor.plugin_config = MtgFciL1cConfig(product_type=product_type)
+    return ingestor
+
+
+class TestLooseChunkDiscovery:
+    def test_flat_directory_of_chunks_gives_one_bundle_per_cycle(self, tmp_path):
+        from datetime import datetime
+
+        from firecube_mtg_fci_l1c._data import SceneBundle
+
+        cycle1 = _touch(
+            tmp_path,
+            [
+                _fci_chunk("FDHSI", "TRAIL", "20240101000002", 1, 41),
+                _fci_chunk("FDHSI", "BODY", "20240101000031", 1, 2),
+                _fci_chunk("FDHSI", "BODY", "20240101000002", 1, 1),
+            ],
+        )
+        cycle2 = _touch(
+            tmp_path,
+            [
+                _fci_chunk("FDHSI", "BODY", "20240101001003", 2, 1),
+                _fci_chunk("FDHSI", "BODY", "20240101001052", 2, 33),
+            ],
+        )
+        _touch(tmp_path, ["notes.nc", "manifest.xml"])
+
+        items = list(
+            _ingestor_for("FDHSI").discover_source_files(
+                SimpleNamespace(source=str(tmp_path))
+            )
+        )
+
+        assert all(isinstance(item, SceneBundle) for item in items)
+        assert [item.coordinate for item in items] == [
+            datetime(2024, 1, 1, 0, 0),
+            datetime(2024, 1, 1, 0, 10),
+        ]
+        # Original item strings, BODY by chunk number, then TRAIL.
+        assert items[0].members == tuple(str(cycle1[i]) for i in (2, 1, 0))
+        assert items[1].members == tuple(str(p) for p in cycle2)
+
+    def test_zip_only_discovery_returns_the_zip_items_in_name_order(self, tmp_path):
+        zips = _touch(
+            tmp_path,
+            [
+                _fci_zip("FDHSI", "20240101001003", 2),
+                _fci_zip("FDHSI", "20240101000002", 1),
+            ],
+        )
+        _touch(tmp_path, ["notes.nc"])
+
+        items = list(
+            _ingestor_for("FDHSI").discover_source_files(
+                SimpleNamespace(source=str(tmp_path))
+            )
+        )
+
+        assert items == [str(zips[1]), str(zips[0])]
+
+    def test_zips_and_chunks_together_are_rejected_with_the_filter_hint(self, tmp_path):
+        from firecube.ingestor.api import ConfigurationError
+
+        _touch(
+            tmp_path,
+            [
+                _fci_zip("FDHSI", "20240101000002", 1),
+                _fci_chunk("FDHSI", "BODY", "20240101001003", 2, 1),
+            ],
+        )
+
+        with pytest.raises(ConfigurationError) as excinfo:
+            _ingestor_for("FDHSI").discover_source_files(
+                SimpleNamespace(source=str(tmp_path))
+            )
+
+        message = str(excinfo.value)
+        assert "--input-filters '[\"!*.zip\"]'" in message
+        assert "--input-filters '[\"!*.nc\"]'" in message
+
+    @pytest.mark.parametrize(
+        ("configured", "names", "hint"),
+        [
+            (
+                "FDHSI",
+                [
+                    _fci_chunk("FDHSI", "BODY", "20240101000002", 1, 1),
+                    _fci_chunk("HRFI", "BODY", "20240101000002", 1, 1),
+                ],
+                "--input-filters '[\"!*HRFI*\"]'",
+            ),
+            (
+                "HRFI",
+                [_fci_zip("FDHSI", "20240101000002", 1)],
+                "--input-filters '[\"!*FDHSI*\"]'",
+            ),
+        ],
+    )
+    def test_items_of_the_other_product_type_are_rejected_with_the_filter_hint(
+        self, tmp_path, configured, names, hint
+    ):
+        from firecube.ingestor.api import ConfigurationError
+
+        _touch(tmp_path, names)
+
+        with pytest.raises(ConfigurationError) as excinfo:
+            _ingestor_for(configured).discover_source_files(
+                SimpleNamespace(source=str(tmp_path))
+            )
+
+        assert hint in str(excinfo.value)
+
+    def test_bundle_hooks_label_size_and_keep_the_bundle(self, tmp_path):
+        from datetime import datetime
+
+        members = _touch(
+            tmp_path,
+            [
+                _fci_chunk("FDHSI", "BODY", "20240101001003", 2, 1),
+                _fci_chunk("FDHSI", "TRAIL", "20240101001003", 2, 41),
+            ],
+            size=7,
+        )
+        ingestor = _ingestor_for("FDHSI")
+        ctx: Any = SimpleNamespace(source=str(tmp_path))
+        (bundle,) = ingestor.discover_source_files(ctx)
+
+        assert ingestor.filter_item(bundle, ctx) is True
+        assert ingestor.inspect_item(bundle, ctx) == ItemInfo(
+            coordinate=datetime(2024, 1, 1, 0, 10)
+        )
+        assert ingestor.item_size_bytes(bundle) == 14
+
+        members[1].unlink()
+        assert ingestor.item_size_bytes(bundle) is None
+
+    def test_remote_zip_uri_passes_filter_item(self):
+        ingestor = _ingestor_for("FDHSI")
+        uri = "s3://bucket/fci/" + _fci_zip("FDHSI", "20240101000002", 1)
+
+        assert ingestor.filter_item(uri, SimpleNamespace()) is True
+        assert (
+            ingestor.filter_item("s3://bucket/fci/notes.nc", SimpleNamespace()) is False
+        )
+
+
+class _SourceGuardCtx:
+    """Context whose ``source`` must not be read."""
+
+    run_id = "run-1"
+    options: dict[str, Any] = {}
+
+    @property
+    def source(self) -> str:
+        raise AssertionError("ctx.source was read")
+
+    def option(self, _key: str, default: Any = None) -> Any:
+        return default
+
+    def materialize(self, _item: Any) -> Path:
+        raise AssertionError("ctx.materialize was called")
+
+
+class TestProductTypeRequired:
+    @pytest.mark.parametrize(
+        "call",
+        [
+            pytest.param(lambda ing, ctx: ing.index_spec(ctx), id="index_spec"),
+            pytest.param(lambda ing, ctx: ing.zarr_schema(ctx), id="zarr_schema"),
+            pytest.param(
+                lambda ing, ctx: ing.get_batch_groups([], ctx), id="get_batch_groups"
+            ),
+            pytest.param(
+                lambda ing, ctx: ing.discover_source_files(ctx),
+                id="discover_source_files",
+            ),
+            pytest.param(
+                lambda ing, ctx: ing.build_write_intents(
+                    SimpleNamespace(items=[], metadata={}, batch_id="batch_0000"), ctx
+                ),
+                id="build_write_intents",
+            ),
+        ],
+    )
+    def test_missing_product_type_raises_without_reading_the_source(self, call):
+        from firecube.ingestor.api import ConfigurationError
+
+        with pytest.raises(ConfigurationError, match="product_type") as excinfo:
+            call(_ingestor_for(None), _SourceGuardCtx())
+
+        assert "--option product_type=FDHSI" in str(excinfo.value)
+
+
+class TestBundleMaterialisationFailure:
+    def test_failed_member_counts_the_scene_as_failed_under_its_uri(self):
+        from firecube_mtg_fci_l1c._data import group_chunks_into_bundles
+
+        (bundle,) = group_chunks_into_bundles(
+            [
+                "s3://bucket/fci/"
+                + _fci_chunk("FDHSI", "BODY", "20240101001003", 2, 1),
+                "s3://bucket/fci/"
+                + _fci_chunk("FDHSI", "BODY", "20240101001052", 2, 2),
+            ]
+        )
+        ingestor = _ingestor_for("FDHSI")
+        ingestor.plugin_config.include_geolocation = False
+        calls: list[str] = []
+
+        def materialize(item: str) -> Path:
+            calls.append(item)
+            if item == bundle.members[1]:
+                raise OSError("download failed")
+            return Path("/nonexistent") / Path(item).name
+
+        batch: Any = SimpleNamespace(items=[bundle], metadata={}, batch_id="batch_0000")
+        ctx: Any = SimpleNamespace(
+            run_id="run-1", option=lambda *_args: None, materialize=materialize
+        )
+        try:
+            intents = ingestor.build_write_intents(batch, ctx)
+        finally:
+            ingestor.cleanup_batch_data(batch, ctx)
+
+        counters = batch.metadata["plugin_failure_counters"]
+        assert counters["files_processed"] == 0
+        assert counters["files_failed"] == 1
+        assert counters["zip_errors"] == [
+            "fci-scene://FDHSI/20240101001000: download failed"
+        ]
+        assert calls == list(bundle.members)
+        assert {getattr(intent, "kind", None) for intent in intents} == {"static"}

@@ -48,7 +48,7 @@ Keep the root README user/operator focused.
 
 ## Firecube And Zarr Invariants
 
-- Current plugin version is `0.2.0`. Firecube baseline is `0.1.5`; the lockfile and CI use `0.1.7`.
+- Current plugin version is `0.2.0`. Firecube baseline is `0.1.7`; the lockfile and CI use `0.1.7`.
 - The plugin uses Firecube direct-region Zarr behavior. Link core mechanics to
   Firecube public docs instead of duplicating them:
   - Direct Region Zarr: `https://eumetsat.github.io/firecube/concepts/output-formats/zarr/direct-region/`
