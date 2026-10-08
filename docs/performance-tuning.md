@@ -8,53 +8,39 @@ tuning Zarr storage layout, or deploying multi-pod parallel ingestion.
 
 ## Prerequisites
 
-- Firecube ≥ 0.1.5 with `mtg_fci_l1c` installed.
+- Firecube ≥ 0.1.7 with `mtg_fci_l1c` installed.
 - A Zarr store target: `file:///` for local storage or `s3://` for object storage.
 - For parallel ingestion: all pods must have read access to the same input ZIP
-  files, and the Zarr store must be preallocated before the first pod starts.
+  or chunk files, and the Zarr store must be preallocated before the first pod starts.
 
 ---
 
 ## Memory Considerations
 
-All figures below apply to this workload unless noted: **FDHSI, 1 km + 2 km,
-all 16 channels, `pipeline_workers=1`, `pixel_time_dtype=float64`, one slot**.
-Measured baseline: **14.625 GiB** peak RSS per worker.
+Peak resident memory (RSS) of one `firecube ingest` process ingesting one
+slot. Measured on an aarch64 host (NVIDIA GB10) on 2026-10-08 with
+`/usr/bin/time -v`, for FDHSI, 1 km + 2 km, all 16 channels, default options,
+`pipeline_workers=1`, `--write-mode direct` to a local store preallocated for
+144 slots, with a precomputed `fci_grids_file`:
 
-### Per-component breakdown
-
-| Component | Theoretical footprint | Notes |
+| Input | Peak RSS per process | Label |
 |---|---|---|
-| Pixel time (`float64`) | ~9.24 GiB | Largest single component. `include_pixel_time=false` removes it entirely. |
-| Counts + calibration | ~2.31 GiB | Irreducible baseline; always included. |
-| Pixel quality | ~1.15 GiB | `include_pixel_quality=false` removes it. |
-| Geolocation (lat/lon) | ~1.15 GiB | `include_geolocation=false` skips it. |
-| Runtime / writer overhead | ~0.78 GiB | Zarr write buffers, HDF5 read-side, Python runtime. |
-| **Total observed** | **~14.6 GiB** | Measured baseline with all features enabled. |
+| Full-disk ZIP | about 2.0 GiB (mean 2.017 GiB over 4 runs) | measured |
+| Full-disk unpacked chunks | about 2.0 GiB (mean 2.019 GiB over 2 runs) | measured |
+| Stripe store, `body_chunks=[32, 40]` | about 1.25 GiB (3 runs, 1.252 to 1.253 GiB) | measured |
 
-### Feature-flag knobs
+A single run now and then peaks 50 to 130 MiB higher than the others (highest
+seen: 2.15 GiB). Plan for 2.5 GiB per pod to leave room for that (calculated,
+not a measured limit).
 
-The following options reduce per-worker peak RSS. Savings are expected values
-based on payload-size analysis; they are not independently re-measured for every
-configuration.
+N workers need about N times the figure above (calculated). Without a shared
+`fci_grids_file` each process computes the grids itself and peaks higher; that
+case was not re-measured.
 
-| Option | Default | Expected saving per slot | Trade-off |
-|---|---|---|---|
-| `pixel_time_dtype=float32` | `float64` | ~4.7 GiB | Pixel-time precision drops to ~64–128 s absolute-epoch resolution. Safe only when sub-minute precision is not required downstream. |
-| `include_pixel_time=false` | `true` | ~9.5 GiB | Drops per-pixel observation timestamps entirely. Safe when downstream consumers do not use pixel_time. |
-| `include_geolocation=false` | `true` | ~1.2 GiB | Skips static lat/lon arrays. Safe when coordinates are available from another source or not needed. See [Geolocation Grid Compute](#geolocation-grid-compute). |
-| `include_pixel_quality=false` | `true` | ~1.2 GiB | Skips pixel quality mask. Safe when quality filtering is done at source. |
-
-Example: disable pixel time to reduce per-worker peak from ~14.6 GiB to ~5.1 GiB:
-
-```bash
-firecube ingest mtg_fci_l1c \
-    --input-data /path/to/fci-zips \
-    --target file:///path/to/output.zarr \
-    --output-format zarr \
-    --write-mode staged \
-    --option include_pixel_time=false
-```
+The options that shrink the stored output (`include_pixel_time=false`,
+`pixel_time_dtype=float32`, `include_pixel_quality=false`,
+`include_geolocation=false`) have not been re-measured against these figures;
+do not assume they lower peak RSS by the size of the arrays they drop.
 
 ## Geolocation Grid Compute
 
@@ -71,11 +57,14 @@ to generate and inspect the `.npz` file.
 
 ## Chunk and Shard Tuning
 
-### Defaults are nc_part-aligned
+### Default chunk heights
 
-FCI L1C ZIPs contain 40 nc_parts per acquisition. The default chunk Y-dim
-matches the nc_part row count so each nc_part write fills exactly one chunk
-(no read-modify-write during streaming ingest):
+An FCI L1C repeat cycle holds 40 BODY chunks. The default chunk Y-dim is the
+nominal height of one BODY chunk at that resolution, and a chunk spans the full
+grid width. BODY chunk heights are not uniform (at 1 km they range from 258 to
+300 rows), so an output chunk is assembled from one or two chunk files and
+written once; the plugin refuses a chunk height above twice the nominal one
+(`zarr_chunk_y` and `zarr_chunk_overrides` are checked against it):
 
 | Resolution | Array size (y=x) | Default chunk Y |
 |---|---|---|
@@ -89,9 +78,10 @@ groups ~21 chunks along Y, giving a shard shape of approximately
 
 ### When to override chunks
 
-- **Larger Y chunks** (e.g. `zarr_chunk_y=2784`) reduce Zarr object count by
-  grouping 10 nc_parts per chunk. Cost: read-modify-write on each nc_part write.
-  Safe in `--write-mode staged`; avoid in `--write-mode direct` to S3.
+- **Larger Y chunks** up to the cap (`zarr_chunk_y=556` at 1 km, twice the
+  default 278) halve the chunk count along Y. A chunk of that height is
+  assembled from up to two chunk files. Larger values are rejected when the
+  config is created.
 - **Smaller Y chunks** enable finer spatial subsetting but multiply object count.
 
 ### When to override shards
@@ -104,17 +94,23 @@ groups ~21 chunks along Y, giving a shard shape of approximately
 
 | Resolution | Chunk override | Shard override |
 |---|---|---|
-| 500m | `(1, 5568, 22272, 1)` | `(1, 22272, 22272, 1)` |
-| 1km | `(1, 2784, 11136, 1)` | `(1, 11136, 11136, 1)` |
-| 2km | `(1, 1392, 5568, 1)` | `(1, 5568, 5568, 1)` |
+| 500m | `(1, 1112, 22272, 1)` | `(1, 23352, 22272, 1)` |
+| 1km | `(1, 556, 11136, 1)` | `(1, 11676, 11136, 1)` |
+| 2km | `(1, 278, 5568, 1)` | `(1, 5838, 5568, 1)` |
+
+The chunk height is the largest the plugin accepts. The shard height must be a
+whole multiple of it, so it is rounded up to cover the grid: 21 chunks along Y
+(for example `21 * 556 = 11676` rows at 1 km, for 11136 rows). The 21st chunk
+covers only the last 16 rows at 1 km (32 at 500 m, 8 at 2 km).
 
 ```bash
 firecube ingest mtg_fci_l1c \
   --input-data /path/to/zips \
   --target file:///path/to/output.zarr \
   --output-format zarr --write-mode staged \
-  --option zarr_chunk_overrides='{"data_1km":[1,2784,11136,1]}' \
-  --option zarr_shard_overrides='{"data_1km":[1,11136,11136,1]}'
+  --option product_type=FDHSI \
+  --option zarr_chunk_overrides='{"data_1km":[1,556,11136,1]}' \
+  --option zarr_shard_overrides='{"data_1km":[1,11676,11136,1]}'
 ```
 
 Override keys are always `data_<res>`, also for a store written with
@@ -123,13 +119,15 @@ Override keys are always `data_<res>`, also for a store written with
 
 ### Resulting shard byte size (uint16 data arrays)
 
-| Resolution | Full-disk shard | Byte size (uint16) |
+| Resolution | Full-disk shard | Uncompressed disk data (uint16) |
 |---|---|---|
-| 500m | `(1, 22272, 22272, 1)` | ~990 MB |
-| 1km | `(1, 11136, 11136, 1)` | ~248 MB |
-| 2km | `(1, 5568, 5568, 1)` | ~62 MB |
+| 500m | `(1, 23352, 22272, 1)` | ~992 MB |
+| 1km | `(1, 11676, 11136, 1)` | ~248 MB |
+| 2km | `(1, 5838, 5568, 1)` | ~62 MB |
 
-For float64 `pixel_time` at 500m the shard would be ~3.96 GB. Disable
+Sizes are for the 22272, 11136 and 5568 grid rows; the padding in the last
+chunk adds up to one chunk of rows. For float64 `pixel_time` at 500m the data
+would be ~3.96 GB. Disable
 `pixel_time` via `--option include_pixel_time=false` if this is too large.
 
 ### Known caveats
@@ -175,7 +173,7 @@ Same-slot conflicts raise `ClaimConflictError` immediately with no retry and no
 queue. The batch is dropped and the ingest run aborts. This is deterministic:
 any configuration where two workers target the same slot will fail on every run.
 
-**RAM scales linearly**: N workers × ~14.6 GiB per worker. Scale horizontally
+**RAM scales linearly**: N workers × about 2.0 GiB per worker (measured; see [Memory Considerations](#memory-considerations)). Scale horizontally
 with separate pods over disjoint slot ranges; do not raise `pipeline_workers`
 inside a pod.
 
@@ -221,6 +219,7 @@ scaling plots and benchmark workload notes.
 | Symptom | Cause | Recovery |
 |---|---|---|
 | `ClaimConflictError` on startup | Two pods have overlapping slot ranges | Ensure `--slot-start`/`--slot-end` ranges do not overlap. The failed pod can be re-submitted with a corrected range. |
+| `ResumeConflictError` on a store ingested before `body_chunks` existed | Spans written by plugin 0.2.0 or earlier carry no `body_chunks` value, so a single-pod run (no `--slot-start`/`--slot-end`) cannot prove it matches them | Add `--option resume_existing=true` to continue, or `--option force_reingest=true` to overwrite |
 | `ResumeConflictError` on restart | A previous run was interrupted (SIGKILL, OOM) and left a `started` record | 1. `firecube chunks runs list --product-name <name> --status started` to find the stale run ID. 2. `firecube chunks runs abandon --product-name <name> --run-id <id> --reason "crash recovery" --yes-i-really-mean-it` to clear the record. 3. Re-run the same slot range. Data written before the kill is intact; re-ingest overwrites the partial slot cleanly. |
 | Some slots missing after a run | A pod exited with an error | Re-submit the missing slot range. Writes are idempotent with `force_reingest=true` (the default in `scripts/fci-ingest.sh`). |
 

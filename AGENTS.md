@@ -67,13 +67,14 @@ Keep the root README user/operator focused.
 ## Where Things Live
 
 - Plugin config: `src/firecube_mtg_fci_l1c/config.py`
-- Product, channel, and grid constants: `src/firecube_mtg_fci_l1c/_constants.py`
+- Product, channel, and grid constants, and the BODY chunk row table: `src/firecube_mtg_fci_l1c/_constants.py`
 - Zarr variable declarations and source functions: `src/firecube_mtg_fci_l1c/_variables.py`
 - `Variable`/`VariableContext` and array/group spec building: `src/firecube_mtg_fci_l1c/_schema.py`
-- Per-resolution plans and group naming (`data_<res>` or root for `flat_store`):
-  `src/firecube_mtg_fci_l1c/_group_plan.py`
+- Per-resolution plans, group naming (`data_<res>` or root for `flat_store`), and
+  `body_chunks` stripe windows: `src/firecube_mtg_fci_l1c/_group_plan.py`
 - Ingest orchestration and write intents: `src/firecube_mtg_fci_l1c/ingestor.py`
-- Input ZIP helpers (product type, timestamps, source files): `src/firecube_mtg_fci_l1c/_data.py`
+- Input helpers for ZIPs and loose chunk files (product type, timestamps, chunk
+  names, per-cycle scene bundles): `src/firecube_mtg_fci_l1c/_data.py`
 - NetCDF nc_part streaming reads: `src/firecube_mtg_fci_l1c/_decode.py`
 - Geolocation helpers and grid CLI: `src/firecube_mtg_fci_l1c/geolocation/`
   and `src/firecube_mtg_fci_l1c/plugin_cli.py`

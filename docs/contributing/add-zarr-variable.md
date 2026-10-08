@@ -39,9 +39,11 @@ The source function receives a `VariableContext`. Different fields are populated
 
 | Phase | Populated fields |
 |---|---|
-| Static | `group`, `resolution`, `product_type`, `config`, `dimsize`, `n_channels`, `logical_channels`, `geo_provider` |
+| Static | `group`, `resolution`, `product_type`, `config`, `dimsize`, `n_channels`, `logical_channels`, `geo_provider`, `y_window` |
 | Time-channel | `group`, `resolution`, `product_type`, `config`, `dimsize`, `n_channels`, `logical_channels`, `nc_channels`, `calibration_table` |
-| Spatial | `group`, `resolution`, `product_type`, `config`, `dimsize`, `n_channels`, `logical_channels`, `nc_channels`, `y_slice`, `channel_payload` |
+| Spatial | `group`, `resolution`, `product_type`, `config`, `dimsize`, `n_channels`, `logical_channels`, `nc_channels`, `y_slice`, `channel_payload`, `y_window` |
+
+`dimsize` is always the full-disk size. `y_window` is `None` for a full-disk group; in a stripe store (`body_chunks`) it is the `(start, stop)` full-disk rows the group holds, with `y_start`, `y_stop` and `ny` as properties, and `y_slice` is relative to that window. Size and index the `y` axis with `ny` and `y_window`, not `dimsize`.
 
 Use `resolution` (such as `"1km"`), not `group`, to pick per-resolution values: `group` is `""` when the store is written with `flat_store=true`.
 

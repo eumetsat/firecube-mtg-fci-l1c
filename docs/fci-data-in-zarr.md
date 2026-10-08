@@ -46,6 +46,27 @@ ds = xr.open_zarr("fci-1km.zarr")
 Options, rules, and examples are in
 [Customization → Flat store layout](customization.md#flat-store-layout).
 
+### Stripe layout
+
+A store ingested with `--option 'body_chunks=[first,last]'` holds one band of
+the disk. Row 0 of the full disk is the southern edge, so a stripe of high
+chunk numbers is a northern band. In every group:
+
+- `x` keeps its full width; `y`, `latitude`, `longitude` and the `y` axis of
+  `counts`, `pixel_quality` and `pixel_time` hold only the stripe's rows,
+  widened to the group's output-chunk grid.
+- `y` holds the real projection coordinate of each stored row, so the first
+  value is that of the first stripe row, not of the southern edge.
+- Rows of the widened window that the input did not cover stay at the fill
+  value.
+
+For `body_chunks=[32,40]` of FDHSI, `data_1km` is `2518 × 11136` (disk rows
+8618 to 11136) and `data_2km` is `1259 × 5568` (disk rows 4309 to 5568).
+Groups created by `firecube ingest` also carry the attributes `body_chunks`,
+`disk_row_start` and `disk_row_stop`. See
+[Customization → Stripe stores](customization.md#stripe-stores) for the option
+and its limits.
+
 ## Variables
 
 Every resolution group, or the root of a flat store, contains:
@@ -99,8 +120,10 @@ the full minute: a product that starts at `12:20:06` gets the label
 ds.sel(time="2026-09-28T12:20:00")
 ```
 
-A slot without an ingested product has no label (`NaT`). The exact
-acquisition time of every pixel is in `pixel_time`.
+A slot ingested from unpacked chunk files is labelled with the nominal start
+of its repeat cycle (`00:00:00`, `00:10:00`, and so on). A slot without an
+ingested product has no label (`NaT`). The exact acquisition time of every
+pixel is in `pixel_time`.
 
 `time` is stored as `datetime64[s]`. The `units` and `calendar` attributes are
 not written to Zarr array metadata; xarray manages them via encoding on the

@@ -10,6 +10,7 @@ products into direct-region Zarr stores.
 | Install the plugin | [Installation](#installation) |
 | Run one local ingest | [Quickstart](#quickstart) |
 | Run production ingestion | [Production Ingestion](#production-ingestion) |
+| Ingest unpacked chunk files, or only a stripe of the disk | [Input forms](docs/customization.md#input-forms), [Stripe stores](docs/customization.md#stripe-stores) |
 | Navigate all docs | [docs/index.md](docs/index.md) |
 | Understand the Zarr layout, variables, channel names, and quality bits | [FCI Data in Zarr](docs/fci-data-in-zarr.md) |
 | Configure plugin options, script variables, grids, chunks, or shards | [Customization](docs/customization.md) |
@@ -24,7 +25,7 @@ products into direct-region Zarr stores.
 Requirements:
 
 - [uv](https://docs.astral.sh/uv/)
-- Firecube 0.1.5 or newer
+- Firecube 0.1.7 or newer
 
 Clone the plugin and install it into the Firecube environment:
 
@@ -58,15 +59,24 @@ eumdac download -c EO:EUM:DAT:0662 \
     -o /path/to/fci-zips
 ```
 
-Ingest a local FDHSI slot into a local Zarr store:
+Ingest a local FDHSI slot into a local Zarr store. `product_type` is required:
+pass `FDHSI` or `HRFI`; the plugin does not infer it from the input.
 
 ```bash
 firecube ingest mtg_fci_l1c \
     --input-data /path/to/fci-zips \
     --target file:///path/to/output.zarr \
     --output-format zarr \
-    --write-mode staged
+    --write-mode staged \
+    --option product_type=FDHSI
 ```
+
+`--input-data` can also be a directory (or S3 prefix) of unpacked chunk `.nc`
+files instead of ZIPs, complete or partial. To store only a stripe of the disk,
+such as BODY chunks 32 to 40, add `--option 'body_chunks=[32,40]'`. See
+[Input forms](docs/customization.md#input-forms),
+[Partial scenes](docs/customization.md#partial-scenes) and
+[Stripe stores](docs/customization.md#stripe-stores).
 
 To ingest only one channel, pass the `channels` option:
 
@@ -76,6 +86,7 @@ firecube ingest mtg_fci_l1c \
     --target file:///path/to/output-vis-06.zarr \
     --output-format zarr \
     --write-mode staged \
+    --option product_type=FDHSI \
     --option channels=vis_06
 ```
 

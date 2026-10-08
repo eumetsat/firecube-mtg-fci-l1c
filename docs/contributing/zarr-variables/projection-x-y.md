@@ -24,7 +24,7 @@ These coordinates are static per group, so the source function lives in the stat
 
 ### Case A: Computed analytically from constants
 
-> **Status: IMPLEMENTED in FCI L1C plugin**: see `_projection_angle_source` (shared by `_projection_x_source` /
+> **Status: IMPLEMENTED in FCI L1C plugin**: see `_projection_angle_source(ctx, start, stop)` (shared by `_projection_x_source` /
 > `_projection_y_source`) in `_variables.py` and `FCI_PROJ_SCALE_RAD_PER_INDEX` in `_constants.py`.
 
 If you know the projection geometry (FCI uses fixed sampling), you can compute the coords without touching the NetCDF:
@@ -40,12 +40,23 @@ _FCI_PROJ_SCALE: dict[str, float] = {
 }
 
 
-def _projection_angle_source(ctx: VariableContext) -> np.ndarray | None:
-    """Scan angle of each pixel centre; identical for x and y (square, symmetric grid)."""
+def _projection_angle_source(
+    ctx: VariableContext, start: int, stop: int
+) -> np.ndarray | None:
+    """Scan angle of pixel centres ``start``..``stop - 1``; same formula for x and y (square, symmetric grid)."""
     if ctx.resolution not in _FCI_PROJ_SCALE:
         return None
     centre = ctx.dimsize / 2 - 0.5          # index of nadir (between the two central pixels)
-    return (np.arange(ctx.dimsize, dtype=np.float64) - centre) * _FCI_PROJ_SCALE[ctx.resolution]
+    return (np.arange(start, stop, dtype=np.float64) - centre) * _FCI_PROJ_SCALE[ctx.resolution]
+
+
+def _projection_x_source(ctx: VariableContext) -> np.ndarray | None:
+    return _projection_angle_source(ctx, 0, ctx.dimsize)
+
+
+def _projection_y_source(ctx: VariableContext) -> np.ndarray | None:
+    # A stripe store holds only its window of rows: y_start..y_stop (the full disk by default).
+    return _projection_angle_source(ctx, ctx.y_start, ctx.y_stop)
 
 
 Variable(
@@ -59,7 +70,7 @@ Variable(
         "long_name": "MTG geostationary projection x angle",
         "axis": "X",
     },
-    source=_projection_angle_source,
+    source=_projection_x_source,
 ),
 Variable(
     name="y",
@@ -72,7 +83,7 @@ Variable(
         "long_name": "MTG geostationary projection y angle",
         "axis": "Y",
     },
-    source=_projection_angle_source,
+    source=_projection_y_source,
 ),
 ```
 
@@ -102,7 +113,7 @@ _FCI_SATELLITE_ALTITUDE_M = 35_786_400.0
 
 
 def _projection_x_metres_source(ctx: VariableContext) -> np.ndarray | None:
-    radians = _projection_angle_source(ctx)
+    radians = _projection_angle_source(ctx, 0, ctx.dimsize)
     if radians is None:
         return None
     return radians * _FCI_SATELLITE_ALTITUDE_M
