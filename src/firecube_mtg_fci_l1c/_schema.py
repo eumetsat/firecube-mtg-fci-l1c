@@ -28,7 +28,7 @@ from firecube.ingestor.api import (  # pyright: ignore[reportMissingImports]
 )
 
 from ._constants import CONSTANTS
-from ._group_plan import group_name
+from ._group_plan import group_name, stripe_window
 from .config import MtgFciL1cConfig
 
 if TYPE_CHECKING:
@@ -65,6 +65,23 @@ class VariableContext:
     # Per-slot satellite position (SLOT_GEOMETRY_SOURCES names) and
     # sun_earth_distance. None outside the time phase.
     slot_geometry: dict[str, float] | None = None
+    # Full-disk rows (start, stop) of the group's y axis; None is the full disk.
+    y_window: tuple[int, int] | None = None
+
+    @property
+    def y_start(self) -> int:
+        """First full-disk row of the group's y axis."""
+        return 0 if self.y_window is None else self.y_window[0]
+
+    @property
+    def y_stop(self) -> int:
+        """End (exclusive) full-disk row of the group's y axis."""
+        return self.dimsize if self.y_window is None else self.y_window[1]
+
+    @property
+    def ny(self) -> int:
+        """Length of the group's y axis."""
+        return self.y_stop - self.y_start
 
 
 @dataclasses.dataclass(frozen=True)
@@ -114,34 +131,71 @@ def _copy_attrs(attrs: Mapping[str, Any] | None) -> dict[str, Any] | None:
     return dict(attrs) if attrs is not None else None
 
 
-def _group_attrs(resolution: str) -> dict[str, str]:
-    """Global attributes for the group holding one resolution."""
-    return {
+def _group_attrs(
+    resolution: str,
+    body_chunks: list[int] | None = None,
+    y_window: tuple[int, int] | None = None,
+) -> dict[str, Any]:
+    """Global attributes for the group holding one resolution.
+
+    A stripe store also records its BODY chunk range and the full-disk rows
+    its y axis holds.
+    """
+    attrs: dict[str, Any] = {
         "Conventions": "CF-1.8",
         "title": f"MTG FCI Level 1C effective radiances ({resolution})",
         "institution": "EUMETSAT",
         "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
         "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
     }
+    if body_chunks is not None and y_window is not None:
+        attrs["body_chunks"] = [int(n) for n in body_chunks]
+        attrs["disk_row_start"] = int(y_window[0])
+        attrs["disk_row_stop"] = int(y_window[1])
+    return attrs
 
 
 def _byte_budgeted_4d_shard(
     chunks: tuple[int, int, int, int],
     dtype: Any,
     *,
-    dimsize: int,
+    y_extent: int,
     target_bytes: int,
 ) -> tuple[int, int, int, int]:
-    """Return a chunk-aligned 4-D shard near the byte target, growing only y."""
+    """Return a chunk-aligned 4-D shard near the byte target, growing only y.
+
+    The shard holds at most ``y_extent // chunk_y`` chunks along y, and never
+    fewer than one chunk.
+    """
     itemsize = np.dtype(dtype).itemsize
     chunk_y = chunks[1]
     chunk_bytes = math.prod(chunks) * itemsize
     if chunk_bytes >= target_bytes:
         return chunks
     multiples = max(1, target_bytes // chunk_bytes)
-    cap = max(1, dimsize // chunk_y)
+    cap = max(1, y_extent // chunk_y)
     shard_y = max(chunk_y, min(multiples, cap) * chunk_y)
     return (chunks[0], shard_y, chunks[2], chunks[3])
+
+
+def _validate_shard_override_window(
+    shards: tuple[int, ...],
+    chunks: tuple[int, ...],
+    *,
+    ny: int,
+    group: str,
+    name: str,
+) -> None:
+    """Raise if a shard override is taller than a stripe's y axis in whole chunks."""
+    chunk_y = chunks[1]
+    max_shard_y = -(-ny // chunk_y) * chunk_y
+    if shards[1] > max_shard_y:
+        raise ValueError(
+            f"zarr_shard_overrides[{group!r}] shard y {shards[1]} exceeds the "
+            f"body_chunks stripe of {ny} rows ({max_shard_y} rows in whole "
+            f"chunks of {chunk_y}) for array {name!r}. Use a shard y <= "
+            f"{max_shard_y}, or drop the shard override."
+        )
 
 
 def _validate_shard_override(
@@ -167,12 +221,14 @@ def _validate_shard_override(
             )
 
 
-def _static_2d_chunks(dimsize: int, dtype: Any, target_bytes: int) -> tuple[int, int]:
-    """Return full-width row chunks for a large static ``(y, x)`` grid."""
+def _static_2d_chunks(
+    rows: int, cols: int, dtype: Any, target_bytes: int
+) -> tuple[int, int]:
+    """Return full-width row chunks for a large static ``(rows, cols)`` grid."""
     itemsize = np.dtype(dtype).itemsize
-    row_bytes = dimsize * itemsize
-    tile_y = max(1, min(dimsize, target_bytes // max(1, row_bytes)))
-    return (tile_y, dimsize)
+    row_bytes = cols * itemsize
+    tile_y = max(1, min(rows, target_bytes // max(1, row_bytes)))
+    return (tile_y, cols)
 
 
 def _variable_dtype(
@@ -243,17 +299,25 @@ def _build_array_time_yx_channel(
         _validate_shard_override(
             shard_override, chunks4, group=override_key, name=spec.variable.name
         )
+        if ctx.y_window is not None:
+            _validate_shard_override_window(
+                shard_override,
+                chunks4,
+                ny=ctx.ny,
+                group=override_key,
+                name=spec.variable.name,
+            )
         shards = shard_override
     else:
         shards = _byte_budgeted_4d_shard(
             chunks4,
             spec.dtype,
-            dimsize=ctx.dimsize,
+            y_extent=ctx.ny,
             target_bytes=ctx.config.zarr_shard_target_bytes,
         )
     return ZarrArraySpec(
         name=spec.variable.name,
-        shape=(1, ctx.dimsize, ctx.dimsize, ctx.n_channels),
+        shape=(1, ctx.ny, ctx.dimsize, ctx.n_channels),
         dtype=spec.dtype,
         chunks=chunks4,
         fill_value=spec.fill_value,
@@ -299,10 +363,10 @@ def _build_array_yx(spec: _ArraySpecInputs, ctx: VariableContext) -> ZarrArraySp
     """Build the ``(y, x)`` static-grid array spec (e.g. latitude/longitude)."""
     return ZarrArraySpec(
         name=spec.variable.name,
-        shape=(ctx.dimsize, ctx.dimsize),
+        shape=(ctx.ny, ctx.dimsize),
         dtype=spec.dtype,
         chunks=_static_2d_chunks(
-            ctx.dimsize, spec.dtype, ctx.config.zarr_shard_target_bytes
+            ctx.ny, ctx.dimsize, spec.dtype, ctx.config.zarr_shard_target_bytes
         ),
         fill_value=spec.fill_value,
         shards=None,
@@ -327,12 +391,17 @@ def _build_array_channel(spec: _ArraySpecInputs, ctx: VariableContext) -> ZarrAr
 
 
 def _build_array_axis_1d(spec: _ArraySpecInputs, ctx: VariableContext) -> ZarrArraySpec:
-    """Build the ``(x,)`` or ``(y,)`` GEOS projection-angle coordinate spec."""
+    """Build the ``(x,)`` or ``(y,)`` GEOS projection-angle coordinate spec.
+
+    ``x`` is always full width; ``y`` spans the group's rows (a stripe's
+    window, or the full disk).
+    """
+    extent = ctx.ny if spec.dims == ("y",) else ctx.dimsize
     return ZarrArraySpec(
         name=spec.variable.name,
-        shape=(ctx.dimsize,),
+        shape=(extent,),
         dtype=spec.dtype,
-        chunks=(ctx.dimsize,),
+        chunks=(extent,),
         # ZarrArraySpec accepts None, preserving coord vars without _FillValue.
         fill_value=spec.fill_value,
         time_indexed=False,
@@ -431,6 +500,7 @@ def build_specs(config: MtgFciL1cConfig, product_type: str) -> list[ZarrGroupSpe
         logical_channels: tuple[str, ...] = tuple(res_info["channels"])  # type: ignore[arg-type]
         if channel_selection is not None:
             logical_channels = tuple(channel_selection[resolution])
+        y_window = stripe_window(config, product_type, resolution, dimsize)
 
         ctx = VariableContext(
             group=group,
@@ -440,6 +510,7 @@ def build_specs(config: MtgFciL1cConfig, product_type: str) -> list[ZarrGroupSpe
             dimsize=dimsize,
             n_channels=len(logical_channels),
             logical_channels=logical_channels,
+            y_window=y_window,
         )
         enabled_variables = [
             variable
@@ -454,7 +525,7 @@ def build_specs(config: MtgFciL1cConfig, product_type: str) -> list[ZarrGroupSpe
                     for variable in enabled_variables
                 ],
                 coord_names=_coord_names_for(enabled_variables, TIME_COORD_NAME),
-                attrs=_group_attrs(resolution),
+                attrs=_group_attrs(resolution, config.body_chunks, y_window),
             )
         )
     return group_specs

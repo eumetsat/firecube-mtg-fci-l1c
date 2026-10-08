@@ -20,6 +20,7 @@ import pickle
 
 import numpy as np
 import pytest
+import zarr
 
 from firecube_mtg_fci_l1c.config import MtgFciL1cConfig
 from firecube_mtg_fci_l1c._variables import (
@@ -884,3 +885,318 @@ def test_warm_calibration_declared_only_in_groups_with_ir38(
     for group_spec in specs:
         names = {a.name for a in group_spec.arrays}
         assert {"slope", "offset"} <= names, group_spec.group
+
+
+# ─────────────────────────────────────────────────────────────
+# Group 11: body_chunks stripe stores (schema, static coordinates, identity)
+# ─────────────────────────────────────────────────────────────
+
+# Expected windows, written out from the BODY chunk row table: chunks 32-40
+# start at full-disk row 8649 (1 km), 4324 (2 km) and 17299 (HRFI 500 m), and
+# chunk 40 ends at the disk edge. The window starts at the output chunk that
+# holds that row: 31 * 278 = 8618, 31 * 139 = 4309, 31 * 556 = 17236.
+_STRIPE_32_40 = [
+    # product, resolution, dimsize, chunk_y, n_channels, window start, window stop
+    ("FDHSI", "1km", 11136, 278, 8, 8618, 11136),
+    ("FDHSI", "2km", 5568, 139, 8, 4309, 5568),
+    ("HRFI", "500m", 22272, 556, 2, 17236, 22272),
+    ("HRFI", "1km", 11136, 278, 2, 8618, 11136),
+]
+
+
+def _group_arrays(specs: list, group: str) -> tuple[dict, dict]:
+    group_spec = next(g for g in specs if g.group == group)
+    return dict(group_spec.attrs or {}), {a.name: a for a in group_spec.arrays}
+
+
+def _static_payloads(config: MtgFciL1cConfig, product_type: str) -> dict:
+    """Resolve every static write intent the ingestor emits for *config*."""
+    from firecube_mtg_fci_l1c._group_plan import resolve_group_plans
+    from firecube_mtg_fci_l1c.ingestor import MtgFciL1cIngestor
+
+    ingestor = MtgFciL1cIngestor()
+    ingestor.plugin_config = config
+    plans = resolve_group_plans(config, product_type)
+    intents = ingestor._emit_static_intents(config, product_type, plans)
+    return {(intent.group, intent.array): intent.data() for intent in intents}
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("product_type", "resolution", "dimsize", "chunk_y", "n_ch", "start", "stop"),
+    _STRIPE_32_40,
+)
+def test_stripe_arrays_span_the_window_snapped_to_the_groups_chunk_grid(
+    product_type: str,
+    resolution: str,
+    dimsize: int,
+    chunk_y: int,
+    n_ch: int,
+    start: int,
+    stop: int,
+) -> None:
+    group = f"data_{resolution}"
+    full_attrs, full = _group_arrays(
+        build_specs(MtgFciL1cConfig(product_type=product_type), product_type), group
+    )
+    attrs, arrays = _group_arrays(
+        build_specs(
+            MtgFciL1cConfig(product_type=product_type, body_chunks=[32, 40]),
+            product_type,
+        ),
+        group,
+    )
+    ny = stop - start
+
+    assert start % chunk_y == 0
+    for name in ("counts", "pixel_quality", "pixel_time"):
+        array = arrays[name]
+        assert array.shape == (1, ny, dimsize, n_ch), name
+        # Same chunk grid as the full-disk store: chunk boundaries coincide.
+        assert array.chunks == full[name].chunks == (1, chunk_y, dimsize, 1)
+        # Shards: whole chunks, no taller than the window in whole chunks.
+        assert array.shards is not None
+        assert array.shards[1] % chunk_y == 0, name
+        assert array.shards[1] <= -(-ny // chunk_y) * chunk_y, name
+        assert array.shards[2:] == array.chunks[2:], name
+        # Zarr itself rejects a shard that is not a whole number of chunks.
+        created = zarr.create_array(
+            store=zarr.storage.MemoryStore(),
+            shape=array.shape,
+            chunks=array.chunks,
+            shards=array.shards,
+            dtype=array.dtype,
+            fill_value=array.fill_value,
+        )
+        assert created.shape == array.shape
+    for name in ("latitude", "longitude"):
+        assert arrays[name].shape == (ny, dimsize), name
+        assert arrays[name].chunks[1] == dimsize
+        assert arrays[name].chunks[0] <= ny
+    assert arrays["y"].shape == arrays["y"].chunks == (ny,)
+    assert arrays["x"].shape == full["x"].shape == (dimsize,)
+    assert attrs["body_chunks"] == [32, 40]
+    assert attrs["disk_row_start"] == start
+    assert attrs["disk_row_stop"] == stop
+    assert {"body_chunks", "disk_row_start", "disk_row_stop"}.isdisjoint(full_attrs)
+    assert {k: v for k, v in attrs.items() if k in full_attrs} == full_attrs
+
+
+@pytest.mark.unit
+def test_stripe_window_start_is_floor_of_chunk_32_first_row() -> None:
+    """Chunk 32 starts at 1 km row 8649; with zarr_chunk_y=200 the window starts at 8600."""
+    attrs, arrays = _group_arrays(
+        build_specs(
+            MtgFciL1cConfig(
+                product_type="FDHSI",
+                resolutions="1km",
+                zarr_chunk_y=200,
+                body_chunks=[32, 40],
+            ),
+            "FDHSI",
+        ),
+        "data_1km",
+    )
+    assert attrs["disk_row_start"] == 8600
+    assert attrs["disk_row_stop"] == 11136
+    assert arrays["counts"].shape[1] == 2536
+    assert arrays["counts"].chunks[1] == 200
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("product_type", "body_chunks", "expected"),
+    [
+        # Chunk 40 ends at the disk edge: the window stops at dimsize, not at
+        # the next multiple of the chunk height (11120 + 278 > 11136).
+        ("FDHSI", [40, 40], {"data_1km": (10842, 11136), "data_2km": (5421, 5568)}),
+        ("HRFI", [40, 40], {"data_500m": (21684, 22272), "data_1km": (10842, 11136)}),
+        # Chunk 1 starts at row 0; the 2 km chunks 1-3 end exactly on a chunk edge.
+        ("FDHSI", [1, 3], {"data_1km": (0, 1112), "data_2km": (0, 417)}),
+    ],
+)
+def test_stripe_window_at_the_disk_edges(
+    product_type: str, body_chunks: list[int], expected: dict[str, tuple[int, int]]
+) -> None:
+    specs = build_specs(
+        MtgFciL1cConfig(product_type=product_type, body_chunks=body_chunks),
+        product_type,
+    )
+    for group, (start, stop) in expected.items():
+        attrs, arrays = _group_arrays(specs, group)
+        assert (attrs["disk_row_start"], attrs["disk_row_stop"]) == (start, stop)
+        assert arrays["counts"].shape[1] == stop - start
+        assert arrays["latitude"].shape[0] == stop - start
+        assert arrays["y"].shape == (stop - start,)
+
+
+@pytest.mark.unit
+def test_stripe_shard_budget_is_capped_by_window_height() -> None:
+    """1 km counts: the byte budget allows 21 chunks; the 2518-row window holds 9."""
+    _full_attrs, full = _group_arrays(
+        build_specs(MtgFciL1cConfig(product_type="FDHSI"), "FDHSI"), "data_1km"
+    )
+    _attrs, stripe = _group_arrays(
+        build_specs(
+            MtgFciL1cConfig(product_type="FDHSI", body_chunks=[32, 40]), "FDHSI"
+        ),
+        "data_1km",
+    )
+    assert full["counts"].shards == (1, 21 * 278, 11136, 1)
+    assert stripe["counts"].shards == (1, 9 * 278, 11136, 1)
+
+
+@pytest.mark.unit
+def test_stripe_inside_the_last_partial_chunk_keeps_the_chunk_height() -> None:
+    """zarr_chunk_y=400: the last 1 km output chunk is [10800, 11136), 336 rows.
+
+    Chunk 40 lies inside it, so the window is one partial chunk. The chunk
+    height stays 400 (the full-disk grid) and the shard is that one chunk.
+    """
+    attrs, arrays = _group_arrays(
+        build_specs(
+            MtgFciL1cConfig(
+                product_type="FDHSI",
+                resolutions="1km",
+                zarr_chunk_y=400,
+                body_chunks=[40, 40],
+            ),
+            "FDHSI",
+        ),
+        "data_1km",
+    )
+    counts = arrays["counts"]
+    assert (attrs["disk_row_start"], attrs["disk_row_stop"]) == (10800, 11136)
+    assert counts.shape == (1, 336, 11136, 8)
+    assert counts.chunks == (1, 400, 11136, 1)
+    assert counts.shards == (1, 400, 11136, 1)
+    created = zarr.create_array(
+        store=zarr.storage.MemoryStore(),
+        shape=counts.shape,
+        chunks=counts.chunks,
+        shards=counts.shards,
+        dtype=counts.dtype,
+        fill_value=counts.fill_value,
+    )
+    created[0, 330:336, :, 0] = 7
+    assert int(created[0, 335, 0, 0]) == 7
+
+
+@pytest.mark.unit
+def test_stripe_rejects_a_shard_override_taller_than_the_window() -> None:
+    # chunk 556: window [8340, 11136) is 2796 rows, 6 whole chunks = 3336 rows.
+    def config(shard_y: int, body_chunks: list[int] | None) -> MtgFciL1cConfig:
+        return MtgFciL1cConfig(
+            product_type="FDHSI",
+            resolutions="1km",
+            zarr_chunk_overrides={"data_1km": (1, 556, 11136, 1)},
+            zarr_shard_overrides={"data_1km": (1, shard_y, 11136, 1)},
+            body_chunks=body_chunks,
+        )
+
+    _attrs, arrays = _group_arrays(
+        build_specs(config(3336, [32, 40]), "FDHSI"), "data_1km"
+    )
+    assert arrays["counts"].shape[1] == 2796
+    assert arrays["counts"].shards == (1, 3336, 11136, 1)
+
+    with pytest.raises(ValueError, match="exceeds the body_chunks stripe of 2796 rows"):
+        build_specs(config(3892, [32, 40]), "FDHSI")
+    # The full-disk recipe keeps working without body_chunks.
+    _attrs, full = _group_arrays(build_specs(config(11120, None), "FDHSI"), "data_1km")
+    assert full["counts"].shards == (1, 11120, 11136, 1)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("product_type", "resolutions", "starts"),
+    [
+        ("FDHSI", None, {"data_1km": 8618, "data_2km": 4309}),
+        ("HRFI", None, {"data_500m": 17236, "data_1km": 8618}),
+    ],
+)
+def test_stripe_projection_axes_are_the_full_disk_values_of_the_window(
+    product_type: str, resolutions: str | None, starts: dict[str, int]
+) -> None:
+    common = {
+        "product_type": product_type,
+        "resolutions": resolutions,
+        "include_geolocation": False,
+    }
+    full = _static_payloads(MtgFciL1cConfig(**common), product_type)
+    stripe_config = MtgFciL1cConfig(**common, body_chunks=[32, 40])
+    stripe = _static_payloads(stripe_config, product_type)
+    specs = build_specs(stripe_config, product_type)
+
+    for group, start in starts.items():
+        _attrs, arrays = _group_arrays(specs, group)
+        ny = arrays["y"].shape[0]
+        y = stripe[(group, "y")]
+        assert y.shape == (ny,)
+        np.testing.assert_array_equal(y, full[(group, "y")][start : start + ny])
+        np.testing.assert_array_equal(stripe[(group, "x")], full[(group, "x")])
+
+
+@pytest.mark.unit
+def test_stripe_latitude_longitude_are_the_full_disk_rows_of_the_window() -> None:
+    common = {"product_type": "FDHSI", "resolutions": "2km"}
+    full = _static_payloads(MtgFciL1cConfig(**common), "FDHSI")
+    stripe = _static_payloads(MtgFciL1cConfig(**common, body_chunks=[32, 40]), "FDHSI")
+
+    for name in ("latitude", "longitude"):
+        window = stripe[("data_2km", name)]
+        assert window.shape == (1259, 5568), name
+        assert window.dtype == np.float32
+        np.testing.assert_array_equal(window, full[("data_2km", name)][4309:5568])
+    # The window reaches the southern limb: off-disk pixels stay NaN.
+    assert np.isnan(stripe[("data_2km", "latitude")][-1, 0])
+
+
+@pytest.mark.unit
+def test_stripe_token_separates_store_identities() -> None:
+    from types import SimpleNamespace
+
+    from firecube_mtg_fci_l1c.ingestor import MtgFciL1cIngestor
+
+    def index_name(**kwargs: object) -> str:
+        ingestor = MtgFciL1cIngestor()
+        ingestor.plugin_config = MtgFciL1cConfig(time_slots=144, **kwargs)  # type: ignore[arg-type]
+        spec = ingestor.index_spec(SimpleNamespace(source="/tmp"))  # type: ignore[arg-type]
+        assert spec is not None
+        return spec.name
+
+    full = index_name(product_type="FDHSI")
+    stripe = index_name(product_type="FDHSI", body_chunks=[32, 40])
+    other = index_name(product_type="FDHSI", body_chunks=[30, 40])
+    flat = index_name(
+        product_type="FDHSI", resolutions="1km", flat_store=True, body_chunks=[32, 40]
+    )
+
+    assert full == "eumetsat_repeat_cycle_v1"
+    assert stripe == "eumetsat_repeat_cycle_v1_stripe_c32_40"
+    assert other == "eumetsat_repeat_cycle_v1_stripe_c30_40"
+    assert flat == "eumetsat_repeat_cycle_v1_fdhsi_1km_stripe_c32_40"
+    assert index_name(product_type="HRFI", body_chunks=[32, 40]) == stripe
+
+
+@pytest.mark.unit
+def test_slice_meta_tells_stripes_and_partial_modes_apart() -> None:
+    from types import SimpleNamespace
+
+    from firecube_mtg_fci_l1c.ingestor import MtgFciL1cIngestor
+
+    def meta(**kwargs: object) -> dict:
+        ingestor = MtgFciL1cIngestor()
+        ingestor.plugin_config = MtgFciL1cConfig(product_type="FDHSI", **kwargs)  # type: ignore[arg-type]
+        values = ingestor.slice_meta(SimpleNamespace(options={}))  # type: ignore[arg-type]
+        return {key: values[key] for key in ingestor.slice_meta_keys()}
+
+    full = meta()
+    stripe = meta(body_chunks=[32, 40])
+    error_mode = meta(partial_chunk="error")
+
+    assert full["body_chunks"] is None
+    assert stripe["body_chunks"] == [32, 40]
+    assert full["partial_chunk"] == "fill"
+    assert error_mode["partial_chunk"] == "error"
+    assert stripe != full != error_mode

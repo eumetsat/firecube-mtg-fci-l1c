@@ -78,6 +78,7 @@ from ._ephemeris import sun_earth_distance_au
 from ._group_plan import (
     GroupPlan,
     group_name,
+    stripe_token,
     validate_effective_resolutions,
     resolve_group_plans,
 )
@@ -356,6 +357,11 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             # grid goes into the index identity to keep them from being appended to
             # each other.
             name = "_".join([name, product_type.lower(), *resolutions])
+        token = stripe_token(config)
+        if token is not None:
+            # A stripe store holds only its window's rows, so stores of different
+            # windows (or a full-disk store) must not be appended to each other.
+            name = "_".join([name, token])
         return IndexSpec(
             name=name,
             groups={group_name(res, config.flat_store): axis for res in resolutions},
@@ -512,6 +518,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                 n_channels=len(plan.logical_channels),
                 logical_channels=plan.logical_channels,
                 geo_provider=self._geo_provider if config.include_geolocation else None,
+                y_window=plan.y_window,
             )
 
             pending: list[tuple[Any, Any]] = []
@@ -1164,6 +1171,8 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             "scratch_dir",
             "zarr_chunk_y",
             "time_epoch",
+            "body_chunks",
+            "partial_chunk",
         ]
 
     def slice_meta(self, ctx: PluginContext) -> dict[str, Any]:
@@ -1181,6 +1190,10 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             "scratch_dir": config.scratch_dir,
             "zarr_chunk_y": config.zarr_chunk_y,
             "time_epoch": config.time_epoch,
+            "body_chunks": (
+                None if config.body_chunks is None else list(config.body_chunks)
+            ),
+            "partial_chunk": config.partial_chunk,
         }
 
     def filter_item(self, item: Any, ctx: PluginContext) -> bool:

@@ -22,13 +22,40 @@ from firecube.ingestor.api import (  # pyright: ignore[reportMissingImports]
     ConfigurationError,
 )
 
-from ._constants import CONSTANTS, PRODUCT_TYPE_FDHSI, VALID_RESOLUTIONS
+from ._constants import CONSTANTS, PRODUCT_TYPE_FDHSI, VALID_RESOLUTIONS, stripe_rows
 from .config import MtgFciL1cConfig
 
 
 def group_name(resolution: str, flat: bool) -> str:
     """Return the Zarr group for *resolution*: ``data_<res>``, or ``""`` (root) if flat."""
     return "" if flat else f"data_{resolution}"
+
+
+def stripe_window(
+    config: MtgFciL1cConfig, product_type: str, resolution: str, dimsize: int
+) -> tuple[int, int] | None:
+    """Return the group's ``(start, stop)`` full-disk rows, or ``None`` for the full disk.
+
+    The rows of BODY chunks ``config.body_chunks`` are widened to whole output
+    chunks of this group (its own chunk height), so the stripe store's chunk
+    boundaries are the full-disk store's. ``stop`` is capped at ``dimsize``.
+    """
+    if config.body_chunks is None:
+        return None
+    first, last = config.body_chunks
+    row_start, row_stop = stripe_rows(product_type, resolution, first, last)
+    chunk_y = config.get_group_chunk_shape(resolution)[1]
+    start = (row_start // chunk_y) * chunk_y
+    stop = min(-(-row_stop // chunk_y) * chunk_y, dimsize)
+    return start, stop
+
+
+def stripe_token(config: MtgFciL1cConfig) -> str | None:
+    """Return the store-identity token for ``body_chunks``, e.g. ``stripe_c32_40``."""
+    if config.body_chunks is None:
+        return None
+    first, last = config.body_chunks
+    return f"stripe_c{first}_{last}"
 
 
 def validate_effective_resolutions(config: MtgFciL1cConfig, product_type: str) -> None:
@@ -63,6 +90,23 @@ class GroupPlan:
     dimsize: int
     logical_channels: tuple[str, ...]
     nc_channels: tuple[str, ...]
+    # Full-disk rows (start, stop) the group's arrays hold; None is the full disk.
+    y_window: tuple[int, int] | None = None
+
+    @property
+    def y_start(self) -> int:
+        """First full-disk row of the group's y axis."""
+        return 0 if self.y_window is None else self.y_window[0]
+
+    @property
+    def y_stop(self) -> int:
+        """End (exclusive) full-disk row of the group's y axis."""
+        return self.dimsize if self.y_window is None else self.y_window[1]
+
+    @property
+    def ny(self) -> int:
+        """Length of the group's y axis."""
+        return self.y_stop - self.y_start
 
 
 def resolve_group_plans(
@@ -94,14 +138,16 @@ def resolve_group_plans(
             logical = logical_all
             nc = nc_all
 
+        dimsize = int(info["dimsize"])
         plans.append(
             GroupPlan(
                 product_type=pt,
                 resolution=res,
                 group=group_name(res, config.flat_store),
-                dimsize=int(info["dimsize"]),
+                dimsize=dimsize,
                 logical_channels=logical,
                 nc_channels=nc,
+                y_window=stripe_window(config, pt, res, dimsize),
             )
         )
     return plans

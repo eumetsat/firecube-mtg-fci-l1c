@@ -122,3 +122,113 @@ def test_lat_lon_provider_reuses_npz_loader_for_repeated_resolution(monkeypatch)
     provider.get_lat_lon("grids.npz", 1000)
 
     assert created == ["grids.npz"]
+
+
+def _quiet_logger() -> SimpleNamespace:
+    return SimpleNamespace(warning=lambda *_args, **_kwargs: None)
+
+
+def _cached_arrays(provider: LatLonProvider) -> list[np.ndarray]:
+    return [array for pair in provider._cache.values() for array in pair]
+
+
+@pytest.mark.unit
+def test_lat_lon_rows_equal_the_full_disk_rows_and_cache_only_them(geo_2km):
+    lat_full, lon_full = geo_2km
+    provider = LatLonProvider(_quiet_logger())
+
+    lat, lon = provider.get_lat_lon(None, 2000, rows=(4309, 5568))
+
+    np.testing.assert_array_equal(lat, lat_full[4309:5568])
+    np.testing.assert_array_equal(lon, lon_full[4309:5568])
+    assert lat.dtype == lon.dtype == np.float32
+    cached = _cached_arrays(provider)
+    assert len(cached) == 2
+    for array in cached:
+        assert array.shape == (1259, 5568)
+        # Owns its memory: no view keeping a full-disk base alive.
+        assert array.base is None
+    assert sum(array.nbytes for array in cached) == 2 * 1259 * 5568 * 4
+
+
+@pytest.mark.unit
+def test_lat_lon_rows_release_the_full_disk_pair(monkeypatch):
+    import gc
+    import weakref
+
+    import firecube_mtg_fci_l1c.geolocation.provider as provider_mod
+
+    refs: list[weakref.ref] = []
+
+    def fake_compute_latlon(_resolution_m: int) -> tuple[np.ndarray, np.ndarray]:
+        lat = np.arange(48, dtype=np.float32).reshape(8, 6)
+        lon = -lat
+        refs.extend([weakref.ref(lat), weakref.ref(lon)])
+        return lat, lon
+
+    monkeypatch.setattr(provider_mod, "compute_latlon", fake_compute_latlon)
+    provider = LatLonProvider(_quiet_logger())
+
+    lat, lon = provider.get_lat_lon(None, 2000, rows=(2, 5))
+    gc.collect()
+
+    np.testing.assert_array_equal(
+        lat, np.arange(12, 30, dtype=np.float32).reshape(3, 6)
+    )
+    np.testing.assert_array_equal(lon, -lat)
+    assert len(refs) == 2
+    assert all(ref() is None for ref in refs), "full-disk pair still referenced"
+    assert [array.shape for array in _cached_arrays(provider)] == [(3, 6), (3, 6)]
+
+
+@pytest.mark.unit
+def test_lat_lon_rows_from_a_grids_file(tmp_path):
+    grids_file = tmp_path / "grids.npz"
+    lat_full = np.arange(24, dtype=np.float32).reshape(6, 4)
+    np.savez_compressed(grids_file, **{"2km_lat": lat_full, "2km_lon": lat_full + 100})
+    provider = LatLonProvider(_quiet_logger())
+
+    lat, lon = provider.get_lat_lon(str(grids_file), 2000, rows=(2, 5))
+
+    np.testing.assert_array_equal(lat, lat_full[2:5])
+    np.testing.assert_array_equal(lon, lat_full[2:5] + 100)
+    assert [array.shape for array in _cached_arrays(provider)] == [(3, 4), (3, 4)]
+
+
+@pytest.mark.unit
+def test_lat_lon_rows_reuse_a_cached_full_disk_pair(monkeypatch):
+    import firecube_mtg_fci_l1c.geolocation.provider as provider_mod
+
+    calls: list[int] = []
+
+    def fake_compute_latlon(resolution_m: int) -> tuple[np.ndarray, np.ndarray]:
+        calls.append(resolution_m)
+        lat = np.arange(20, dtype=np.float32).reshape(5, 4)
+        return lat, lat + 1
+
+    monkeypatch.setattr(provider_mod, "compute_latlon", fake_compute_latlon)
+    provider = LatLonProvider(_quiet_logger())
+
+    full_lat, _full_lon = provider.get_lat_lon(None, 2000)
+    lat, _lon = provider.get_lat_lon(None, 2000, rows=(1, 3))
+    provider.get_lat_lon(None, 2000, rows=(1, 3))
+
+    assert calls == [2000]
+    np.testing.assert_array_equal(lat, full_lat[1:3])
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("rows", [(0, 9), (3, 3), (-1, 2), (4, 2)])
+def test_lat_lon_rows_outside_the_grid_raise(monkeypatch, rows):
+    import firecube_mtg_fci_l1c.geolocation.provider as provider_mod
+
+    def fake_compute_latlon(_resolution_m: int) -> tuple[np.ndarray, np.ndarray]:
+        lat = np.zeros((8, 3), dtype=np.float32)
+        return lat, lat
+
+    monkeypatch.setattr(provider_mod, "compute_latlon", fake_compute_latlon)
+    provider = LatLonProvider(_quiet_logger())
+
+    with pytest.raises(ValueError, match="rows"):
+        provider.get_lat_lon(None, 2000, rows=rows)
+    assert provider._cache == {}
