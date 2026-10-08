@@ -1180,7 +1180,7 @@ def test_stripe_token_separates_store_identities() -> None:
 
 
 @pytest.mark.unit
-def test_slice_meta_tells_stripes_and_partial_modes_apart() -> None:
+def test_slice_meta_tells_stripes_apart_but_not_partial_modes() -> None:
     from types import SimpleNamespace
 
     from firecube_mtg_fci_l1c.ingestor import MtgFciL1cIngestor
@@ -1197,6 +1197,7 @@ def test_slice_meta_tells_stripes_and_partial_modes_apart() -> None:
 
     assert full["body_chunks"] is None
     assert stripe["body_chunks"] == [32, 40]
-    assert full["partial_chunk"] == "fill"
-    assert error_mode["partial_chunk"] == "error"
-    assert stripe != full != error_mode
+    assert stripe != full
+    # partial_chunk picks which rows of a partial scene are written; the slice
+    # is the same, so a mode change must still meet the resume guard.
+    assert error_mode == full

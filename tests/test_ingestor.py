@@ -14,6 +14,7 @@
 
 """Tests for MTG FCI L1C ingestor."""
 
+from collections.abc import Iterable
 from typing import Any, cast
 from pathlib import Path
 from types import SimpleNamespace
@@ -1106,11 +1107,14 @@ def _stripe_bundle(tmp_path: Path, rows_by_chunk: dict[int, tuple[int, int]]):
     return bundle
 
 
-def _build_scene_intents(bundle: Any, **options: Any) -> tuple[list[Any], dict]:
-    """Run build_write_intents on one bundle (FDHSI 1 km, vis_04 only).
+def _scene_writes(
+    item: Any, *, materialize: Any = Path, **options: Any
+) -> tuple[list[Any], dict]:
+    """Run build_write_intents on one item (FDHSI 1 km, vis_04 only).
 
-    Region payloads are resolved before batch cleanup; returns the region
-    intents as ``(array, y_slice, data)`` and the failure counters.
+    Payloads are resolved before batch cleanup; returns the slot and region
+    intents as ``(kind, array, y_slice or None, data)`` and the failure
+    counters. ``materialize`` stands in for ``ctx.materialize``.
     """
     from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig, MtgFciL1cIngestor
 
@@ -1123,20 +1127,38 @@ def _build_scene_intents(bundle: Any, **options: Any) -> tuple[list[Any], dict]:
         include_geolocation=False,
         **options,
     )
-    batch: Any = SimpleNamespace(items=[bundle], metadata={}, batch_id="batch_0000")
+    batch: Any = SimpleNamespace(items=[item], metadata={}, batch_id="batch_0000")
     ctx: Any = SimpleNamespace(
-        run_id="run-1", option=lambda *_a: None, materialize=Path
+        run_id="run-1", option=lambda *_a: None, materialize=materialize
     )
     try:
         intents = ingestor.build_write_intents(batch, ctx)
-        regions = [
-            (i.array, (i.y_slice.start, i.y_slice.stop), np.asarray(i.data()))
+        writes = [
+            (
+                i._kind,
+                i.array,
+                None if i.y_slice is None else (i.y_slice.start, i.y_slice.stop),
+                np.asarray(i.data() if callable(i.data) else i.data),
+            )
             for i in intents
-            if getattr(i, "_kind", None) == "region"
+            if getattr(i, "_kind", None) in ("slot", "region")
         ]
     finally:
         ingestor.cleanup_batch_data(batch, ctx)
-    return regions, batch.metadata["plugin_failure_counters"]
+    return writes, batch.metadata["plugin_failure_counters"]
+
+
+def _build_scene_intents(
+    bundle: Any, *, materialize: Any = Path, **options: Any
+) -> tuple[list[Any], dict]:
+    """Return a bundle's region intents as ``(array, y_slice, data)`` and counters."""
+    writes, counters = _scene_writes(bundle, materialize=materialize, **options)
+    regions = [
+        (array, y_slice, data)
+        for kind, array, y_slice, data in writes
+        if kind == "region"
+    ]
+    return regions, counters
 
 
 class TestPartialChunkOption:
@@ -1349,3 +1371,268 @@ def test_partial_chunk_fill_leaves_uncovered_rows_at_the_fill_value(
         assert counts.fill_value == np.iinfo(np.uint16).max
         np.testing.assert_array_equal(slot[:2], np.full((2, 4), 65535))
         np.testing.assert_array_equal(slot[2:], np.full((2, 4), value))
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+def test_partial_chunk_change_does_not_bypass_the_resume_conflict(
+    tmp_path: Path, small_fci_layout: list[int]
+):
+    import zarr
+    from firecube.ingestor.api import ResumeConflictError
+
+    from tests.test_integration import _run_ingest, _write_scene_chunks
+
+    first = tmp_path / "first"
+    _write_scene_chunks(first, start="20240101000002", cycle=1, values=(5, 6))
+    # The same scene again, with different pixel values so an overwrite shows.
+    second = tmp_path / "second"
+    _write_scene_chunks(second, start="20240101000002", cycle=1, values=(7, 8))
+    options: dict[str, object] = {"include_geolocation": False}
+
+    out = _run_ingest(first, tmp_path, {**options, "partial_chunk": "fill"})
+    before = np.asarray(zarr.open_group(str(out), mode="r")["data_1km"]["counts"][:])
+    np.testing.assert_array_equal(before[0, :2, :, 0], np.full((2, 4), 5))
+
+    with pytest.raises(ResumeConflictError, match="Existing entries"):
+        _run_ingest(
+            second,
+            tmp_path,
+            {**options, "partial_chunk": "error", "force_reingest": False},
+        )
+
+    after = np.asarray(zarr.open_group(str(out), mode="r")["data_1km"]["counts"][:])
+    np.testing.assert_array_equal(after, before)
+
+
+# --- Stripe read path (body_chunks) --------------------------------------------
+
+# Synthetic FDHSI 1 km grid: 24 rows, six BODY chunks of four rows. With
+# body_chunks=[3, 4] (rows [8, 16)) and 3-row output chunks the window is
+# [6, 18): BODY 2 and 5 reach into its edge chunks, BODY 1 and 6 lie outside.
+_STRIPE_TABLE = ((0, 4), (4, 8), (8, 12), (12, 16), (16, 20), (20, 24))
+_STRIPE_OPTIONS: dict[str, Any] = {"zarr_chunk_y": 3, "body_chunks": [3, 4]}
+
+
+@pytest.fixture
+def stripe_grid(monkeypatch):
+    """Patch FDHSI 1 km to the 24-row grid and its six-chunk row table."""
+    from firecube_mtg_fci_l1c import _constants as const_mod
+
+    monkeypatch.setitem(const_mod.CONSTANTS["FDHSI"]["1km"], "dimsize", 24)
+    monkeypatch.setitem(const_mod.BODY_CHUNK_ROWS["FDHSI"], "1km", _STRIPE_TABLE)
+
+
+def _stripe_parts(tmp_path: Path, numbers: Iterable[int]) -> Any:
+    return _stripe_bundle(tmp_path, {n: _STRIPE_TABLE[n - 1] for n in numbers})
+
+
+class _ReadSpy:
+    """Record the BODY chunk numbers each NCPartReader method was called for."""
+
+    METHODS = (
+        "read_channel_data",
+        "read_time_map",
+        "read_slot_geometry",
+        "read_calibration",
+    )
+
+    def __init__(self, monkeypatch) -> None:
+        from firecube_mtg_fci_l1c._decode import NCPartReader
+
+        self.chunks: dict[str, set[int]] = {name: set() for name in self.METHODS}
+        for name in self.METHODS:
+            monkeypatch.setattr(
+                NCPartReader, name, self._recording(name, getattr(NCPartReader, name))
+            )
+
+    def _recording(self, name: str, method: Any) -> Any:
+        from firecube_mtg_fci_l1c._data import parse_chunk_name
+
+        def record(reader: Any, *args: Any, **kwargs: Any) -> Any:
+            self.chunks[name].add(parse_chunk_name(reader.path).chunk_number)
+            return method(reader, *args, **kwargs)
+
+        return record
+
+
+def _region_rows(regions: list[Any], array: str) -> list[tuple[tuple, list[int]]]:
+    """Return ``(y_slice, disk rows of the data)`` of one array's region writes."""
+    return [
+        (y_slice, data[:, 0].astype(int).tolist())
+        for name, y_slice, data in regions
+        if name == array
+    ]
+
+
+@pytest.mark.usefixtures("stripe_grid")
+class TestStripeReadPath:
+    def test_parts_outside_the_window_get_no_pixel_read_but_root_tables(
+        self, tmp_path, monkeypatch
+    ):
+        bundle = _stripe_parts(tmp_path, range(1, 7))
+        spy = _ReadSpy(monkeypatch)
+
+        regions, counters = _build_scene_intents(bundle, **_STRIPE_OPTIONS)
+
+        assert counters["files_failed"] == 0
+        assert regions
+        assert spy.chunks["read_channel_data"] == {2, 3, 4, 5}
+        assert spy.chunks["read_time_map"] == {1, 2, 3, 4, 5, 6}
+        assert spy.chunks["read_slot_geometry"] == {1, 2, 3, 4, 5, 6}
+        # Calibration is attributes only; the first part in scene order has it.
+        assert spy.chunks["read_calibration"] == {1}
+
+    def test_region_y_slices_are_relative_to_the_window_start(self, tmp_path):
+        bundle = _stripe_parts(tmp_path, range(1, 7))
+
+        regions, _counters = _build_scene_intents(bundle, **_STRIPE_OPTIONS)
+
+        expected = [
+            ((0, 3), [6, 7, 8]),
+            ((3, 6), [9, 10, 11]),
+            ((6, 9), [12, 13, 14]),
+            ((9, 12), [15, 16, 17]),
+        ]
+        assert _region_rows(regions, "counts") == expected
+        for array in ("pixel_quality", "pixel_time"):
+            assert [y for name, y, _d in regions if name == array] == [
+                y for y, _rows in expected
+            ]
+
+    def test_fill_writes_the_covered_window_rows_around_a_missing_chunk(self, tmp_path):
+        bundle = _stripe_parts(tmp_path, [1, 2, 4, 5, 6])
+
+        regions, counters = _build_scene_intents(bundle, **_STRIPE_OPTIONS)
+
+        assert counters["files_failed"] == 0
+        # Window chunk [6, 9) keeps BODY 2's rows 6-7; [9, 12) meets no part.
+        assert _region_rows(regions, "counts") == [
+            ((0, 2), [6, 7]),
+            ((6, 9), [12, 13, 14]),
+            ((9, 12), [15, 16, 17]),
+        ]
+
+    def test_error_names_only_the_missing_chunk_inside_the_window(self, tmp_path):
+        # BODY 1, 3 and 6 are missing; only BODY 3's rows meet a window chunk
+        # that a present part also meets.
+        bundle = _stripe_parts(tmp_path, [2, 4, 5])
+
+        with pytest.raises(ConfigurationError) as excinfo:
+            _build_scene_intents(bundle, partial_chunk="error", **_STRIPE_OPTIONS)
+
+        assert "group 'data_1km' (1km) rows [8, 9); missing BODY chunk(s) 3. " in str(
+            excinfo.value
+        )
+
+    def test_error_mode_ignores_gaps_outside_the_window(self, tmp_path):
+        # BODY 6 is missing: full-disk chunk [18, 21) would have a gap, but it
+        # lies outside the window.
+        bundle = _stripe_parts(tmp_path, range(1, 6))
+
+        regions, counters = _build_scene_intents(
+            bundle, partial_chunk="error", **_STRIPE_OPTIONS
+        )
+
+        assert counters["files_failed"] == 0
+        assert [y for y, _rows in _region_rows(regions, "counts")] == [
+            (0, 3),
+            (3, 6),
+            (6, 9),
+            (9, 12),
+        ]
+
+    def test_scene_without_a_part_in_the_window_writes_nothing(self, tmp_path):
+        bundle = _stripe_parts(tmp_path, [1, 6])
+
+        writes, counters = _scene_writes(bundle, **_STRIPE_OPTIONS)
+
+        assert counters["files_failed"] == 0
+        assert writes == []
+
+    def test_part_rows_differing_from_the_row_table_fail_the_scene(self, tmp_path):
+        bundle = _stripe_bundle(tmp_path, {3: (8, 11), 4: (11, 16)})
+
+        writes, counters = _scene_writes(bundle, **_STRIPE_OPTIONS)
+
+        assert writes == []
+        assert counters["files_failed"] == 1
+        (error,) = counters["zip_errors"]
+        assert error.startswith(bundle.uri)
+        assert "BODY chunk 3" in error
+        assert "rows [8, 11)" in error
+        assert "row table gives [8, 12)" in error
+
+    def test_full_disk_ingest_does_not_check_the_row_table(self, tmp_path):
+        bundle = _stripe_bundle(tmp_path, {3: (8, 11), 4: (11, 16)})
+
+        regions, counters = _build_scene_intents(bundle, zarr_chunk_y=3)
+
+        assert counters["files_failed"] == 0
+        # Full-disk y_slices are disk rows; the odd rows are placed as read.
+        assert _region_rows(regions, "counts") == [
+            ((8, 9), [8]),
+            ((9, 12), [9, 10, 11]),
+            ((12, 15), [12, 13, 14]),
+            ((15, 16), [15]),
+        ]
+
+    def test_chunk_numbers_come_from_the_item_names_not_the_materialised_paths(
+        self, tmp_path
+    ):
+        # Core's remote materialiser caches each URI as <sha256[:16]>.nc, so
+        # the local file name carries no chunk number.
+        import hashlib
+        import shutil
+
+        chunks = tmp_path / "chunks"
+        cache = tmp_path / "_remote_cache"
+        chunks.mkdir()
+        cache.mkdir()
+        bundle = _stripe_parts(chunks, range(1, 7))
+
+        def hash_named_copy(item: str) -> Path:
+            target = cache / f"{hashlib.sha256(item.encode()).hexdigest()[:16]}.nc"
+            if not target.exists():
+                shutil.copy(item, target)
+            return target
+
+        renamed, counters = _build_scene_intents(
+            bundle, materialize=hash_named_copy, **_STRIPE_OPTIONS
+        )
+        original, _counters = _build_scene_intents(bundle, **_STRIPE_OPTIONS)
+
+        assert counters == {"files_processed": 1, "files_failed": 0, "zip_errors": []}
+        assert len(list(cache.glob("????????????????.nc"))) == 6
+        assert [(a, y) for a, y, _d in renamed] == [(a, y) for a, y, _d in original]
+        assert _region_rows(renamed, "counts") == [
+            ((0, 3), [6, 7, 8]),
+            ((3, 6), [9, 10, 11]),
+            ((6, 9), [12, 13, 14]),
+            ((9, 12), [15, 16, 17]),
+        ]
+        for (_a, _y, got), (_b, _z, want) in zip(renamed, original, strict=True):
+            np.testing.assert_array_equal(got, want)
+
+    def test_part_name_without_a_chunk_number_fails_the_scene(self, tmp_path):
+        import zipfile
+
+        from firecube_mtg_fci_l1c._constants import get_nc_part_prefix
+
+        part = tmp_path / "part.nc"
+        _write_disk_rows_chunk(part, _STRIPE_TABLE[2])
+        zip_path = tmp_path / (
+            "W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI1+FCI-1C-RRAD-FDHSI-FD--x-x---x_C_EUMT_"
+            "20240101000318_IDPFI_OPE_20240101000002_20240101000934_N__O_0001_0000.zip"
+        )
+        member = f"{get_nc_part_prefix('FDHSI')}0003.nc"
+        with zipfile.ZipFile(zip_path, "w") as zf:
+            zf.write(part, arcname=member)
+
+        writes, counters = _scene_writes(
+            str(zip_path), scratch_dir=str(tmp_path / "scratch"), **_STRIPE_OPTIONS
+        )
+
+        assert writes == []
+        (error,) = counters["zip_errors"]
+        assert f"Cannot read the BODY chunk number of {member}" in error
