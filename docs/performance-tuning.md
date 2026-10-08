@@ -8,10 +8,10 @@ tuning Zarr storage layout, or deploying multi-pod parallel ingestion.
 
 ## Prerequisites
 
-- Firecube ≥ 0.1.7 with `mtg_fci_l1c` installed.
+- Firecube ≥ 0.1.5 with `mtg_fci_l1c` installed.
 - A Zarr store target: `file:///` for local storage or `s3://` for object storage.
 - For parallel ingestion: all pods must have read access to the same input ZIP
-  or chunk files, and the Zarr store must be preallocated before the first pod starts.
+  files, and the Zarr store must be preallocated before the first pod starts.
 
 ---
 
@@ -144,8 +144,7 @@ would be ~3.8 GiB. Disable
   rejects (see [Default chunk heights](#default-chunk-heights)). Do not switch
   to `--write-mode staged` to avoid rewriting chunks in a populated store: a
   `staged` run replaces each output chunk or shard it writes, so rows an
-  earlier run stored there are lost. See
-  [Staged write mode](customization.md#staged-write-mode-takes-complete-scenes-only).
+  earlier run stored there are lost.
 
 ## Codec choice
 

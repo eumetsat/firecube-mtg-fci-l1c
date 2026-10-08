@@ -11,10 +11,10 @@ Full env-var reference for the script is in
 
 ## Prerequisites
 
-- Firecube ≥ 0.1.7 with the `mtg_fci_l1c` plugin installed.
+- Firecube ≥ 0.1.5 with the `mtg_fci_l1c` plugin installed.
 - Read access to FCI L1C `.zip` files, or to unpacked chunk `.nc` files, at
   `INPUT` (local path, `file://` URI, or `s3://` prefix); not both forms in one
-  `INPUT`. See [Input forms](../customization.md#input-forms). The same `INPUT`
+  `INPUT`. The same `INPUT`
   is passed to every pod.
 - For local `TARGET`: any writable local filesystem.
 - For S3 `TARGET`: Firecube installed with the `obstore` extra
@@ -130,8 +130,8 @@ those steps and adds fan-out, logging, and idempotent re-runs.
 | `--option resolutions=...` | `RESOLUTIONS` |
 | `--option flat_store=true` | `FLAT_STORE=1` (see [Flat store layout](../customization.md#flat-store-layout)) |
 | `--option product_type=...` | `PRODUCT_TYPE` (default `FDHSI`) |
-| `--option fci_chunks=[32,40]` | `FCI_CHUNKS=[32,40]` (see [Stripe stores](../customization.md#stripe-stores)) |
-| `--option partial_chunk=...` | `PARTIAL_CHUNK` (see [Partial scenes](../customization.md#partial-scenes)) |
+| `--option fci_chunks=[32,40]` | `FCI_CHUNKS=[32,40]` (see [FCI chunks](../customization.md#fci-chunks)) |
+| `--option partial_chunk=...` | `PARTIAL_CHUNK` |
 | `--slot-start`, `--slot-end` | `SLOT_START`, `SLOT_END` |
 | number of parallel processes | `PARALLELISM` |
 
@@ -191,7 +191,7 @@ Host requirement: `12 × 2.5 GiB = 30 GiB` RAM plus 12 cores. Reduce
 ## Unpacked Chunks And Stripes
 
 `INPUT` can point at unpacked chunk `.nc` files instead of ZIPs, locally or on
-S3 (see [Input forms](../customization.md#input-forms)). A scene is the chunk
+S3. A scene is the chunk
 files of one repeat cycle, and the slot window selects scenes exactly as it
 selects ZIPs. To keep only the northern stripe of the disk, add `FCI_CHUNKS`;
 `PARTIAL_CHUNK` is optional:
@@ -212,12 +212,10 @@ The script rejects an `FCI_CHUNKS` that is not two integers in brackets without
 spaces, and a `PARTIAL_CHUNK` other than `fill` or `error`, before it calls
 Firecube. Scenes that leave rows of the stripe or disk uncovered, such as
 chunks 32 to 40 alone, need the default `WRITE_MODE=direct`: with
-`WRITE_MODE=staged` they fail before anything is written (see
-[Staged write mode](../customization.md#staged-write-mode-takes-complete-scenes-only)). Remote chunks are downloaded into each pod's workspace.
+`WRITE_MODE=staged` they fail before anything is written. Remote chunks are downloaded into each pod's workspace.
 The script passes `--option cleanup_workspace=true` by default, so Firecube
 deletes each workspace directory at the end of its run. Set
-`CLEANUP_WORKSPACE=0` to keep the workspaces; see
-[Workspace cleanup](../customization.md#workspace-cleanup).
+`CLEANUP_WORKSPACE=0` to keep the workspaces.
 
 ## Multi-Host Scaling
 

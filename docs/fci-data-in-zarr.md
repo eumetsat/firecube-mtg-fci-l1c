@@ -46,7 +46,7 @@ ds = xr.open_zarr("fci-1km.zarr")
 Options, rules, and examples are in
 [Customization → Flat store layout](customization.md#flat-store-layout).
 
-### Stripe layout
+### FCI chunks
 
 A store ingested with `--option 'fci_chunks=[first,last]'` holds one band of
 the disk. Row 0 of the full disk is the southern edge, so a stripe of high
@@ -64,7 +64,7 @@ For `fci_chunks=[32,40]` of FDHSI, `data_1km` is `2518 × 11136` (disk rows
 8618 to 11136) and `data_2km` is `1259 × 5568` (disk rows 4309 to 5568).
 Groups created by `firecube ingest` also carry the attributes `fci_chunks`,
 `disk_row_start` and `disk_row_stop`. See
-[Customization → Stripe stores](customization.md#stripe-stores) for the option
+[Customization → FCI chunks](customization.md#fci-chunks) for the option
 and its limits.
 
 ## Variables

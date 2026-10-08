@@ -10,7 +10,7 @@ products into direct-region Zarr stores.
 | Install the plugin | [Installation](#installation) |
 | Run one local ingest | [Quickstart](#quickstart) |
 | Run production ingestion | [Production Ingestion](#production-ingestion) |
-| Ingest unpacked chunk files, or only a stripe of the disk | [Input forms](docs/customization.md#input-forms), [Stripe stores](docs/customization.md#stripe-stores) |
+| Store only some BODY chunks of the disk | [FCI chunks](docs/customization.md#fci-chunks) |
 | Navigate all docs | [docs/index.md](docs/index.md) |
 | Understand the Zarr layout, variables, channel names, and quality bits | [FCI Data in Zarr](docs/fci-data-in-zarr.md) |
 | Configure plugin options, script variables, grids, chunks, or shards | [Customization](docs/customization.md) |
@@ -75,9 +75,7 @@ firecube ingest mtg_fci_l1c \
 `--input-data` can also be a directory (or S3 prefix) of unpacked chunk `.nc`
 files instead of ZIPs, complete or partial. To store only a stripe of the disk,
 such as BODY chunks 32 to 40, add `--option 'fci_chunks=[32,40]'`. See
-[Input forms](docs/customization.md#input-forms),
-[Partial scenes](docs/customization.md#partial-scenes) and
-[Stripe stores](docs/customization.md#stripe-stores).
+[FCI chunks](docs/customization.md#fci-chunks).
 
 To ingest only one channel, pass the `channels` option:
 

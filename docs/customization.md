@@ -3,9 +3,7 @@
 Operator-facing plugin and production-script settings.
 
 - [Plugin `--option` flags](#plugin---option-flags)
-- [Input forms: ZIP files and unpacked chunks](#input-forms)
-- [Partial scenes (`partial_chunk`)](#partial-scenes)
-- [Stripe stores (`fci_chunks`)](#stripe-stores)
+- [FCI chunks (`fci_chunks`)](#fci-chunks)
 - [Flat store layout](#flat-store-layout)
 - [Projection units](#projection-units)
 - [Time-axis options (`time_epoch`, `time_slots`)](#time-axis-options)
@@ -38,8 +36,8 @@ Only `product_type` is required.
 | `resolutions` | all for `product_type` | Comma-separated list, e.g. `1km` or `500m,1km` |
 | `flat_store` | `false` | Write the variables at the store root instead of `data_<res>/`. Needs exactly one resolution; see [Flat store layout](#flat-store-layout) |
 | `channels` | all channels for selected resolutions | Comma-separated logical channel names, e.g. `vis_06,ir_105` |
-| `partial_chunk` | `fill` | `fill` or `error`: what to do with rows that no input file covers. See [Partial scenes](#partial-scenes) |
-| `fci_chunks` | `null` (full disk) | Inclusive `[first, last]` BODY chunk numbers (1 to 40): store only the rows of those chunks. See [Stripe stores](#stripe-stores) |
+| `partial_chunk` | `fill` | `fill` or `error`: what to do with rows that no input file covers. |
+| `fci_chunks` | `null` (full disk) | Inclusive `[first, last]` BODY chunk numbers (1 to 40): store only the rows of those chunks. See [FCI chunks](#fci-chunks) |
 | `include_pixel_quality` | `true` | Include the 8-bit warning flag array |
 | `include_pixel_time` | `true` | Include per-pixel observation timestamps |
 | `include_calibration` | `true` | Include `slope` and `offset` arrays |
@@ -78,138 +76,7 @@ firecube ingest mtg_fci_l1c \
 
 ---
 
-## Input forms
-
-`--input-data` is a directory or an S3 prefix that holds either of two forms,
-never both:
-
-- **ZIP files**, as delivered by the EUMETSAT Data Store.
-- **Unpacked chunk files**: the `.nc` files of the BODY chunks of each repeat
-  cycle, plus the TRAIL chunk if you have it. The TRAIL chunk is optional.
-
-Both forms write the same arrays for the same repeat cycle.
-
-An unpacked chunk file is named like this (one line):
-
-```text
-W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI1+FCI-1C-RRAD-FDHSI-FD--CHK-BODY---NC4E_C_EUMT_20250701001030_IDPFI_OPE_20250701000726_20250701000818_N__O_0001_0032.nc
-```
-
-The plugin accepts a name that
-
-- contains `FCI-1C-RRAD`, `FDHSI` or `HRFI`, and `CHK-BODY` or `CHK-TRAIL`;
-- ends in `.nc`, with the tail
-  `_<disseminated>_<id>_<id>_<sensing start>_<sensing end>_N__<letter>_<cycle>_<chunk>.nc`
-  (timestamps as `YYYYMMDDhhmmss`; `<cycle>` and `<chunk>` as four digits;
-  `<id>_<id>` is `IDPFI_OPE` in the example).
-
-It reads the product type, the sensing start, the repeat cycle number and the
-chunk number from the name. Other files in the directory, such as quicklook
-images and `.xml` metadata, are ignored.
-
-A **scene** is the set of chunk files of one repeat cycle (one date and one
-cycle number). It does not need to be complete; see
-[Partial scenes](#partial-scenes). Two files with the same chunk number in one
-scene are an error.
-
-The `time` label of an unpacked scene is the nominal start of its repeat cycle:
-cycle 1 is `00:00:00` UTC, cycle 2 is `00:10:00`, and cycle 144 is `23:50:00`.
-A ZIP keeps the sensing start of the product, floored to the minute.
-
-Remote input works as for ZIPs. Firecube lists the prefix and downloads each
-file; the plugin does no downloading. Downloaded copies sit in Firecube's
-per-run workspace (`--option workspace`). The workspace holds every remote
-file the run reads, so size it for the whole input.
-
-#### Workspace cleanup
-
-Firecube creates the workspace directory (by default
-`<temp dir>/mtg_fci_l1c_<random>`) at the start of every run, in `direct` and
-in `staged` write mode. It stays on disk after the run unless you pass
-`--option cleanup_workspace=true`, which deletes the whole workspace directory
-at the end of the run. A run that stops while Firecube is still validating its
-options (for example an invalid `partial_chunk` value) ends before that cleanup
-and leaves the workspace in place. `scripts/fci-ingest.sh` passes it by default; see
-`CLEANUP_WORKSPACE` in [Behavior](#behavior). In a one-slot test run with a
-local ZIP:
-
-| Write mode | Without the option | With the option |
-|---|---|---|
-| `direct` | an empty `mtg_fci_l1c_*` directory | removed |
-| `staged` | the staged store, 73 files, 359 MiB (FDHSI 2 km) | removed |
-
-Three empty directories, `firecube_controlplane_*` and two `firecube_chunks_*`,
-remain in the temp dir after every run, with or without the option.
-
-Input errors stop the run before anything is written:
-
-| Message starts with | Cause | Fix |
-|---|---|---|
-| `Mixed ZIP and unpacked chunk input` | The directory holds ZIPs and chunk files | Keep one form: `--input-filters '["!*.zip"]'` keeps the chunks, `--input-filters '["!*.nc"]'` keeps the ZIPs |
-| `<n> input file(s) are not HRFI products` (or `FDHSI`) | Files of the other product are in the input | Exclude them with the filter in the message, for example `--input-filters '["!*HRFI*"]'`, or set `product_type` to match |
-| `product_type is required` | No `product_type` option | Add `--option product_type=FDHSI` or `HRFI` |
-
-```bash
-firecube ingest mtg_fci_l1c \
-    --input-data /path/to/fci-chunks \
-    --target file:///path/to/output.zarr \
-    --output-format zarr --write-mode direct \
-    --option product_type=FDHSI \
-    --option cleanup_workspace=true
-```
-
----
-
-## Partial scenes
-
-A scene may hold fewer chunks than the full disk, for example the nine chunks
-32 to 40 that a partial download gives you. Ingest partial scenes with
-`--write-mode direct`; see [Staged write mode](#staged-write-mode-takes-complete-scenes-only).
-`partial_chunk` decides what happens to the rows that no input file covers.
-
-| Value | Behaviour |
-|---|---|
-| `fill` (default) | Rows that no input file covers are not written. They keep the array fill value (`counts` 65535, `pixel_quality` 0, `pixel_time` `NaN`). In `direct` write mode, rows written by an earlier ingest survive, so ingesting the neighbouring chunks later completes the output chunks that two pieces share. |
-| `error` | A scene that leaves rows uncovered in an output chunk it would write fails its batch before it writes anything. Other batches of the same run still run, and the run ends failed. The message names the missing BODY chunks. |
-
-Output chunks do not line up with BODY chunks (the default output chunk is 278
-rows at 1 km; BODY chunk heights at 1 km range from 258 to 300 rows), so the
-edge of a piece usually shares an output chunk with the neighbouring piece.
-With `partial_chunk=error` that neighbour must be present: ingesting chunks 32
-to 40 alone fails with `missing BODY chunk(s) 31`.
-
-The static arrays `latitude`, `longitude`, `x` and `y` are written for the
-whole group whatever the scene holds.
-
-Caveats when you ingest one scene in pieces:
-
-- With `zarr_region_write_concurrency` above 1, Firecube rejects an output
-  chunk that has a gap in the middle. The serial default works.
-- The satellite position variables (`subsatellite_latitude`,
-  `subsatellite_longitude`, `platform_altitude`) hold the mean over the files of
-  the last piece ingested, not over the whole scene.
-- `pixel_time` at the edge of a piece can differ from a full-scene ingest.
-
-### Staged write mode takes complete scenes only
-
-A `staged` run writes into a local workspace and then replaces, in the target,
-every output chunk (every shard, when the store is sharded) it wrote. It does
-not carry over rows already stored in those chunks, so one piece of a scene
-would reset the rows that other pieces wrote there. In `staged` mode a scene
-must therefore cover every row of each group it writes: the full disk, or the
-whole [stripe](#stripe-stores) window. This applies with either
-`partial_chunk` value. Any other scene fails its batch before anything is
-written, with a message such as:
-
-```text
-Scene fci-scene://FDHSI/20250701000000 does not cover the rows it would write in staged write mode: group 'data_1km' (1km) rows [8618, 8649); missing BODY chunk(s) 31; group 'data_2km' (2km) rows [4309, 4324); missing BODY chunk(s) 31. Staged mode replaces every output chunk it writes in the target, so rows an earlier ingest wrote there would be lost. Use --write-mode direct to ingest a scene in pieces, or give the complete scene.
-```
-
-Rerun with `--write-mode direct`, or add the missing chunk files.
-
----
-
-## Stripe stores
+## FCI chunks
 
 `fci_chunks=[first,last]` stores only a band of the disk. The numbers are
 inclusive BODY chunk numbers from 1 to 40, for FDHSI and HRFI alike. Chunk 1
@@ -283,8 +150,7 @@ firecube ingest mtg_fci_l1c \
 
 The `--entry` patterns match the chunk numbers 0032 to 0040 at the end of the
 file name. The window starts at disk row 8618, inside chunk 31, so chunks 32
-to 40 are a partial scene for it and need `--write-mode direct`; see
-[Staged write mode](#staged-write-mode-takes-complete-scenes-only). Open the result with `xr.open_zarr("/path/to/stripe.zarr", group="data_1km")`.
+to 40 are a partial scene for it and need `--write-mode direct`. Open the result with `xr.open_zarr("/path/to/stripe.zarr", group="data_1km")`.
 
 ---
 
@@ -395,14 +261,14 @@ All pods writing to the same store **must** use identical `time_epoch` and
 
 | Variable | Default | Description |
 |---|---|---|
-| `INPUT` | `/data/fci-zips` | Directory or URI of FCI L1C `.zip` files or unpacked chunk `.nc` files, not both (same for all pods). See [Input forms](#input-forms) |
+| `INPUT` | `/data/fci-zips` | Directory or URI of FCI L1C `.zip` files or unpacked chunk `.nc` files, not both (same for all pods). |
 | `TARGET` | `s3://mtg-fci-l1c.zarr/` | Zarr store URI (`file:///abs/path` or `s3://bucket/key/`) |
 | `PRODUCT_NAME` | derived from `TARGET` basename | Logical store name |
 | `PRODUCT_TYPE` | `FDHSI` | `FDHSI` or `HRFI`. Always passed as `--option product_type=...`, so set it to `HRFI` for HRFI input |
 | `RESOLUTIONS` | all for `PRODUCT_TYPE` | Optional subset, e.g. `1km` or `500m,1km` |
 | `FLAT_STORE` | unset | `1`, `true`, `yes`, or `on` (any case) adds `--option flat_store=true`; needs a single-resolution `RESOLUTIONS`. See [Flat store layout](#flat-store-layout) |
-| `FCI_CHUNKS` | unset | Adds `--option fci_chunks=...` to preallocation and every pod, e.g. `[32,40]`. Write it without spaces. See [Stripe stores](#stripe-stores) |
-| `PARTIAL_CHUNK` | unset | Adds `--option partial_chunk=...` (`fill` or `error`) to preallocation and every pod. See [Partial scenes](#partial-scenes) |
+| `FCI_CHUNKS` | unset | Adds `--option fci_chunks=...` to preallocation and every pod, e.g. `[32,40]`. Write it without spaces. See [FCI chunks](#fci-chunks) |
+| `PARTIAL_CHUNK` | unset | Adds `--option partial_chunk=...` (`fill` or `error`) to preallocation and every pod. |
 | `PLUGIN` | `mtg_fci_l1c` | Firecube plugin name passed to `firecube ingest` and `firecube zarr preallocate` |
 | `FIRECUBE` | `firecube` | Firecube executable path or wrapper command |
 
@@ -436,7 +302,7 @@ Same semantics as [`--option time_epoch` / `--option time_slots`](#time-axis-opt
 
 | Variable | Default | Description |
 |---|---|---|
-| `WRITE_MODE` | `direct` | `direct` writes chunks straight to the store; `staged` writes locally first, then uploads, and refuses [partial scenes](#staged-write-mode-takes-complete-scenes-only) |
+| `WRITE_MODE` | `direct` | `direct` writes chunks straight to the store; `staged` writes locally first, then uploads, and refuses partial scenes |
 | `STORAGE_TYPE` | inferred from `TARGET` scheme | `local` (from `file://`) or `s3` (from `s3://`); override when inference is wrong |
 | `STORAGE_DRIVER` | `fsspec` | `fsspec` for local. For S3, use **`obstore`** because parallel writes are much faster than `fsspec` (requires the `obstore` extra: `uv sync --extra obstore`) |
 
@@ -445,7 +311,7 @@ Same semantics as [`--option time_epoch` / `--option time_slots`](#time-axis-opt
 | Variable | Default | Description |
 |---|---|---|
 | `FORCE_REINGEST` | `1` | `1` overwrites written slots (idempotent re-runs); `0` errors on existing slots |
-| `CLEANUP_WORKSPACE` | `true` | `1`, `true`, `yes`, or `on` (any case) adds `--option cleanup_workspace=true` to preallocation and every pod; `0`, `false`, `no`, or `off` passes nothing and keeps the workspaces. See [Workspace cleanup](#workspace-cleanup) |
+| `CLEANUP_WORKSPACE` | `true` | `1`, `true`, `yes`, or `on` (any case) adds `--option cleanup_workspace=true` to preallocation and every pod; `0`, `false`, `no`, or `off` passes nothing and keeps the workspaces. |
 | `ASSUME_YES` | `0` | `1` skips the interactive confirmation prompt (use in CI) |
 | `DO_PREALLOCATE` | `1` | `0` skips phase 0 (use when preallocation runs separately) |
 
