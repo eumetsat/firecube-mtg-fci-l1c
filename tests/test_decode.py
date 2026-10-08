@@ -1072,3 +1072,64 @@ def test_nc_part_reader_missing_row_metadata_fails_loudly(tmp_path: Path):
         # ... but the row bounds cannot be recovered.
         with pytest.raises(KeyError, match="start/end row metadata"):
             reader._read_row_bounds(reader._open()["data/vis_04/measured"])
+
+
+def _fci_chunk_name(kind: str, number: int, *, satellite: str = "MTI1") -> str:
+    pad = "---" if kind == "BODY" else "--"
+    return (
+        f"W_XX-EUMETSAT-Darmstadt,IMG+SAT,{satellite}+FCI-1C-RRAD-FDHSI-FD--"
+        f"CHK-{kind}{pad}NC4E_C_EUMT_20250701000756_IDPFI_OPE_20250701000352_"
+        f"20250701000421_N__O_0001_{number:04d}.nc"
+    )
+
+
+def _populate_mixed_satellite_dir(root: Path) -> list[str]:
+    """Write chunks of two satellites plus noise; return the expected order."""
+    (root / "nested").mkdir(parents=True)
+    expected = [
+        _fci_chunk_name("BODY", 2),
+        _fci_chunk_name("BODY", 3, satellite="MTI2"),
+        _fci_chunk_name("BODY", 10),
+        _fci_chunk_name("TRAIL", 40, satellite="MTI2"),
+        _fci_chunk_name("TRAIL", 41),
+    ]
+    noise = [
+        "preview.nc",
+        _fci_chunk_name("BODY", 5).replace("CHK-BODY", "CHK-HEAD"),
+        _fci_chunk_name("BODY", 6).replace("FCI-1C-RRAD", "FCI-1C-XXXX"),
+        _fci_chunk_name("BODY", 7).removesuffix(".nc") + ".xml",
+    ]
+    # Shuffled creation order and a nested location: neither may affect the result.
+    for name in (expected[4], expected[2], expected[0], expected[3]):
+        (root / name).touch()
+    (root / "nested" / expected[1]).touch()
+    for name in noise:
+        (root / name).touch()
+    return expected
+
+
+@pytest.mark.unit
+def test_list_fci_nc_parts_accepts_any_satellite_body_then_trail(tmp_path: Path):
+    expected = _populate_mixed_satellite_dir(tmp_path / "extract")
+
+    found = list_fci_nc_parts(tmp_path / "extract")
+
+    assert [p.name for p in found] == expected
+
+
+@pytest.mark.unit
+def test_list_fci_nc_parts_matches_loose_bundle_members(tmp_path: Path):
+    from firecube_mtg_fci_l1c._data import (
+        group_chunks_into_bundles,
+        is_valid_fci_chunk,
+    )
+
+    root = tmp_path / "extract"
+    _populate_mixed_satellite_dir(root)
+    loose = sorted(p for p in root.rglob("*") if p.is_file())
+
+    (bundle,) = group_chunks_into_bundles(p for p in loose if is_valid_fci_chunk(p))
+
+    assert [p.name for p in list_fci_nc_parts(root)] == [
+        Path(m).name for m in bundle.members
+    ]

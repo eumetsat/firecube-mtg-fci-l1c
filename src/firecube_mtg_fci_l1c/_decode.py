@@ -33,9 +33,9 @@ from ._constants import (
     CONSTANTS,
     FCI_CONVERSION_CONSTANT_NAMES,
     SLOT_GEOMETRY_SOURCES,
-    get_nc_part_prefix,
     nc_channel_resolution_map,
 )
+from ._data import is_valid_fci_chunk
 
 _PART_NUMBER_RE = re.compile(r"(\d+)\.nc$", re.IGNORECASE)
 _BOUNDED_UNSIGNED_DTYPES = frozenset(
@@ -813,31 +813,15 @@ def list_fci_nc_parts(extracted_dir: Path) -> list[Path]:
     """List FCI BODY/TRAIL nc_parts in an extracted ZIP directory.
 
     BODY parts come first (sorted by numeric part number, then by filename),
-    followed by TRAIL parts. Only files matching the FCI BODY/TRAIL naming
-    convention (built from ``get_nc_part_prefix(product_type)`` and its TRAIL
-    counterpart) are returned; other ``.nc`` members are ignored.
+    followed by TRAIL parts. Selection uses ``is_valid_fci_chunk``, the same
+    predicate as unpacked-chunk input, so any satellite name is accepted and
+    other ``.nc`` members are ignored.
     """
-    prefix_pairs: list[tuple[str, str]] = []
-    for product_type in CONSTANTS:
-        body = get_nc_part_prefix(product_type)
-        trail = body.replace("BODY", "TRAIL")
-        prefix_pairs.append((body, trail))
-
     parts: list[tuple[Path, int]] = []
     for path in Path(extracted_dir).rglob("*.nc"):
-        name = path.name
-        classification: int | None = None
-        for body_prefix, trail_prefix in prefix_pairs:
-            if name.startswith(body_prefix):
-                classification = 0
-                break
-            if name.startswith(trail_prefix):
-                classification = 1
-                break
-
-        if classification is None:
+        if not is_valid_fci_chunk(path):
             continue
-        parts.append((path, classification))
+        parts.append((path, 1 if "CHK-TRAIL" in path.name else 0))
 
     def _part_number(path: Path) -> int:
         match = _PART_NUMBER_RE.search(path.name)

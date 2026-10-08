@@ -30,7 +30,6 @@ from firecube_mtg_fci_l1c._data import (
     is_valid_fci_zip,
     nominal_cycle_start,
     parse_chunk_name,
-    validate_no_mixed_products,
 )
 
 
@@ -54,25 +53,6 @@ def test_detect_product_type_hrfi():
 def test_detect_product_type_invalid():
     with pytest.raises(ValueError):
         detect_product_type("W_XX-FCI-1C-RRAD-UNKNOWN-20241001005154.zip")
-
-
-@pytest.mark.unit
-def test_validate_no_mixed_products_single():
-    assert (
-        validate_no_mixed_products([Path("A-FCI-1C-RRAD-FDHSI-20241001005154.zip")])
-        == PRODUCT_TYPE_FDHSI
-    )
-
-
-@pytest.mark.unit
-def test_validate_no_mixed_products_mixed_rejected():
-    with pytest.raises(ValueError, match=r"[Mm]ixed"):
-        validate_no_mixed_products(
-            [
-                Path("A-FCI-1C-RRAD-FDHSI-20241001005154.zip"),
-                Path("A-FCI-1C-RRAD-HRFI-20241001015154.zip"),
-            ]
-        )
 
 
 @pytest.mark.unit

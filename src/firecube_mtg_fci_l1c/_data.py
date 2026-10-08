@@ -24,10 +24,9 @@ from __future__ import annotations
 import datetime
 import posixpath
 import re
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 from ._constants import PRODUCT_TYPE_FDHSI, PRODUCT_TYPE_HRFI
 
@@ -69,19 +68,6 @@ def detect_product_type(path_or_name: str | Path) -> str:
         "Cannot detect product type from filename: "
         f"{name!r}. Expected 'FDHSI' or 'HRFI' in name."
     )
-
-
-def validate_no_mixed_products(items: Sequence[Any]) -> str:
-    """Return the common product type, rejecting mixed FDHSI/HRFI batches."""
-    types: set[str] = {detect_product_type(str(item)) for item in items}
-    if len(types) > 1:
-        raise ValueError(
-            "Mixed FDHSI and HRFI products detected in source directory. "
-            f"Found: {sorted(types)}. Process one product type at a time."
-        )
-    if not types:
-        return PRODUCT_TYPE_FDHSI
-    return types.pop()
 
 
 def is_valid_fci_zip(path: Path) -> bool:

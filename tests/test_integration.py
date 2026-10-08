@@ -32,7 +32,6 @@ from firecube_mtg_fci_l1c._constants import (
     PRODUCT_TYPE_HRFI,
     get_nc_part_prefix,
 )
-from firecube_mtg_fci_l1c._data import validate_no_mixed_products
 from firecube_mtg_fci_l1c.config import MtgFciL1cConfig
 from firecube_mtg_fci_l1c._variables import build_specs
 
@@ -258,17 +257,6 @@ def test_hrfi_groups_created(tmp_path: Path, hrfi_zip: Path):
     root = zarr.open_group(str(out), mode="r")
     assert "data_500m" in root
     assert "data_1km" in root
-
-
-@pytest.mark.integration
-@pytest.mark.plugin
-def test_mixed_rejection(tmp_path: Path, fdhsi_zip: Path, hrfi_zip: Path):
-    mixed = tmp_path / "mixed"
-    mixed.mkdir()
-    (mixed / fdhsi_zip.name).write_bytes(fdhsi_zip.read_bytes())
-    (mixed / hrfi_zip.name).write_bytes(hrfi_zip.read_bytes())
-    with pytest.raises(ValueError, match=r"[Mm]ixed"):
-        validate_no_mixed_products(list(mixed.glob("*.zip")))
 
 
 @pytest.mark.integration
