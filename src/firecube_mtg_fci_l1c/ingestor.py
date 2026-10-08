@@ -1026,33 +1026,33 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         Root tables (time map, slot geometry, calibration) are read from every
         present part; pixel arrays only from parts inside a group's window.
         """
-        part_ranges = {
-            plan.group: self._read_part_ranges(plan, nc_parts, shared_reader)
-            for plan in plans
-        }
-        if config.body_chunks is not None:
-            for plan in plans:
-                _check_body_chunk_rows(
-                    plan.product_type,
-                    plan.resolution,
-                    part_ranges[plan.group],
-                    chunk_numbers,
-                )
-        self._check_partial_coverage(label, plans, part_ranges, config)
+        # The time map and slot geometry emit no intents, so the checks run
+        # before any intent of the scene. On success keep them after those
+        # reads: run first, a full-disk ZIP ingest peaked about 50 MiB higher
+        # (measured, mechanism not established). If a root table fails, the
+        # checks run first so a strict coverage error is not masked by it.
+        try:
+            index2time: dict[int, float] | None = None
+            if config.include_pixel_time:
+                time_accum = TimeMapAccumulator()
+                for part_path in nc_parts:
+                    if shared_reader.has_time_map(part_path):
+                        time_accum.accumulate(shared_reader.reader_for(part_path))
+                index2time = time_accum.build_index2time()
 
-        index2time: dict[int, float] | None = None
-        if config.include_pixel_time:
-            time_accum = TimeMapAccumulator()
+            geometry_accum = SlotGeometryAccumulator()
             for part_path in nc_parts:
-                if shared_reader.has_time_map(part_path):
-                    time_accum.accumulate(shared_reader.reader_for(part_path))
-            index2time = time_accum.build_index2time()
-
-        geometry_accum = SlotGeometryAccumulator()
-        for part_path in nc_parts:
-            geometry_accum.accumulate(shared_reader.reader_for(part_path))
-        slot_geometry = geometry_accum.build()
-        slot_geometry["sun_earth_distance"] = sun_earth_distance_au(timestamp)
+                geometry_accum.accumulate(shared_reader.reader_for(part_path))
+            slot_geometry = geometry_accum.build()
+            slot_geometry["sun_earth_distance"] = sun_earth_distance_au(timestamp)
+        except Exception:
+            self._check_scene_coverage(
+                label, plans, nc_parts, chunk_numbers, shared_reader, config
+            )
+            raise
+        part_ranges = self._check_scene_coverage(
+            label, plans, nc_parts, chunk_numbers, shared_reader, config
+        )
 
         for plan in plans:
             self._intents_for_plan(
@@ -1067,6 +1067,31 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                 batch_id=batch_id,
                 intents=intents,
             )
+
+    def _check_scene_coverage(
+        self,
+        label: str,
+        plans: list[GroupPlan],
+        nc_parts: list[Path],
+        chunk_numbers: Mapping[Path, int],
+        shared_reader: SharedNcPartReader,
+        config: MtgFciL1cConfig,
+    ) -> dict[str, list[tuple[Path, tuple[int, int]]]]:
+        """Read every group's part rows and run the row-table and coverage checks."""
+        part_ranges = {
+            plan.group: self._read_part_ranges(plan, nc_parts, shared_reader)
+            for plan in plans
+        }
+        if config.body_chunks is not None:
+            for plan in plans:
+                _check_body_chunk_rows(
+                    plan.product_type,
+                    plan.resolution,
+                    part_ranges[plan.group],
+                    chunk_numbers,
+                )
+        self._check_partial_coverage(label, plans, part_ranges, config)
+        return part_ranges
 
     @staticmethod
     def _read_part_ranges(

@@ -1237,6 +1237,46 @@ class TestPartialChunkOption:
         np.testing.assert_array_equal(disk[:, 0], np.arange(11136))
 
 
+class TestRootTableFailureVsCoverage:
+    """A failing root table must not mask a strict coverage error."""
+
+    @staticmethod
+    def _fail(monkeypatch, accumulator: str) -> None:
+        from firecube_mtg_fci_l1c import ingestor as ingestor_mod
+
+        def boom(self: Any, reader: Any) -> None:
+            raise ValueError("malformed root table")
+
+        monkeypatch.setattr(getattr(ingestor_mod, accumulator), "accumulate", boom)
+
+    @pytest.mark.parametrize(
+        "accumulator", ["TimeMapAccumulator", "SlotGeometryAccumulator"]
+    )
+    def test_error_mode_coverage_error_wins(self, tmp_path, monkeypatch, accumulator):
+        bundle = _stripe_bundle(tmp_path, {32: (8649, 8908)})
+        self._fail(monkeypatch, accumulator)
+
+        with pytest.raises(ConfigurationError, match="missing BODY chunk"):
+            _scene_writes(bundle, partial_chunk="error", include_pixel_time=True)
+
+    @pytest.mark.parametrize(
+        "accumulator", ["TimeMapAccumulator", "SlotGeometryAccumulator"]
+    )
+    def test_fill_mode_root_table_failure_is_a_scene_failure(
+        self, tmp_path, monkeypatch, accumulator
+    ):
+        bundle = _stripe_bundle(tmp_path, {32: (8649, 8908)})
+        self._fail(monkeypatch, accumulator)
+
+        _writes, counters = _scene_writes(
+            bundle, partial_chunk="fill", include_pixel_time=True
+        )
+
+        assert counters["files_failed"] == 1
+        assert counters["files_processed"] == 0
+        assert "malformed root table" in counters["zip_errors"][0]
+
+
 def _write_body_2_only(directory: Path) -> None:
     """Write BODY 2 (rows 2-3 of the 4-row small grid) of cycle 1, values 7."""
     from tests.test_integration import _chunk_name, _write_chunk_netcdf
