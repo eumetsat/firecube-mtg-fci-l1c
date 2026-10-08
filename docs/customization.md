@@ -127,7 +127,9 @@ Firecube creates the workspace directory (by default
 `<temp dir>/mtg_fci_l1c_<random>`) at the start of every run, in `direct` and
 in `staged` write mode. It stays on disk after the run unless you pass
 `--option cleanup_workspace=true`, which deletes the whole workspace directory
-at the end of the run. `scripts/fci-ingest.sh` passes it by default; see
+at the end of the run. A run that stops while Firecube is still validating its
+options (for example an invalid `partial_chunk` value) ends before that cleanup
+and leaves the workspace in place. `scripts/fci-ingest.sh` passes it by default; see
 `CLEANUP_WORKSPACE` in [Behavior](#behavior). In a one-slot test run with a
 local ZIP:
 

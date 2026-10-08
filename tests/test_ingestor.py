@@ -1205,12 +1205,27 @@ class TestRootTableFailureVsCoverage:
     @pytest.mark.parametrize(
         "accumulator", ["TimeMapAccumulator", "SlotGeometryAccumulator"]
     )
-    def test_error_mode_coverage_error_wins(self, tmp_path, monkeypatch, accumulator):
+    @pytest.mark.parametrize(
+        ("partial_chunk", "write_mode", "message"),
+        [
+            ("error", "direct", "missing BODY chunk"),
+            ("fill", "staged", "--write-mode direct"),
+        ],
+        ids=["partial-chunk-error", "staged-mode"],
+    )
+    def test_coverage_error_wins_over_a_failing_root_table(
+        self, tmp_path, monkeypatch, accumulator, partial_chunk, write_mode, message
+    ):
         bundle = _stripe_bundle(tmp_path, {32: (8649, 8908)})
         self._fail(monkeypatch, accumulator)
 
-        with pytest.raises(ConfigurationError, match="missing BODY chunk"):
-            _scene_writes(bundle, partial_chunk="error", include_pixel_time=True)
+        with pytest.raises(ConfigurationError, match=message):
+            _scene_writes(
+                bundle,
+                partial_chunk=partial_chunk,
+                write_mode=write_mode,
+                include_pixel_time=True,
+            )
 
     @pytest.mark.parametrize(
         "accumulator", ["TimeMapAccumulator", "SlotGeometryAccumulator"]
