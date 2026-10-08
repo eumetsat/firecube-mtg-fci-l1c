@@ -825,7 +825,7 @@ def test_warm_calibration_declared_only_in_groups_with_ir38(
 
 
 # ─────────────────────────────────────────────────────────────
-# Group 11: body_chunks stripe stores (schema, static coordinates, identity)
+# Group 11: fci_chunks stripe stores (schema, static coordinates, identity)
 # ─────────────────────────────────────────────────────────────
 
 # Expected windows, written out from the BODY chunk row table: chunks 32-40
@@ -878,7 +878,7 @@ def test_stripe_arrays_span_the_window_snapped_to_the_groups_chunk_grid(
     )
     attrs, arrays = _group_arrays(
         build_specs(
-            MtgFciL1cConfig(product_type=product_type, body_chunks=[32, 40]),
+            MtgFciL1cConfig(product_type=product_type, fci_chunks=[32, 40]),
             product_type,
         ),
         group,
@@ -912,10 +912,10 @@ def test_stripe_arrays_span_the_window_snapped_to_the_groups_chunk_grid(
         assert arrays[name].chunks[0] <= ny
     assert arrays["y"].shape == arrays["y"].chunks == (ny,)
     assert arrays["x"].shape == full["x"].shape == (dimsize,)
-    assert attrs["body_chunks"] == [32, 40]
+    assert attrs["fci_chunks"] == [32, 40]
     assert attrs["disk_row_start"] == start
     assert attrs["disk_row_stop"] == stop
-    assert {"body_chunks", "disk_row_start", "disk_row_stop"}.isdisjoint(full_attrs)
+    assert {"fci_chunks", "disk_row_start", "disk_row_stop"}.isdisjoint(full_attrs)
     assert {k: v for k, v in attrs.items() if k in full_attrs} == full_attrs
 
 
@@ -928,7 +928,7 @@ def test_stripe_window_start_is_floor_of_chunk_32_first_row() -> None:
                 product_type="FDHSI",
                 resolutions="1km",
                 zarr_chunk_y=200,
-                body_chunks=[32, 40],
+                fci_chunks=[32, 40],
             ),
             "FDHSI",
         ),
@@ -942,7 +942,7 @@ def test_stripe_window_start_is_floor_of_chunk_32_first_row() -> None:
 
 @pytest.mark.unit
 @pytest.mark.parametrize(
-    ("product_type", "body_chunks", "expected"),
+    ("product_type", "fci_chunks", "expected"),
     [
         # Chunk 40 ends at the disk edge: the window stops at dimsize, not at
         # the next multiple of the chunk height (11120 + 278 > 11136).
@@ -953,10 +953,10 @@ def test_stripe_window_start_is_floor_of_chunk_32_first_row() -> None:
     ],
 )
 def test_stripe_window_at_the_disk_edges(
-    product_type: str, body_chunks: list[int], expected: dict[str, tuple[int, int]]
+    product_type: str, fci_chunks: list[int], expected: dict[str, tuple[int, int]]
 ) -> None:
     specs = build_specs(
-        MtgFciL1cConfig(product_type=product_type, body_chunks=body_chunks),
+        MtgFciL1cConfig(product_type=product_type, fci_chunks=fci_chunks),
         product_type,
     )
     for group, (start, stop) in expected.items():
@@ -975,7 +975,7 @@ def test_stripe_shard_budget_is_capped_by_window_height() -> None:
     )
     _attrs, stripe = _group_arrays(
         build_specs(
-            MtgFciL1cConfig(product_type="FDHSI", body_chunks=[32, 40]), "FDHSI"
+            MtgFciL1cConfig(product_type="FDHSI", fci_chunks=[32, 40]), "FDHSI"
         ),
         "data_1km",
     )
@@ -996,7 +996,7 @@ def test_stripe_inside_the_last_partial_chunk_keeps_the_chunk_height() -> None:
                 product_type="FDHSI",
                 resolutions="1km",
                 zarr_chunk_y=400,
-                body_chunks=[40, 40],
+                fci_chunks=[40, 40],
             ),
             "FDHSI",
         ),
@@ -1022,13 +1022,13 @@ def test_stripe_inside_the_last_partial_chunk_keeps_the_chunk_height() -> None:
 @pytest.mark.unit
 def test_stripe_rejects_a_shard_override_taller_than_the_window() -> None:
     # chunk 556: window [8340, 11136) is 2796 rows, 6 whole chunks = 3336 rows.
-    def config(shard_y: int, body_chunks: list[int] | None) -> MtgFciL1cConfig:
+    def config(shard_y: int, fci_chunks: list[int] | None) -> MtgFciL1cConfig:
         return MtgFciL1cConfig(
             product_type="FDHSI",
             resolutions="1km",
             zarr_chunk_overrides={"data_1km": (1, 556, 11136, 1)},
             zarr_shard_overrides={"data_1km": (1, shard_y, 11136, 1)},
-            body_chunks=body_chunks,
+            fci_chunks=fci_chunks,
         )
 
     _attrs, arrays = _group_arrays(
@@ -1037,9 +1037,9 @@ def test_stripe_rejects_a_shard_override_taller_than_the_window() -> None:
     assert arrays["counts"].shape[1] == 2796
     assert arrays["counts"].shards == (1, 3336, 11136, 1)
 
-    with pytest.raises(ValueError, match="exceeds the body_chunks stripe of 2796 rows"):
+    with pytest.raises(ValueError, match="exceeds the fci_chunks stripe of 2796 rows"):
         build_specs(config(3892, [32, 40]), "FDHSI")
-    # The full-disk recipe keeps working without body_chunks.
+    # The full-disk recipe keeps working without fci_chunks.
     _attrs, full = _group_arrays(build_specs(config(11120, None), "FDHSI"), "data_1km")
     assert full["counts"].shards == (1, 11120, 11136, 1)
 
@@ -1061,7 +1061,7 @@ def test_stripe_projection_axes_are_the_full_disk_values_of_the_window(
         "include_geolocation": False,
     }
     full = _static_payloads(MtgFciL1cConfig(**common), product_type)
-    stripe_config = MtgFciL1cConfig(**common, body_chunks=[32, 40])
+    stripe_config = MtgFciL1cConfig(**common, fci_chunks=[32, 40])
     stripe = _static_payloads(stripe_config, product_type)
     specs = build_specs(stripe_config, product_type)
 
@@ -1078,7 +1078,7 @@ def test_stripe_projection_axes_are_the_full_disk_values_of_the_window(
 def test_stripe_latitude_longitude_are_the_full_disk_rows_of_the_window() -> None:
     common = {"product_type": "FDHSI", "resolutions": "2km"}
     full = _static_payloads(MtgFciL1cConfig(**common), "FDHSI")
-    stripe = _static_payloads(MtgFciL1cConfig(**common, body_chunks=[32, 40]), "FDHSI")
+    stripe = _static_payloads(MtgFciL1cConfig(**common, fci_chunks=[32, 40]), "FDHSI")
 
     for name in ("latitude", "longitude"):
         window = stripe[("data_2km", name)]
@@ -1103,17 +1103,17 @@ def test_stripe_token_separates_store_identities() -> None:
         return spec.name
 
     full = index_name(product_type="FDHSI")
-    stripe = index_name(product_type="FDHSI", body_chunks=[32, 40])
-    other = index_name(product_type="FDHSI", body_chunks=[30, 40])
+    stripe = index_name(product_type="FDHSI", fci_chunks=[32, 40])
+    other = index_name(product_type="FDHSI", fci_chunks=[30, 40])
     flat = index_name(
-        product_type="FDHSI", resolutions="1km", flat_store=True, body_chunks=[32, 40]
+        product_type="FDHSI", resolutions="1km", flat_store=True, fci_chunks=[32, 40]
     )
 
     assert full == "eumetsat_repeat_cycle_v1"
     assert stripe == "eumetsat_repeat_cycle_v1_stripe_c32_40"
     assert other == "eumetsat_repeat_cycle_v1_stripe_c30_40"
     assert flat == "eumetsat_repeat_cycle_v1_fdhsi_1km_stripe_c32_40"
-    assert index_name(product_type="HRFI", body_chunks=[32, 40]) == stripe
+    assert index_name(product_type="HRFI", fci_chunks=[32, 40]) == stripe
 
 
 @pytest.mark.unit
@@ -1129,11 +1129,11 @@ def test_slice_meta_tells_stripes_apart_but_not_partial_modes() -> None:
         return {key: values[key] for key in ingestor.slice_meta_keys()}
 
     full = meta()
-    stripe = meta(body_chunks=[32, 40])
+    stripe = meta(fci_chunks=[32, 40])
     error_mode = meta(partial_chunk="error")
 
-    assert full["body_chunks"] is None
-    assert stripe["body_chunks"] == [32, 40]
+    assert full["fci_chunks"] is None
+    assert stripe["fci_chunks"] == [32, 40]
     assert stripe != full
     # partial_chunk picks which rows of a partial scene are written; the slice
     # is the same, so a mode change must still meet the resume guard.

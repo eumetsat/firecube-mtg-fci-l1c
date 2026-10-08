@@ -5,7 +5,7 @@ Operator-facing plugin and production-script settings.
 - [Plugin `--option` flags](#plugin---option-flags)
 - [Input forms: ZIP files and unpacked chunks](#input-forms)
 - [Partial scenes (`partial_chunk`)](#partial-scenes)
-- [Stripe stores (`body_chunks`)](#stripe-stores)
+- [Stripe stores (`fci_chunks`)](#stripe-stores)
 - [Flat store layout](#flat-store-layout)
 - [Projection units](#projection-units)
 - [Time-axis options (`time_epoch`, `time_slots`)](#time-axis-options)
@@ -39,7 +39,7 @@ Only `product_type` is required.
 | `flat_store` | `false` | Write the variables at the store root instead of `data_<res>/`. Needs exactly one resolution; see [Flat store layout](#flat-store-layout) |
 | `channels` | all channels for selected resolutions | Comma-separated logical channel names, e.g. `vis_06,ir_105` |
 | `partial_chunk` | `fill` | `fill` or `error`: what to do with rows that no input file covers. See [Partial scenes](#partial-scenes) |
-| `body_chunks` | `null` (full disk) | Inclusive `[first, last]` BODY chunk numbers (1 to 40): store only the rows of those chunks. See [Stripe stores](#stripe-stores) |
+| `fci_chunks` | `null` (full disk) | Inclusive `[first, last]` BODY chunk numbers (1 to 40): store only the rows of those chunks. See [Stripe stores](#stripe-stores) |
 | `include_pixel_quality` | `true` | Include the 8-bit warning flag array |
 | `include_pixel_time` | `true` | Include per-pixel observation timestamps |
 | `include_calibration` | `true` | Include `slope` and `offset` arrays |
@@ -171,13 +171,13 @@ Caveats when you ingest one scene in pieces:
 
 ## Stripe stores
 
-`body_chunks=[first,last]` stores only a band of the disk. The numbers are
+`fci_chunks=[first,last]` stores only a band of the disk. The numbers are
 inclusive BODY chunk numbers from 1 to 40, for FDHSI and HRFI alike. Chunk 1
 is at the southern edge of the disk and chunk 40 at the northern edge, so
 `[32,40]` is the northern part: at 1 km it is rows 8649 to 11136 of 11136.
 
 ```bash
---option 'body_chunks=[32,40]'
+--option 'fci_chunks=[32,40]'
 ```
 
 Pass the same value to every ingest of the store. Use no spaces when you set it
@@ -192,7 +192,7 @@ What the store holds:
   one real cycle. `x` keeps the full width.
 - **Coordinates.** `y`, `latitude` and `longitude` cover those rows only.
 - **Group attributes.** A store created by `firecube ingest` carries
-  `body_chunks`, `disk_row_start` and `disk_row_stop` on each group (disk rows
+  `fci_chunks`, `disk_row_start` and `disk_row_stop` on each group (disk rows
   counted from the southern edge). A store created by `firecube zarr
   preallocate` carries no group attributes at all, as for the CF attributes of
   a full-disk store; read its window from the shape of `y`.
@@ -213,7 +213,7 @@ Limits and caveats:
   files you give it.
 - `pixel_time` at the northern edge of the stripe can differ from a full-disk
   ingest unless the next chunk to the north is present.
-- `body_chunks` is part of the resume identity of a run. Stores ingested before
+- `fci_chunks` is part of the resume identity of a run. Stores ingested before
   the option existed carry no value for it, so a single-pod run into such a
   store (no `--slot-start`/`--slot-end`) can fail with `ResumeConflictError`. Add
   `--option resume_existing=true` to continue, or `--option force_reingest=true`
@@ -237,7 +237,7 @@ firecube ingest mtg_fci_l1c \
     --target file:///path/to/stripe.zarr \
     --output-format zarr --write-mode staged \
     --option product_type=FDHSI \
-    --option 'body_chunks=[32,40]'
+    --option 'fci_chunks=[32,40]'
 ```
 
 The `--entry` patterns match the chunk numbers 0032 to 0040 at the end of the
@@ -356,7 +356,7 @@ All pods writing to the same store **must** use identical `time_epoch` and
 | `PRODUCT_TYPE` | `FDHSI` | `FDHSI` or `HRFI`. Always passed as `--option product_type=...`, so set it to `HRFI` for HRFI input |
 | `RESOLUTIONS` | all for `PRODUCT_TYPE` | Optional subset, e.g. `1km` or `500m,1km` |
 | `FLAT_STORE` | unset | `1`, `true`, `yes`, or `on` (any case) adds `--option flat_store=true`; needs a single-resolution `RESOLUTIONS`. See [Flat store layout](#flat-store-layout) |
-| `BODY_CHUNKS` | unset | Adds `--option body_chunks=...` to preallocation and every pod, e.g. `[32,40]`. Write it without spaces. See [Stripe stores](#stripe-stores) |
+| `FCI_CHUNKS` | unset | Adds `--option fci_chunks=...` to preallocation and every pod, e.g. `[32,40]`. Write it without spaces. See [Stripe stores](#stripe-stores) |
 | `PARTIAL_CHUNK` | unset | Adds `--option partial_chunk=...` (`fill` or `error`) to preallocation and every pod. See [Partial scenes](#partial-scenes) |
 | `PLUGIN` | `mtg_fci_l1c` | Firecube plugin name passed to `firecube ingest` and `firecube zarr preallocate` |
 | `FIRECUBE` | `firecube` | Firecube executable path or wrapper command |

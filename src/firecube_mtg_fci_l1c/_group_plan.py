@@ -36,13 +36,13 @@ def stripe_window(
 ) -> tuple[int, int] | None:
     """Return the group's ``(start, stop)`` full-disk rows, or ``None`` for the full disk.
 
-    The rows of BODY chunks ``config.body_chunks`` are widened to whole output
+    The rows of BODY chunks ``config.fci_chunks`` are widened to whole output
     chunks of this group (its own chunk height), so the stripe store's chunk
     boundaries are the full-disk store's. ``stop`` is capped at ``dimsize``.
     """
-    if config.body_chunks is None:
+    if config.fci_chunks is None:
         return None
-    first, last = config.body_chunks
+    first, last = config.fci_chunks
     row_start, row_stop = stripe_rows(product_type, resolution, first, last)
     chunk_y = config.get_group_chunk_shape(resolution)[1]
     start = (row_start // chunk_y) * chunk_y
@@ -51,10 +51,10 @@ def stripe_window(
 
 
 def stripe_token(config: MtgFciL1cConfig) -> str | None:
-    """Return the store-identity token for ``body_chunks``, e.g. ``stripe_c32_40``."""
-    if config.body_chunks is None:
+    """Return the store-identity token for ``fci_chunks``, e.g. ``stripe_c32_40``."""
+    if config.fci_chunks is None:
         return None
-    first, last = config.body_chunks
+    first, last = config.fci_chunks
     return f"stripe_c{first}_{last}"
 
 

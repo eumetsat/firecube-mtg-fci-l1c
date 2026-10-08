@@ -422,7 +422,7 @@ def test_output_chunks_that_meet_no_part_are_not_written(
 
 @_PRODUCTS
 @pytest.mark.parametrize(
-    "options", [{}, {"body_chunks": [2, 3]}], ids=["full-disk", "stripe"]
+    "options", [{}, {"fci_chunks": [2, 3]}], ids=["full-disk", "stripe"]
 )
 def test_partial_chunk_error_fails_the_run_before_anything_is_written(
     tmp_path: Path, stripe_layout: None, product_type: str, options: dict[str, object]
@@ -490,7 +490,7 @@ def test_stripe_store_holds_the_window_rows_of_the_full_disk_store(
 
     full_shape = _ingest(source, tmp_path / "ws_full", product_type)
     stripe = _ingest(
-        source, tmp_path / "ws_stripe", product_type, body_chunks=list(window)
+        source, tmp_path / "ws_stripe", product_type, fci_chunks=list(window)
     )
 
     full_root, stripe_root = _open(full_shape), _open(stripe)
@@ -532,7 +532,7 @@ def test_zip_and_loose_bundle_of_the_same_chunks_give_identical_stripe_stores(
 ):
     loose = _write_scene(tmp_path / "loose", product_type, (2, 3))
     zipped = _zip_scene(tmp_path / "zipped", product_type, (2, 3))
-    options: dict[str, Any] = {"body_chunks": [2, 3]}
+    options: dict[str, Any] = {"fci_chunks": [2, 3]}
 
     from_loose = _ingest(loose, tmp_path / "ws_loose", product_type, **options)
     from_zip = _ingest(zipped, tmp_path / "ws_zip", product_type, **options)
@@ -561,7 +561,7 @@ def test_partial_input_stripe_differs_from_full_input_stripe_only_as_documented(
 ):
     full_source = _write_scene(tmp_path / "full", product_type, (1, 2, 3))
     partial_source = _write_scene(tmp_path / "partial", product_type, present)
-    options: dict[str, Any] = {"body_chunks": list(window)}
+    options: dict[str, Any] = {"fci_chunks": list(window)}
 
     full = _ingest(full_source, tmp_path / "ws_full", product_type, **options)
     partial = _ingest(partial_source, tmp_path / "ws_partial", product_type, **options)
@@ -582,7 +582,7 @@ def test_partial_input_stripe_differs_from_full_input_stripe_only_as_documented(
 @pytest.mark.parametrize(
     ("second", "incoming_name"),
     [
-        ({"body_chunks": [1, 2]}, "eumetsat_repeat_cycle_v1_stripe_c1_2"),
+        ({"fci_chunks": [1, 2]}, "eumetsat_repeat_cycle_v1_stripe_c1_2"),
         ({}, "eumetsat_repeat_cycle_v1"),
     ],
     ids=["other-window", "full-disk-run"],
@@ -597,7 +597,7 @@ def test_run_with_another_window_is_rejected_and_the_stripe_store_is_untouched(
     first_source = _write_scene(tmp_path / "first", product_type, (2, 3))
     second_source = _write_scene(tmp_path / "second", product_type, (1, 2))
     workspace = tmp_path / "ws"
-    store = _ingest(first_source, workspace, product_type, body_chunks=[2, 3])
+    store = _ingest(first_source, workspace, product_type, fci_chunks=[2, 3])
     before = store_files(store)
     group = _group_names(product_type)[0][0]
     counts_before = np.asarray(_open(store)[group]["counts"][...])
@@ -615,7 +615,7 @@ def test_run_with_another_window_is_rejected_and_the_stripe_store_is_untouched(
     np.testing.assert_array_equal(_open(store)[group]["counts"][...], counts_before)
 
     # The store still takes its own window.
-    _ingest(first_source, workspace, product_type, body_chunks=[2, 3])
+    _ingest(first_source, workspace, product_type, fci_chunks=[2, 3])
     assert store_files(store) == before
 
 
@@ -628,11 +628,11 @@ def test_same_stripe_twice_resumes_without_error_and_leaves_the_data_equal(
 ):
     source = _write_scene(tmp_path / "src", product_type, (2, 3))
     workspace = tmp_path / "ws"
-    store = _ingest(source, workspace, product_type, body_chunks=[2, 3])
+    store = _ingest(source, workspace, product_type, fci_chunks=[2, 3])
     before = store_files(store)
     assert any("/counts/c/" in rel for rel in before)
 
-    resumed = _ingest(source, workspace, product_type, body_chunks=[2, 3], **_RESUME)
+    resumed = _ingest(source, workspace, product_type, fci_chunks=[2, 3], **_RESUME)
 
     assert resumed == store
     assert store_files(store) == before

@@ -154,10 +154,11 @@ class MtgFciL1cConfig(BasePluginConfig):
       cross-check against ``zarr_shard_overrides`` for divisibility. Run at schema
       build time when dimsize is known.
 
-    Example (full-disk shard with 4 chunks per shard along Y; X stays full row):
-        zarr_chunk_overrides={"data_1km": (1, 2784, 11136, 1)}
-        zarr_shard_overrides={"data_1km": (1, 11136, 11136, 1)}
-        # 11136 / 2784 = 4 chunks along Y, 11136 / 11136 = 1 along X.
+    Example (one full disk per shard; X stays full row):
+        zarr_chunk_overrides={"data_1km": (1, 556, 11136, 1)}
+        zarr_shard_overrides={"data_1km": (1, 11676, 11136, 1)}
+        # 556 is the 1km maximum (MAX_CHUNK_Y_PER_RESOLUTION); the shard is
+        # 21 chunks along Y (11676 >= 11136 disk rows), 1 along X.
 
     Trade-off: chunks larger than the nc_part row count (default 278 for
     1km) cause read-modify-write during streaming ingest. Cheap in
@@ -203,12 +204,12 @@ class MtgFciL1cConfig(BasePluginConfig):
     fails the scene before any write.
     """
 
-    body_chunks: list[int] | None = None
+    fci_chunks: list[int] | None = None
     """Inclusive ``[first, last]`` range of BODY chunk numbers to ingest.
 
     Chunk numbers are 1-based; both FDHSI and HRFI have 40. Restricts the
     scene to the stripe of rows those chunks cover. ``None`` means the full
-    disk. Pass as a JSON list, e.g. ``--option 'body_chunks=[32, 40]'``.
+    disk. Pass as a JSON list, e.g. ``--option 'fci_chunks=[32, 40]'``.
     """
 
     _template_config: ZarrTemplateConfig = field(
@@ -237,7 +238,7 @@ class MtgFciL1cConfig(BasePluginConfig):
         where the chunk shape for each group is known.
         """
         self._validate_partial_chunk()
-        self._validate_body_chunks()
+        self._validate_fci_chunks()
         self._validate_zarr_shard_target_bytes()
         self._validate_pixel_time_dtype()
         self._validate_projection_units()
@@ -252,17 +253,17 @@ class MtgFciL1cConfig(BasePluginConfig):
                 f"got {self.partial_chunk!r}"
             )
 
-    def _validate_body_chunks(self) -> None:
-        if self.body_chunks is None:
+    def _validate_fci_chunks(self) -> None:
+        if self.fci_chunks is None:
             return
-        value = self.body_chunks
+        value = self.fci_chunks
         if (
             not isinstance(value, (list, tuple))
             or len(value) != 2
             or any(isinstance(n, bool) or not isinstance(n, int) for n in value)
         ):
             raise ValueError(
-                f"body_chunks must be [first, last], two integers, got {value!r}"
+                f"fci_chunks must be [first, last], two integers, got {value!r}"
             )
         first, last = value
         # Both products have the same count; with no product_type use the common bound.
@@ -277,7 +278,7 @@ class MtgFciL1cConfig(BasePluginConfig):
             )
         if not 1 <= first <= last <= bound:
             raise ValueError(
-                f"body_chunks {value!r} must satisfy 1 <= first <= last <= {bound}"
+                f"fci_chunks {value!r} must satisfy 1 <= first <= last <= {bound}"
             )
 
     def _validate_zarr_shard_target_bytes(self) -> None:

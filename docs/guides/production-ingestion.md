@@ -130,7 +130,7 @@ those steps and adds fan-out, logging, and idempotent re-runs.
 | `--option resolutions=...` | `RESOLUTIONS` |
 | `--option flat_store=true` | `FLAT_STORE=1` (see [Flat store layout](../customization.md#flat-store-layout)) |
 | `--option product_type=...` | `PRODUCT_TYPE` (default `FDHSI`) |
-| `--option body_chunks=[32,40]` | `BODY_CHUNKS=[32,40]` (see [Stripe stores](../customization.md#stripe-stores)) |
+| `--option fci_chunks=[32,40]` | `FCI_CHUNKS=[32,40]` (see [Stripe stores](../customization.md#stripe-stores)) |
 | `--option partial_chunk=...` | `PARTIAL_CHUNK` (see [Partial scenes](../customization.md#partial-scenes)) |
 | `--slot-start`, `--slot-end` | `SLOT_START`, `SLOT_END` |
 | number of parallel processes | `PARALLELISM` |
@@ -193,7 +193,7 @@ Host requirement: `12 × 2.5 GiB = 30 GiB` RAM plus 12 cores. Reduce
 `INPUT` can point at unpacked chunk `.nc` files instead of ZIPs, locally or on
 S3 (see [Input forms](../customization.md#input-forms)). A scene is the chunk
 files of one repeat cycle, and the slot window selects scenes exactly as it
-selects ZIPs. To keep only the northern stripe of the disk, add `BODY_CHUNKS`;
+selects ZIPs. To keep only the northern stripe of the disk, add `FCI_CHUNKS`;
 `PARTIAL_CHUNK` is optional:
 
 ```bash
@@ -203,12 +203,12 @@ INPUT=file:///data/fci-chunks \
 TARGET=file:///data/fci_stripe.zarr \
 PRODUCT_NAME=fci-stripe \
 PRODUCT_TYPE=FDHSI \
-BODY_CHUNKS='[32,40]' \
+FCI_CHUNKS='[32,40]' \
 ASSUME_YES=1 \
 bash scripts/fci-ingest.sh
 ```
 
-The script rejects a `BODY_CHUNKS` that is not two integers in brackets without
+The script rejects an `FCI_CHUNKS` that is not two integers in brackets without
 spaces, and a `PARTIAL_CHUNK` other than `fill` or `error`, before it calls
 Firecube. Remote chunks are downloaded into each pod's workspace and stay there
 unless `cleanup_workspace=true` is passed (for example through

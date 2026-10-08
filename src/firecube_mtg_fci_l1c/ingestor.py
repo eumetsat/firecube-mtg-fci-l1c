@@ -345,7 +345,7 @@ def _check_body_chunk_rows(
         except ValueError as exc:
             raise AssemblyPreconditionError(
                 f"Cannot read the BODY chunk number of {part_path.name}: {exc}. "
-                "body_chunks checks each part's rows by its chunk number."
+                "fci_chunks checks each part's rows by its chunk number."
             ) from exc
         if not 1 <= number <= len(table):
             raise AssemblyPreconditionError(
@@ -1016,7 +1016,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
 
         ``nc_parts`` are local files in BODY-then-TRAIL chunk order; ``label``
         names the scene in errors. ``chunk_numbers`` maps parts to their chunk
-        numbers where the file name may not carry one. With ``body_chunks``
+        numbers where the file name may not carry one. With ``fci_chunks``
         every part's rows are checked against the row table, then every
         group's row coverage is checked, before the scene emits any intent.
         Intents are then appended incrementally so a mid-scene failure
@@ -1082,7 +1082,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             plan.group: self._read_part_ranges(plan, nc_parts, shared_reader)
             for plan in plans
         }
-        if config.body_chunks is not None:
+        if config.fci_chunks is not None:
             for plan in plans:
                 _check_body_chunk_rows(
                     plan.product_type,
@@ -1296,7 +1296,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             "scratch_dir",
             "zarr_chunk_y",
             "time_epoch",
-            "body_chunks",
+            "fci_chunks",
         ]
 
     def slice_meta(self, ctx: PluginContext) -> dict[str, Any]:
@@ -1314,8 +1314,8 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             "scratch_dir": config.scratch_dir,
             "zarr_chunk_y": config.zarr_chunk_y,
             "time_epoch": config.time_epoch,
-            "body_chunks": (
-                None if config.body_chunks is None else list(config.body_chunks)
+            "fci_chunks": (
+                None if config.fci_chunks is None else list(config.fci_chunks)
             ),
         }
 

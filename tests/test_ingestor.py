@@ -1360,13 +1360,13 @@ def test_partial_chunk_change_does_not_bypass_the_resume_conflict(
     np.testing.assert_array_equal(after, before)
 
 
-# --- Stripe read path (body_chunks) --------------------------------------------
+# --- Stripe read path (fci_chunks) --------------------------------------------
 
 # Synthetic FDHSI 1 km grid: 24 rows, six BODY chunks of four rows. With
-# body_chunks=[3, 4] (rows [8, 16)) and 3-row output chunks the window is
+# fci_chunks=[3, 4] (rows [8, 16)) and 3-row output chunks the window is
 # [6, 18): BODY 2 and 5 reach into its edge chunks, BODY 1 and 6 lie outside.
 _STRIPE_TABLE = ((0, 4), (4, 8), (8, 12), (12, 16), (16, 20), (20, 24))
-_STRIPE_OPTIONS: dict[str, Any] = {"zarr_chunk_y": 3, "body_chunks": [3, 4]}
+_STRIPE_OPTIONS: dict[str, Any] = {"zarr_chunk_y": 3, "fci_chunks": [3, 4]}
 
 
 @pytest.fixture

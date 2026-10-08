@@ -133,7 +133,7 @@ def _copy_attrs(attrs: Mapping[str, Any] | None) -> dict[str, Any] | None:
 
 def _group_attrs(
     resolution: str,
-    body_chunks: list[int] | None = None,
+    fci_chunks: list[int] | None = None,
     y_window: tuple[int, int] | None = None,
 ) -> dict[str, Any]:
     """Global attributes for the group holding one resolution.
@@ -148,8 +148,8 @@ def _group_attrs(
         "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
         "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
     }
-    if body_chunks is not None and y_window is not None:
-        attrs["body_chunks"] = [int(n) for n in body_chunks]
+    if fci_chunks is not None and y_window is not None:
+        attrs["fci_chunks"] = [int(n) for n in fci_chunks]
         attrs["disk_row_start"] = int(y_window[0])
         attrs["disk_row_stop"] = int(y_window[1])
     return attrs
@@ -192,7 +192,7 @@ def _validate_shard_override_window(
     if shards[1] > max_shard_y:
         raise ValueError(
             f"zarr_shard_overrides[{group!r}] shard y {shards[1]} exceeds the "
-            f"body_chunks stripe of {ny} rows ({max_shard_y} rows in whole "
+            f"fci_chunks stripe of {ny} rows ({max_shard_y} rows in whole "
             f"chunks of {chunk_y}) for array {name!r}. Use a shard y <= "
             f"{max_shard_y}, or drop the shard override."
         )
@@ -525,7 +525,7 @@ def build_specs(config: MtgFciL1cConfig, product_type: str) -> list[ZarrGroupSpe
                     for variable in enabled_variables
                 ],
                 coord_names=_coord_names_for(enabled_variables, TIME_COORD_NAME),
-                attrs=_group_attrs(resolution, config.body_chunks, y_window),
+                attrs=_group_attrs(resolution, config.fci_chunks, y_window),
             )
         )
     return group_specs

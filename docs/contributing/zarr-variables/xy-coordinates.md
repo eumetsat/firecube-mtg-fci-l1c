@@ -28,7 +28,7 @@ def _latitude_source(ctx: VariableContext) -> np.ndarray | None:
     return None if pair is None else pair[0]
 ```
 
-`ctx.geo_provider` is populated during the static phase. Call `resolution_m(ctx.resolution)` to map a bare resolution string (`"1km"`, `"2km"`, `"500m"`) to metres, then `get_lat_lon(grids_file, res_m)` to get the full-disk grid. A group of a stripe store (`body_chunks`) holds only the rows of `ctx.y_window`, so pass `rows=ctx.y_window` to get just those rows: the provider then caches only that slice. The provider caches the result on `(grids_file, resolution_m, rows)` so repeated calls within a run are free. Return `None` to skip writing.
+`ctx.geo_provider` is populated during the static phase. Call `resolution_m(ctx.resolution)` to map a bare resolution string (`"1km"`, `"2km"`, `"500m"`) to metres, then `get_lat_lon(grids_file, res_m)` to get the full-disk grid. A group of a stripe store (`fci_chunks`) holds only the rows of `ctx.y_window`, so pass `rows=ctx.y_window` to get just those rows: the provider then caches only that slice. The provider caches the result on `(grids_file, resolution_m, rows)` so repeated calls within a run are free. Return `None` to skip writing.
 
 ### Variable entry
 

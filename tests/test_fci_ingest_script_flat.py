@@ -63,7 +63,7 @@ def _env(
         "EXTRA_OPTIONS",
         "RESOLUTIONS",
         "SHIM_FAIL_ZARR_SLOTS",
-        "BODY_CHUNKS",
+        "FCI_CHUNKS",
         "PARTIAL_CHUNK",
     ):
         env.pop(name, None)
@@ -244,7 +244,7 @@ def _recorded(calls: Path) -> dict[str, list[str]]:
     return grouped
 
 
-def test_body_chunks_and_partial_chunk_reach_every_firecube_call(
+def test_fci_chunks_and_partial_chunk_reach_every_firecube_call(
     tmp_path: Path, input_dir: Path
 ) -> None:
     recorder, calls = _recorder(tmp_path)
@@ -255,7 +255,7 @@ def test_body_chunks_and_partial_chunk_reach_every_firecube_call(
             input_dir,
             recorder,
             TIME_SLOTS="2",
-            BODY_CHUNKS="[32,40]",
+            FCI_CHUNKS="[32,40]",
             PARTIAL_CHUNK="error",
         )
     )
@@ -267,11 +267,11 @@ def test_body_chunks_and_partial_chunk_reach_every_firecube_call(
         2,
     ]
     for line in (line for lines in recorded.values() for line in lines):
-        assert "--option body_chunks=[32,40]" in line, line
+        assert "--option fci_chunks=[32,40]" in line, line
         assert "--option partial_chunk=error" in line, line
 
 
-def test_body_chunks_and_partial_chunk_are_absent_when_unset(
+def test_fci_chunks_and_partial_chunk_are_absent_when_unset(
     tmp_path: Path, input_dir: Path
 ) -> None:
     recorder, calls = _recorder(tmp_path)
@@ -282,7 +282,7 @@ def test_body_chunks_and_partial_chunk_are_absent_when_unset(
     assert recorded["preallocate"], "preallocate was not called"
     assert recorded["ingest"], "ingest was not called"
     for line in (line for lines in recorded.values() for line in lines):
-        assert "--option body_chunks=" not in line, line
+        assert "--option fci_chunks=" not in line, line
         assert "--option partial_chunk=" not in line, line
 
 
@@ -316,13 +316,13 @@ def test_product_type_defaults_to_fdhsi(tmp_path: Path, input_dir: Path) -> None
 @pytest.mark.parametrize(
     ("name", "value"),
     [
-        ("BODY_CHUNKS", "32,40"),
-        ("BODY_CHUNKS", "[32, 40]"),
-        ("BODY_CHUNKS", "[32,x]"),
+        ("FCI_CHUNKS", "32,40"),
+        ("FCI_CHUNKS", "[32, 40]"),
+        ("FCI_CHUNKS", "[32,x]"),
         ("PARTIAL_CHUNK", "maybe"),
     ],
 )
-def test_invalid_body_chunks_or_partial_chunk_stops_before_any_firecube_call(
+def test_invalid_fci_chunks_or_partial_chunk_stops_before_any_firecube_call(
     tmp_path: Path, input_dir: Path, name: str, value: str
 ) -> None:
     recorder, calls = _recorder(tmp_path)
@@ -337,16 +337,16 @@ def test_invalid_body_chunks_or_partial_chunk_stops_before_any_firecube_call(
 def test_bracketed_option_value_is_not_expanded_as_a_file_glob(
     tmp_path: Path, input_dir: Path
 ) -> None:
-    """``body_chunks=[32,40]`` is a glob pattern to the shell; it must stay literal."""
+    """``fci_chunks=[32,40]`` is a glob pattern to the shell; it must stay literal."""
     recorder, calls = _recorder(tmp_path)
     workdir = tmp_path / "cwd"
     workdir.mkdir()
-    (workdir / "body_chunks=3").touch()
+    (workdir / "fci_chunks=3").touch()
 
-    _run(_env(tmp_path, input_dir, recorder, BODY_CHUNKS="[32,40]"), cwd=workdir)
+    _run(_env(tmp_path, input_dir, recorder, FCI_CHUNKS="[32,40]"), cwd=workdir)
 
     ingest_lines = _recorded(calls)["ingest"]
     assert ingest_lines, "ingest was not called"
     for line in ingest_lines:
-        assert "--option body_chunks=[32,40]" in line, line
-        assert "body_chunks=3" not in line, line
+        assert "--option fci_chunks=[32,40]" in line, line
+        assert "fci_chunks=3" not in line, line

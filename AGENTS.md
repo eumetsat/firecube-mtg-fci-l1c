@@ -71,7 +71,7 @@ Keep the root README user/operator focused.
 - Zarr variable declarations and source functions: `src/firecube_mtg_fci_l1c/_variables.py`
 - `Variable`/`VariableContext` and array/group spec building: `src/firecube_mtg_fci_l1c/_schema.py`
 - Per-resolution plans, group naming (`data_<res>` or root for `flat_store`), and
-  `body_chunks` stripe windows: `src/firecube_mtg_fci_l1c/_group_plan.py`
+  `fci_chunks` stripe windows: `src/firecube_mtg_fci_l1c/_group_plan.py`
 - Ingest orchestration and write intents: `src/firecube_mtg_fci_l1c/ingestor.py`
 - Input helpers for ZIPs and loose chunk files (product type, timestamps, chunk
   names, per-cycle scene bundles): `src/firecube_mtg_fci_l1c/_data.py`

@@ -32,7 +32,7 @@
 # fixes the preallocated store shape. The WINDOW (FROM/TO or SLOT_START/SLOT_END)
 # is only what THIS run ingests. Grow the window later without re-preallocating.
 #
-# BODY_CHUNKS=[first,last] (no spaces) stores only the stripe of the disk those
+# FCI_CHUNKS=[first,last] (no spaces) stores only the stripe of the disk those
 # BODY chunks cover; PARTIAL_CHUNK=fill|error says what to do with rows that no
 # input file covers. Both are passed to preallocation and every pod, and only
 # when set.
@@ -46,7 +46,7 @@
 # scrolling screen/tmux), pod_<start>_<end>.log is each pod's firecube output,
 # results.txt the ok/FAIL lines. Override the location with LOGDIR or LOG_ROOT.
 set -euo pipefail
-# No pathname expansion: option values such as body_chunks=[32,40] are glob
+# No pathname expansion: option values such as fci_chunks=[32,40] are glob
 # patterns to the shell and must reach firecube literally.
 set -f
 
@@ -88,7 +88,7 @@ EXTRACT_WORKERS="${EXTRACT_WORKERS:-}"               # parallel ZIP extraction p
 EXTRA_OPTIONS="${EXTRA_OPTIONS:-}"                   # extra "--option k=v ..." appended to every invocation
 RESOLUTIONS="${RESOLUTIONS:-}"                        # optional subset, e.g. "1km" or "500m,1km"
 FLAT_STORE="${FLAT_STORE:-}"                          # 1|true|yes|on = arrays at store root (one resolution only)
-BODY_CHUNKS="${BODY_CHUNKS:-}"                        # [first,last] BODY chunk numbers, no spaces: stripe store
+FCI_CHUNKS="${FCI_CHUNKS:-}"                          # [first,last] BODY chunk numbers, no spaces: stripe store
 PARTIAL_CHUNK="${PARTIAL_CHUNK:-}"                    # fill|error: rows no input file covers
 FIRECUBE="${FIRECUBE:-firecube}"
 ASSUME_YES="${ASSUME_YES:-0}"
@@ -159,11 +159,11 @@ case "${FLAT_STORE,,}" in
   ""|0|false|no|off) ;;
   *) echo "ERROR: FLAT_STORE='$FLAT_STORE' is not a boolean (use 1/true/yes/on or 0/false/no/off)." >&2; exit 2 ;;
 esac
-if [[ -n "$BODY_CHUNKS" ]]; then
-  if [[ ! "$BODY_CHUNKS" =~ ^\[[0-9]+,[0-9]+\]$ ]]; then
-    echo "ERROR: BODY_CHUNKS='$BODY_CHUNKS' is not [first,last] (two integers, no spaces, e.g. [32,40])." >&2; exit 2
+if [[ -n "$FCI_CHUNKS" ]]; then
+  if [[ ! "$FCI_CHUNKS" =~ ^\[[0-9]+,[0-9]+\]$ ]]; then
+    echo "ERROR: FCI_CHUNKS='$FCI_CHUNKS' is not [first,last] (two integers, no spaces, e.g. [32,40])." >&2; exit 2
   fi
-  COMMON_OPTS+=(--option "body_chunks=$BODY_CHUNKS")
+  COMMON_OPTS+=(--option "fci_chunks=$FCI_CHUNKS")
 fi
 if [[ -n "$PARTIAL_CHUNK" ]]; then
   case "$PARTIAL_CHUNK" in

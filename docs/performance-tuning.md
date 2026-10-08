@@ -27,7 +27,7 @@ slot. Measured on an aarch64 host (NVIDIA GB10) on 2026-10-08 with
 |---|---|---|
 | Full-disk ZIP | about 2.0 GiB (mean 2.017 GiB over 4 runs) | measured |
 | Full-disk unpacked chunks | about 2.0 GiB (mean 2.019 GiB over 2 runs) | measured |
-| Stripe store, `body_chunks=[32, 40]` | about 1.25 GiB (3 runs, 1.252 to 1.253 GiB) | measured |
+| Stripe store, `fci_chunks=[32, 40]` | about 1.25 GiB (3 runs, 1.252 to 1.253 GiB) | measured |
 
 A single run now and then peaks 50 to 130 MiB higher than the others (highest
 seen: 2.15 GiB). Plan for 2.5 GiB per pod to leave room for that (calculated,
@@ -219,7 +219,7 @@ scaling plots and benchmark workload notes.
 | Symptom | Cause | Recovery |
 |---|---|---|
 | `ClaimConflictError` on startup | Two pods have overlapping slot ranges | Ensure `--slot-start`/`--slot-end` ranges do not overlap. The failed pod can be re-submitted with a corrected range. |
-| `ResumeConflictError` on a store ingested before `body_chunks` existed | Spans written by plugin 0.2.0 or earlier carry no `body_chunks` value, so a single-pod run (no `--slot-start`/`--slot-end`) cannot prove it matches them | Add `--option resume_existing=true` to continue, or `--option force_reingest=true` to overwrite |
+| `ResumeConflictError` on a store ingested before `fci_chunks` existed | Spans written by plugin 0.2.0 or earlier carry no `fci_chunks` value, so a single-pod run (no `--slot-start`/`--slot-end`) cannot prove it matches them | Add `--option resume_existing=true` to continue, or `--option force_reingest=true` to overwrite |
 | `ResumeConflictError` on restart | A previous run was interrupted (SIGKILL, OOM) and left a `started` record | 1. `firecube chunks runs list --product-name <name> --status started` to find the stale run ID. 2. `firecube chunks runs abandon --product-name <name> --run-id <id> --reason "crash recovery" --yes-i-really-mean-it` to clear the record. 3. Re-run the same slot range. Data written before the kill is intact; re-ingest overwrites the partial slot cleanly. |
 | Some slots missing after a run | A pod exited with an error | Re-submit the missing slot range. Writes are idempotent with `force_reingest=true` (the default in `scripts/fci-ingest.sh`). |
 
