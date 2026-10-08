@@ -22,6 +22,7 @@ import pytest
 from firecube_mtg_fci_l1c._constants import PRODUCT_TYPE_FDHSI, PRODUCT_TYPE_HRFI
 from firecube_mtg_fci_l1c._data import (
     detect_product_type,
+    extract_slot_time_from_path,
     extract_timestamp_from_path,
     is_valid_fci_zip,
     validate_no_mixed_products,
@@ -106,3 +107,30 @@ def test_extract_timestamp_hrfi_filename():
     )
     ts = extract_timestamp_from_path(path)
     assert ts == datetime(2024, 10, 1, 12, 0, 7)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("start", "expected"),
+    [
+        ("20241001120007", datetime(2024, 10, 1, 12, 0, 0)),  # typical start
+        ("20241001120000", datetime(2024, 10, 1, 12, 0, 0)),  # already round
+        ("20241001120959", datetime(2024, 10, 1, 12, 9, 0)),  # last second
+        ("20241231235959", datetime(2024, 12, 31, 23, 59, 0)),  # no carry-over
+    ],
+)
+def test_slot_time_is_observation_start_floored_to_the_minute(
+    start: str, expected: datetime
+) -> None:
+    path = Path(
+        "W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI1+FCI-1C-RRAD-FDHSI-FD--"
+        f"x-x---x_C_EUMT_20241001120234_IDPFI_OPE_{start}_"
+        "20241001120924_N__C_0073_0000.zip"
+    )
+
+    assert extract_slot_time_from_path(path) == expected
+
+
+@pytest.mark.unit
+def test_slot_time_is_none_without_timestamp_in_filename() -> None:
+    assert extract_slot_time_from_path(Path("no-timestamp-here.zip")) is None

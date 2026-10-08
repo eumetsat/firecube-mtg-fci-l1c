@@ -62,7 +62,7 @@ from ._constants import (
 )
 from ._data import (
     detect_product_type,
-    extract_timestamp_from_path,
+    extract_slot_time_from_path,
     is_valid_fci_zip,
     validate_no_mixed_products,
 )
@@ -255,9 +255,9 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         )
 
     def inspect_item(self, item: Any, ctx: PluginContext) -> ItemInfo | None:
-        """Extract the timestamp coordinate from an input item path."""
+        """Extract the time coordinate label from an input item path."""
         del ctx
-        timestamp = extract_timestamp_from_path(Path(str(item)))
+        timestamp = extract_slot_time_from_path(Path(str(item)))
         if timestamp is None:
             return None
         return ItemInfo(coordinate=timestamp)
@@ -694,7 +694,7 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         if not nc_parts:
             return f"No nc_parts found in {zip_path.name}"
 
-        timestamp = cast(Any, extract_timestamp_from_path(zip_path))
+        timestamp = cast(Any, extract_slot_time_from_path(zip_path))
         if timestamp is None:
             return f"Could not extract timestamp from {zip_path.name}"
 

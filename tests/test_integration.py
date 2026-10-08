@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import copy
+import datetime
 import zipfile
 from pathlib import Path
 from typing import Any, cast
@@ -950,6 +951,71 @@ def test_reused_ingestor_emits_static_for_each_target(
         grp = cast(Any, zarr.open_group(str(target), mode="r")["data_1km"])
         assert "latitude" in grp, f"{name} missing static latitude (guard not reset)"
         assert grp["latitude"].attrs.get("firecube_static_written") is True
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+def test_time_coordinate_is_floored_to_the_minute_and_gaps_stay_nat(
+    tmp_path: Path, small_fci_layout: list[int]
+):
+    """Labels are round minutes; a slot without a product stays NaT."""
+    src = tmp_path / "src"
+    # Real products start a few seconds after the nominal time. Slot 1
+    # (00:10) has no product.
+    _make_fdhsi_zip_at(src, "20240101000006")
+    _make_fdhsi_zip_at(src, "20240101002008")
+
+    out = _run_ingest(src, tmp_path, options={"include_geolocation": False})
+
+    root = zarr.open_group(str(out), mode="r")
+    for group in ("data_1km", "data_2km"):
+        times = cast(Any, root[group])["time"][:]
+        assert times.tolist() == [
+            datetime.datetime(2024, 1, 1, 0, 0, 0),
+            None,  # NaT
+            datetime.datetime(2024, 1, 1, 0, 20, 0),
+        ], group
+
+    ds = xr.open_zarr(str(out), group="data_1km", consolidated=False)
+    try:
+        # The product is selectable by its round time; it sits in slot 2.
+        selected = ds["counts"].sel(time="2024-01-01T00:20:00")
+        assert selected.shape == (4, 4, 2)
+        np.testing.assert_array_equal(selected.values, ds["counts"].isel(time=2).values)
+        assert bool(ds["counts"].isel(time=1).isnull().all())
+    finally:
+        ds.close()
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+def test_time_coordinate_is_floored_on_the_slot_range_path(
+    tmp_path: Path, small_fci_layout: list[int]
+):
+    """Slot-range ingests into a fixed axis write floored labels and resume."""
+    src = tmp_path / "src"
+    for ts in ("20240101000006", "20240101001007", "20240101003009"):
+        _make_fdhsi_zip_at(src, ts)
+    base = {
+        "write_mode": "direct",
+        "resolutions": "1km",
+        "time_epoch": "2024-01-01",
+        "time_slots": 4,
+        "include_geolocation": False,
+    }
+
+    out = _run_ingest(src, tmp_path, options={**base, "slot_start": 0, "slot_end": 2})
+    _run_ingest(src, tmp_path, options={**base, "slot_start": 2, "slot_end": 4})
+    # Re-running a range verifies the stored labels against the floored ones.
+    _run_ingest(src, tmp_path, options={**base, "slot_start": 0, "slot_end": 2})
+
+    times = cast(Any, zarr.open_group(str(out), mode="r")["data_1km"])["time"][:]
+    assert times.tolist() == [
+        datetime.datetime(2024, 1, 1, 0, 0, 0),
+        datetime.datetime(2024, 1, 1, 0, 10, 0),
+        None,  # slot 2 (00:20) has no product
+        datetime.datetime(2024, 1, 1, 0, 30, 0),
+    ]
 
 
 @pytest.mark.integration

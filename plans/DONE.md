@@ -3,6 +3,27 @@
 Dated log of design decisions and release-completion notes. New entries appended to the top.
 Related documents: [DESIGN.md](DESIGN.md), [TODO.md](TODO.md), [IDEAS.md](IDEAS.md).
 
+## 2026-10-08 — `time` coordinate floored to the minute (issue #20)
+
+### Decision
+The time label handed to Firecube is the product's observation start floored to
+the full minute (`extract_slot_time_from_path`), at both `inspect_item` and the
+write intents. The axis stays `TimeAxis.observed`, so slots without a product
+keep `NaT`. No separate variable holds the exact start; `pixel_time` has the
+per-pixel times. No config switch and no migration command.
+
+### Why not `TimeAxis.grid`
+A grid axis labels every slot at preallocation. Slots without data must stay
+`NaT`.
+
+### Effect on existing stores (verified on small stores via the CLI)
+- Preallocated store with unfloored labels: `zarr preallocate` and `direct`-mode
+  ingests fail with a `time slot N drift` error.
+- Store ingested without preallocation: ingests succeed; re-ingested slots get
+  the floored label, others keep the old one.
+- Flooring the stored labels in place makes such a store usable again. Not
+  shipped as a command: existing stores are experimental and are re-ingested.
+
 ## 2026-10-07 — Satellite position and Sun–Earth distance per slot (issue #15); astropy added
 
 ### Decision

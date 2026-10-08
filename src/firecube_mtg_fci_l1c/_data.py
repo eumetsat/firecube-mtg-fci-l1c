@@ -43,6 +43,19 @@ def extract_timestamp_from_path(path: Path) -> datetime.datetime | None:
         return None
 
 
+def extract_slot_time_from_path(path: Path) -> datetime.datetime | None:
+    """Return the ``time`` coordinate label of an FCI product, if present.
+
+    This is the observation start floored to the full minute, for example
+    ``12:20:06`` becomes ``12:20:00``, so a slot can be selected by its round
+    time. The exact acquisition times stay available in ``pixel_time``.
+    """
+    timestamp = extract_timestamp_from_path(path)
+    if timestamp is None:
+        return None
+    return timestamp.replace(second=0, microsecond=0)
+
+
 def detect_product_type(path_or_name: str | Path) -> str:
     """Return ``FDHSI`` or ``HRFI`` from the ZIP filename."""
     name = Path(path_or_name).name

@@ -58,7 +58,7 @@ Every resolution group, or the root of a flat store, contains:
 | `slope`, `offset` | `(time, channel)` | negligible | radiometric calibration (see [formula](#radiometric-calibration)) |
 | `warm_slope`, `warm_offset` | `(time, channel)` | negligible | IR 3.8 dual-gain calibration for counts above 4095; only in groups with `ir_38` (FDHSI `data_2km`, HRFI `data_1km`), `NaN` for the other channels there (see [formula](#radiometric-calibration)) |
 | `subsatellite_latitude`, `subsatellite_longitude`, `platform_altitude`, `sun_earth_distance` | `(time,)` | negligible | satellite position and Sun–Earth distance per slot (see [below](#satellite-position-and-sunearth-distance)) |
-| `time` | `(time,)` | negligible | slot timestamp coordinate, anchored by `time_epoch`; stored as `datetime64[s]` |
+| `time` | `(time,)` | negligible | slot time coordinate: the product's start time floored to the minute, anchored by `time_epoch`; stored as `datetime64[s]` |
 | `channel` | `(channel,)` | negligible | coordinate of the `channel` dimension: logical channel names such as `vis_06` and `ir_105`, stored as text |
 | radiance conversion constants | `(time, channel)` | negligible | seven per-acquisition constants for brightness temperature and reflectance (see [below](#brightness-temperature-and-reflectance)) |
 | `x`, `y` | `(x,)`, `(y,)` | negligible | GEOS projection coordinates. Default units: metres (east-positive x, north-positive y). Use `--option projection_units=radian` for radian output. See [Projection units](customization.md#projection-units). |
@@ -90,6 +90,17 @@ To write radian coordinates (the native unit from the source netCDF), pass
 reference and the schema-drift warning.
 
 ### `time` coordinate
+
+Each slot is labelled with its product's observation start time, floored to
+the full minute: a product that starts at `12:20:06` gets the label
+`12:20:00`. A slot can therefore be selected by its round time:
+
+```python
+ds.sel(time="2026-09-28T12:20:00")
+```
+
+A slot without an ingested product has no label (`NaT`). The exact
+acquisition time of every pixel is in `pixel_time`.
 
 `time` is stored as `datetime64[s]`. The `units` and `calendar` attributes are
 not written to Zarr array metadata; xarray manages them via encoding on the
