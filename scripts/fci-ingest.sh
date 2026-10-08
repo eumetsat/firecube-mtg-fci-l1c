@@ -41,6 +41,10 @@
 # needs exactly one effective resolution (e.g. RESOLUTIONS=1km); the plugin
 # rejects more, and Firecube rejects switching the layout of an existing store.
 #
+# WRITE_MODE defaults to direct. CLEANUP_WORKSPACE defaults to true and passes
+# --option cleanup_workspace=true to preallocation and every pod; set it to 0 to
+# keep the workspace.
+#
 # LOGS: every run writes to /root/logs/fci-ingest-<timestamp>-<pid>/ —
 # run.log is the full terminal transcript (review with `less -R` instead of
 # scrolling screen/tmux), pod_<start>_<end>.log is each pod's firecube output,
@@ -88,6 +92,7 @@ EXTRACT_WORKERS="${EXTRACT_WORKERS:-}"               # parallel ZIP extraction p
 EXTRA_OPTIONS="${EXTRA_OPTIONS:-}"                   # extra "--option k=v ..." appended to every invocation
 RESOLUTIONS="${RESOLUTIONS:-}"                        # optional subset, e.g. "1km" or "500m,1km"
 FLAT_STORE="${FLAT_STORE:-}"                          # 1|true|yes|on = arrays at store root (one resolution only)
+CLEANUP_WORKSPACE="${CLEANUP_WORKSPACE:-true}"        # 1|true|yes|on (default) = remove the run workspace after each run; 0|false|no|off = keep it
 FCI_CHUNKS="${FCI_CHUNKS:-}"                          # [first,last] BODY chunk numbers, no spaces: stripe store
 PARTIAL_CHUNK="${PARTIAL_CHUNK:-}"                    # fill|error: rows no input file covers
 FIRECUBE="${FIRECUBE:-firecube}"
@@ -158,6 +163,11 @@ case "${FLAT_STORE,,}" in
   1|true|yes|on) FLAT_STORE_ENABLED=1; COMMON_OPTS+=(--option "flat_store=true") ;;
   ""|0|false|no|off) ;;
   *) echo "ERROR: FLAT_STORE='$FLAT_STORE' is not a boolean (use 1/true/yes/on or 0/false/no/off)." >&2; exit 2 ;;
+esac
+case "${CLEANUP_WORKSPACE,,}" in
+  1|true|yes|on) COMMON_OPTS+=(--option "cleanup_workspace=true") ;;
+  0|false|no|off) ;;
+  *) echo "ERROR: CLEANUP_WORKSPACE='$CLEANUP_WORKSPACE' is not a boolean (use 1/true/yes/on or 0/false/no/off)." >&2; exit 2 ;;
 esac
 if [[ -n "$FCI_CHUNKS" ]]; then
   if [[ ! "$FCI_CHUNKS" =~ ^\[[0-9]+,[0-9]+\]$ ]]; then

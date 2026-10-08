@@ -67,8 +67,9 @@ firecube ingest mtg_fci_l1c \
     --input-data /path/to/fci-zips \
     --target file:///path/to/output.zarr \
     --output-format zarr \
-    --write-mode staged \
-    --option product_type=FDHSI
+    --write-mode direct \
+    --option product_type=FDHSI \
+    --option cleanup_workspace=true
 ```
 
 `--input-data` can also be a directory (or S3 prefix) of unpacked chunk `.nc`
@@ -85,9 +86,10 @@ firecube ingest mtg_fci_l1c \
     --input-data /path/to/fci-zips \
     --target file:///path/to/output-vis-06.zarr \
     --output-format zarr \
-    --write-mode staged \
+    --write-mode direct \
     --option product_type=FDHSI \
-    --option channels=vis_06
+    --option channels=vis_06 \
+    --option cleanup_workspace=true
 ```
 
 See [Customization](docs/customization.md) for all plugin options and
@@ -196,7 +198,8 @@ firecube ingest mtg_fci_l1c \
     --option time_slots="$SLOTS" \
     --option fci_grids_file="$GRIDS" \
     --slot-start 0 \
-    --slot-end 6
+    --slot-end 6 \
+    --option cleanup_workspace=true
 ```
 
 4. Verify the store has the expected groups:

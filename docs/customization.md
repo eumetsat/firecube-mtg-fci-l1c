@@ -58,10 +58,11 @@ Only `product_type` is required.
 firecube ingest mtg_fci_l1c \
     --input-data /path/to/fci-zips \
     --target file:///path/to/output.zarr \
-    --output-format zarr --write-mode staged \
+    --output-format zarr --write-mode direct \
     --option product_type=FDHSI \
     --option resolutions=1km \
-    --option include_pixel_time=false
+    --option include_pixel_time=false \
+    --option cleanup_workspace=true
 ```
 
 ```bash
@@ -69,9 +70,10 @@ firecube ingest mtg_fci_l1c \
 firecube ingest mtg_fci_l1c \
     --input-data /path/to/fci-zips \
     --target file:///path/to/output.zarr \
-    --output-format zarr --write-mode staged \
+    --output-format zarr --write-mode direct \
     --option product_type=FDHSI \
-    --option channels=vis_06,ir_105
+    --option channels=vis_06,ir_105 \
+    --option cleanup_workspace=true
 ```
 
 ---
@@ -116,9 +118,26 @@ A ZIP keeps the sensing start of the product, floored to the minute.
 
 Remote input works as for ZIPs. Firecube lists the prefix and downloads each
 file; the plugin does no downloading. Downloaded copies sit in Firecube's
-per-run workspace (`--option workspace`) and stay there after the run unless
-you pass `--option cleanup_workspace=true`. The workspace holds every remote
+per-run workspace (`--option workspace`). The workspace holds every remote
 file the run reads, so size it for the whole input.
+
+#### Workspace cleanup
+
+Firecube creates the workspace directory (by default
+`<temp dir>/mtg_fci_l1c_<random>`) at the start of every run, in `direct` and
+in `staged` write mode. It stays on disk after the run unless you pass
+`--option cleanup_workspace=true`, which deletes the whole workspace directory
+at the end of the run. `scripts/fci-ingest.sh` passes it by default; see
+`CLEANUP_WORKSPACE` in [Behavior](#behavior). In a one-slot test run with a
+local ZIP:
+
+| Write mode | Without the option | With the option |
+|---|---|---|
+| `direct` | an empty `mtg_fci_l1c_*` directory | removed |
+| `staged` | the staged store, 73 files, 359 MiB (FDHSI 2 km) | removed |
+
+Three empty directories, `firecube_controlplane_*` and two `firecube_chunks_*`,
+remain in the temp dir after every run, with or without the option.
 
 Input errors stop the run before anything is written:
 
@@ -132,8 +151,9 @@ Input errors stop the run before anything is written:
 firecube ingest mtg_fci_l1c \
     --input-data /path/to/fci-chunks \
     --target file:///path/to/output.zarr \
-    --output-format zarr --write-mode staged \
-    --option product_type=FDHSI
+    --output-format zarr --write-mode direct \
+    --option product_type=FDHSI \
+    --option cleanup_workspace=true
 ```
 
 ---
@@ -255,7 +275,8 @@ firecube ingest mtg_fci_l1c \
     --target file:///path/to/stripe.zarr \
     --output-format zarr --write-mode direct \
     --option product_type=FDHSI \
-    --option 'fci_chunks=[32,40]'
+    --option 'fci_chunks=[32,40]' \
+    --option cleanup_workspace=true
 ```
 
 The `--entry` patterns match the chunk numbers 0032 to 0040 at the end of the
@@ -276,10 +297,11 @@ grids: FDHSI 1 km, FDHSI 2 km, HRFI 500 m, and HRFI 1 km.
 firecube ingest mtg_fci_l1c \
     --input-data /path/to/fci-zips \
     --target file:///path/to/fci-1km.zarr \
-    --output-format zarr --write-mode staged \
+    --output-format zarr --write-mode direct \
     --option product_type=FDHSI \
     --option resolutions=1km \
-    --option flat_store=true
+    --option flat_store=true \
+    --option cleanup_workspace=true
 ```
 
 ```
@@ -340,9 +362,10 @@ coordinate arrays.
 firecube ingest mtg_fci_l1c \
     --input-data /path/to/fci-zips \
     --target file:///path/to/output.zarr \
-    --output-format zarr --write-mode staged \
+    --output-format zarr --write-mode direct \
     --option product_type=FDHSI \
-    --option projection_units=radian
+    --option projection_units=radian \
+    --option cleanup_workspace=true
 ```
 
 ---
@@ -420,6 +443,7 @@ Same semantics as [`--option time_epoch` / `--option time_slots`](#time-axis-opt
 | Variable | Default | Description |
 |---|---|---|
 | `FORCE_REINGEST` | `1` | `1` overwrites written slots (idempotent re-runs); `0` errors on existing slots |
+| `CLEANUP_WORKSPACE` | `true` | `1`, `true`, `yes`, or `on` (any case) adds `--option cleanup_workspace=true` to preallocation and every pod; `0`, `false`, `no`, or `off` passes nothing and keeps the workspaces. See [Workspace cleanup](#workspace-cleanup) |
 | `ASSUME_YES` | `0` | `1` skips the interactive confirmation prompt (use in CI) |
 | `DO_PREALLOCATE` | `1` | `0` skips phase 0 (use when preallocation runs separately) |
 
@@ -453,9 +477,10 @@ Override when you need a specific layout, for example **one full disk per shard*
 firecube ingest mtg_fci_l1c \
   --input-data /path/to/zips \
   --target file:///path/to/output.zarr \
-  --output-format zarr --write-mode staged \
+  --output-format zarr --write-mode direct \
   --option product_type=FDHSI \
-  --option zarr_shard_overrides='{"data_1km":[1,11398,11136,1]}'
+  --option zarr_shard_overrides='{"data_1km":[1,11398,11136,1]}' \
+  --option cleanup_workspace=true
 ```
 
 This produces `data_1km/counts` chunks of `(1, 278, 11136, 1)` (the default) and
@@ -492,9 +517,10 @@ No action needed to keep the default.
 firecube ingest mtg_fci_l1c \
     --input-data /path/to/fci-zips \
     --target file:///path/to/output.zarr \
-    --output-format zarr --write-mode staged \
+    --output-format zarr --write-mode direct \
     --option product_type=FDHSI \
-    --option zarr_compression=false
+    --option zarr_compression=false \
+    --option cleanup_workspace=true
 ```
 
 Uncompressed output is larger on disk but avoids codec overhead on read. Useful
@@ -506,9 +532,10 @@ for analysis cubes where read speed matters more than storage cost.
 firecube ingest mtg_fci_l1c \
     --input-data /path/to/fci-zips \
     --target file:///path/to/output.zarr \
-    --output-format zarr --write-mode staged \
+    --output-format zarr --write-mode direct \
     --option product_type=FDHSI \
-    --option zarr_codecs='[{"name": "blosc", "configuration": {"cname": "lz4", "clevel": 5}}]'
+    --option zarr_codecs='[{"name": "blosc", "configuration": {"cname": "lz4", "clevel": 5}}]' \
+    --option cleanup_workspace=true
 ```
 
 `zarr_codecs` accepts a JSON list of codec objects in Zarr v3 format. When set,
@@ -556,9 +583,10 @@ the file manually and pass it through `GRIDS_FILE`.
 firecube ingest mtg_fci_l1c \
   --input-data /data/fci-zips \
   --target file:///data/fci_l1c.zarr \
-  --output-format zarr --write-mode staged \
+  --output-format zarr --write-mode direct \
   --option product_type=FDHSI \
-  --option fci_grids_file=/shared/fci_grids.npz
+  --option fci_grids_file=/shared/fci_grids.npz \
+  --option cleanup_workspace=true
 ```
 
 Writes to the Zarr store are idempotent: if `latitude`/`longitude` already
@@ -583,9 +611,10 @@ Saves storage and skips the compute:
 firecube ingest mtg_fci_l1c \
   --input-data /path/to/fci-zips \
   --target file:///path/to/output.zarr \
-  --output-format zarr --write-mode staged \
+  --output-format zarr --write-mode direct \
   --option product_type=FDHSI \
-  --option include_geolocation=false
+  --option include_geolocation=false \
+  --option cleanup_workspace=true
 ```
 
 Array specs (dtype, per-resolution sizes, NaN-at-limb semantics) are in

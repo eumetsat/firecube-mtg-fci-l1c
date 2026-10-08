@@ -110,9 +110,10 @@ rows). The 41st chunk holds only the last 16 rows at 1 km (32 at 500 m, 8 at
 firecube ingest mtg_fci_l1c \
   --input-data /path/to/zips \
   --target file:///path/to/output.zarr \
-  --output-format zarr --write-mode staged \
+  --output-format zarr --write-mode direct \
   --option product_type=FDHSI \
-  --option zarr_shard_overrides='{"data_1km":[1,11398,11136,1]}'
+  --option zarr_shard_overrides='{"data_1km":[1,11398,11136,1]}' \
+  --option cleanup_workspace=true
 ```
 
 Override keys are always `data_<res>`, also for a store written with
@@ -138,8 +139,13 @@ would be ~3.8 GiB. Disable
   raises `SchemaDriftError`. Re-ingest from source to apply a new layout.
 - **`zarr_sharding=false` overrides everything**: `zarr_shard_overrides` shapes
   are ignored when sharding is disabled globally. Chunk overrides still apply.
-- **`--write-mode direct` to S3**: avoid large chunks (>1 nc_part); each nc_part
-  write becomes a download-modify-upload cycle. Use `--write-mode staged` instead.
+- **Chunk height and write mode**: keep the default chunk heights; larger ones
+  can make an output chunk meet three BODY chunk files, which the plugin
+  rejects (see [Default chunk heights](#default-chunk-heights)). Do not switch
+  to `--write-mode staged` to avoid rewriting chunks in a populated store: a
+  `staged` run replaces each output chunk or shard it writes, so rows an
+  earlier run stored there are lost. See
+  [Staged write mode](customization.md#staged-write-mode-takes-complete-scenes-only).
 
 ## Codec choice
 

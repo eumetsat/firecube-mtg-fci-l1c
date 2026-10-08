@@ -213,10 +213,11 @@ spaces, and a `PARTIAL_CHUNK` other than `fill` or `error`, before it calls
 Firecube. Scenes that leave rows of the stripe or disk uncovered, such as
 chunks 32 to 40 alone, need the default `WRITE_MODE=direct`: with
 `WRITE_MODE=staged` they fail before anything is written (see
-[Staged write mode](../customization.md#staged-write-mode-takes-complete-scenes-only)). Remote chunks are downloaded into each pod's workspace and stay there
-unless `cleanup_workspace=true` is passed (for example through
-`EXTRA_OPTIONS="--option cleanup_workspace=true"`); see
-[Input forms](../customization.md#input-forms).
+[Staged write mode](../customization.md#staged-write-mode-takes-complete-scenes-only)). Remote chunks are downloaded into each pod's workspace.
+The script passes `--option cleanup_workspace=true` by default, so Firecube
+deletes each workspace directory at the end of its run. Set
+`CLEANUP_WORKSPACE=0` to keep the workspaces; see
+[Workspace cleanup](../customization.md#workspace-cleanup).
 
 ## Multi-Host Scaling
 

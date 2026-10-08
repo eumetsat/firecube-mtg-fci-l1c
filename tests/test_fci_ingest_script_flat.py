@@ -60,6 +60,7 @@ def _env(
     env = os.environ.copy()
     for name in (
         "FLAT_STORE",
+        "CLEANUP_WORKSPACE",
         "EXTRA_OPTIONS",
         "RESOLUTIONS",
         "SHIM_FAIL_ZARR_SLOTS",
@@ -194,8 +195,9 @@ def test_flat_store_with_two_resolutions_is_rejected(
     assert not (tmp_path / "store.zarr" / "counts").exists()
 
 
-def test_invalid_flat_store_value_stops_before_any_firecube_call(
-    tmp_path: Path, input_dir: Path
+@pytest.mark.parametrize("name", ["FLAT_STORE", "CLEANUP_WORKSPACE"])
+def test_invalid_boolean_option_stops_before_any_firecube_call(
+    tmp_path: Path, input_dir: Path, name: str
 ) -> None:
     calls = tmp_path / "firecube-calls"
     recorder = tmp_path / "firecube"
@@ -205,11 +207,11 @@ def test_invalid_flat_store_value_stops_before_any_firecube_call(
     recorder.chmod(0o755)
 
     result = _run(
-        _env(tmp_path, input_dir, recorder, FLAT_STORE="maybe", RESOLUTIONS="1km")
+        _env(tmp_path, input_dir, recorder, RESOLUTIONS="1km", **{name: "maybe"})
     )
 
     assert result.returncode == 2, _output(result)
-    assert "FLAT_STORE='maybe' is not a boolean" in result.stdout, _output(result)
+    assert f"{name}='maybe' is not a boolean" in result.stdout, _output(result)
     assert not calls.exists()
     assert not (tmp_path / "store.zarr").exists()
 
@@ -269,6 +271,7 @@ def test_fci_chunks_and_partial_chunk_reach_every_firecube_call(
     for line in (line for lines in recorded.values() for line in lines):
         assert "--option fci_chunks=[32,40]" in line, line
         assert "--option partial_chunk=error" in line, line
+        assert "--option cleanup_workspace=true" in line, line
 
 
 def test_fci_chunks_and_partial_chunk_are_absent_when_unset(
@@ -276,7 +279,7 @@ def test_fci_chunks_and_partial_chunk_are_absent_when_unset(
 ) -> None:
     recorder, calls = _recorder(tmp_path)
 
-    _run(_env(tmp_path, input_dir, recorder))
+    _run(_env(tmp_path, input_dir, recorder, CLEANUP_WORKSPACE="0"))
 
     recorded = _recorded(calls)
     assert recorded["preallocate"], "preallocate was not called"
@@ -284,6 +287,7 @@ def test_fci_chunks_and_partial_chunk_are_absent_when_unset(
     for line in (line for lines in recorded.values() for line in lines):
         assert "--option fci_chunks=" not in line, line
         assert "--option partial_chunk=" not in line, line
+        assert "--option cleanup_workspace" not in line, line
 
 
 @pytest.mark.parametrize("product_type", ["FDHSI", "HRFI"])
