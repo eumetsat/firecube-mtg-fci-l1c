@@ -210,7 +210,10 @@ bash scripts/fci-ingest.sh
 
 The script rejects an `FCI_CHUNKS` that is not two integers in brackets without
 spaces, and a `PARTIAL_CHUNK` other than `fill` or `error`, before it calls
-Firecube. Remote chunks are downloaded into each pod's workspace and stay there
+Firecube. Scenes that leave rows of the stripe or disk uncovered, such as
+chunks 32 to 40 alone, need the default `WRITE_MODE=direct`: with
+`WRITE_MODE=staged` they fail before anything is written (see
+[Staged write mode](../customization.md#staged-write-mode-takes-complete-scenes-only)). Remote chunks are downloaded into each pod's workspace and stay there
 unless `cleanup_workspace=true` is passed (for example through
 `EXTRA_OPTIONS="--option cleanup_workspace=true"`); see
 [Input forms](../customization.md#input-forms).

@@ -442,7 +442,11 @@ class TestVariableDispatch:
             lambda _zip_path: datetime.datetime(2024, 1, 1, 0, 0, 0),
         )
 
+        from firecube.ingestor.api import EngineConfig
+
         ingestor = MtgFciL1cIngestor()
+        # The fake parts leave rows uncovered; core's run() sets the mode.
+        ingestor.engine_config = EngineConfig(write_mode="direct")
         ingestor.plugin_config = MtgFciL1cConfig(
             product_type="FDHSI",
             time_epoch="2024-01-01",
@@ -1023,17 +1027,20 @@ def _stripe_bundle(
 
 
 def _scene_writes(
-    item: Any, *, materialize: Any = Path, **options: Any
+    item: Any, *, materialize: Any = Path, write_mode: str = "direct", **options: Any
 ) -> tuple[list[Any], dict]:
     """Run build_write_intents on one item (FDHSI 1 km, vis_04 only).
 
     Payloads are resolved before batch cleanup; returns the slot and region
     intents as ``(kind, array, y_slice or None, data)`` and the failure
-    counters. ``materialize`` stands in for ``ctx.materialize``.
+    counters. ``materialize`` stands in for ``ctx.materialize``; the engine
+    config carries ``write_mode`` as core's ``run()`` would set it.
     """
+    from firecube.ingestor.api import EngineConfig
     from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig, MtgFciL1cIngestor
 
     ingestor = MtgFciL1cIngestor()
+    ingestor.engine_config = EngineConfig(write_mode=write_mode)
     ingestor.plugin_config = MtgFciL1cConfig(
         product_type="FDHSI",
         resolutions="1km",
@@ -1064,10 +1071,12 @@ def _scene_writes(
 
 
 def _build_scene_intents(
-    bundle: Any, *, materialize: Any = Path, **options: Any
+    bundle: Any, *, materialize: Any = Path, write_mode: str = "direct", **options: Any
 ) -> tuple[list[Any], dict]:
     """Return a bundle's region intents as ``(array, y_slice, data)`` and counters."""
-    writes, counters = _scene_writes(bundle, materialize=materialize, **options)
+    writes, counters = _scene_writes(
+        bundle, materialize=materialize, write_mode=write_mode, **options
+    )
     regions = [
         (array, y_slice, data)
         for kind, array, y_slice, data in writes
@@ -1134,15 +1143,44 @@ class TestPartialChunkOption:
         assert "missing BODY chunk(s) 28, 29, 31, 33, 34" in str(excinfo.value)
 
     @pytest.mark.parametrize("partial_chunk", ["fill", "error"])
-    def test_full_disk_scene_writes_every_output_chunk_whole(
+    def test_staged_mode_rejects_every_row_the_scene_leaves_out_of_the_disk(
         self, tmp_path, partial_chunk
+    ):
+        # Staged mode looks at the whole group window, not only at the output
+        # chunks the scene writes: [0, 8133) and [8908, 11136) are named too.
+        bundle = _stripe_bundle(tmp_path, {30: (8133, 8391), 32: (8649, 8908)})
+
+        with pytest.raises(ConfigurationError) as excinfo:
+            _build_scene_intents(
+                bundle,
+                partial_chunk=partial_chunk,
+                write_mode="staged",
+                zarr_chunk_y=556,
+            )
+
+        message = str(excinfo.value)
+        missing = ", ".join(str(n) for n in [*range(1, 30), 31, *range(33, 41)])
+        assert message.startswith(f"Scene {bundle.uri} ")
+        assert (
+            "group 'data_1km' (1km) rows [0, 8133), [8391, 8649), [8908, 11136); "
+            f"missing BODY chunk(s) {missing}"
+        ) in message
+        assert "Use --write-mode direct to ingest a scene in pieces" in message
+        assert "partial_chunk=fill" not in message
+
+    @pytest.mark.parametrize("partial_chunk", ["fill", "error"])
+    @pytest.mark.parametrize("write_mode", ["direct", "staged"])
+    def test_full_disk_scene_writes_every_output_chunk_whole(
+        self, tmp_path, partial_chunk, write_mode
     ):
         from firecube_mtg_fci_l1c._constants import BODY_CHUNK_ROWS
 
         rows = dict(enumerate(BODY_CHUNK_ROWS["FDHSI"]["1km"], start=1))
         bundle = _stripe_bundle(tmp_path, rows)
 
-        regions, counters = _build_scene_intents(bundle, partial_chunk=partial_chunk)
+        regions, counters = _build_scene_intents(
+            bundle, partial_chunk=partial_chunk, write_mode=write_mode
+        )
 
         assert counters["files_failed"] == 0
         counts = [(y, data) for array, y, data in regions if array == "counts"]

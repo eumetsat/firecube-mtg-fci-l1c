@@ -750,3 +750,147 @@ def test_second_ingest_of_a_slot_without_force_or_resume_is_refused_and_writes_n
         _ingest(later_source, workspace, product_type, force_reingest=False)
 
     assert store_files(store) == before
+
+
+# --- (h) Staged write mode takes complete scenes only ----------------------------
+#
+# A staged run replaces every output chunk (every shard, when sharded) it writes
+# in the target, so a piece of a scene would reset the rows other pieces wrote
+# there. Completing a slot in pieces is direct mode's job, see (g).
+
+_STAGED = {"write_mode": "staged"}
+
+
+@_PRODUCTS
+@pytest.mark.parametrize("sharding", [True, False], ids=["sharded", "unsharded"])
+@pytest.mark.parametrize(
+    "second_run",
+    [{"force_reingest": True}, _RESUME],
+    ids=["force_reingest", "resume_existing"],
+)
+def test_staged_ingest_of_a_missing_piece_is_refused_and_the_written_rows_survive(
+    tmp_path: Path,
+    stripe_layout: None,
+    product_type: str,
+    sharding: bool,
+    second_run: dict[str, object],
+):
+    first_source = _write_scene(tmp_path / "parts23", product_type, (2, 3))
+    later_source = _write_scene(tmp_path / "part1", product_type, (1,))
+    workspace = tmp_path / "ws"
+    store = _ingest(first_source, workspace, product_type, zarr_sharding=sharding)
+    before = store_files(store)
+
+    with pytest.raises(RuntimeError) as excinfo:
+        _ingest(
+            later_source,
+            workspace,
+            product_type,
+            zarr_sharding=sharding,
+            **_STAGED,
+            **second_run,
+        )
+
+    message = str(excinfo.value)
+    assert "--write-mode direct" in message
+    for group, res, _channels, dim in _group_names(product_type):
+        gap = f"[{_part_rows(dim, 1)[1]}, {dim})"
+        assert f"group '{group}' ({res}) rows {gap}; missing BODY chunk(s) 2, 3" in (
+            message
+        )
+    assert store_files(store) == before
+    root = _open(store)
+    for group, _res, _channels, dim in _group_names(product_type):
+        counts = np.asarray(root[group]["counts"][0, :, :, 0])
+        rows = range(_part_rows(dim, 2)[0], dim)
+        np.testing.assert_array_equal(
+            counts[rows.start :], _expected_counts(0, rows, dim)
+        )
+
+
+@_PRODUCTS
+@pytest.mark.parametrize("partial_chunk", ["fill", "error"])
+@pytest.mark.parametrize(
+    ("options", "stripe"),
+    [({}, False), ({"fci_chunks": [2, 3]}, True), ({"zarr_chunk_y": 4}, False)],
+    # chunk-aligned: no output chunk has a gap, but the shard (or a later
+    # piece's chunk) still spans rows the scene does not hold.
+    ids=["full-disk", "stripe", "chunk-aligned"],
+)
+def test_staged_mode_rejects_a_partial_scene_before_anything_is_written(
+    tmp_path: Path,
+    stripe_layout: None,
+    product_type: str,
+    partial_chunk: str,
+    options: dict[str, object],
+    stripe: bool,
+):
+    source = _write_scene(tmp_path / "src", product_type, (2, 3))
+    workspace = tmp_path / "ws"
+    workspace.mkdir()
+
+    with pytest.raises(RuntimeError) as excinfo:
+        _ingest(
+            source,
+            workspace,
+            product_type,
+            partial_chunk=partial_chunk,
+            **_STAGED,
+            **options,
+        )
+
+    message = str(excinfo.value)
+    assert "Use --write-mode direct to ingest a scene in pieces" in message
+    assert "partial_chunk=fill" not in message
+    for group, res, _channels, dim in _group_names(product_type):
+        start = _window_start(dim, 2) if stripe else 0
+        gap = f"[{start}, {_part_rows(dim, 2)[0]})"
+        assert f"group '{group}' ({res}) rows {gap}; missing BODY chunk(s) 1" in message
+    assert sorted(store_files(workspace / "out.zarr")) == ["zarr.json"]
+
+
+@_PRODUCTS
+@pytest.mark.parametrize("sharding", [True, False], ids=["sharded", "unsharded"])
+@pytest.mark.parametrize(
+    ("parts", "options"),
+    [
+        ((1, 2, 3), {}),
+        # Window [2,3] widened to the 3-row grid reaches into part 1.
+        ((1, 2, 3), {"fci_chunks": [2, 3]}),
+        # On a 4-row grid the window is exactly parts 2-3.
+        ((2, 3), {"fci_chunks": [2, 3], "zarr_chunk_y": 4}),
+    ],
+    ids=["full-disk", "stripe-widened", "stripe-exact"],
+)
+def test_staged_mode_ingests_a_scene_that_covers_its_window_as_direct_mode_does(
+    tmp_path: Path,
+    stripe_layout: None,
+    product_type: str,
+    sharding: bool,
+    parts: tuple[int, ...],
+    options: dict[str, object],
+):
+    source = _write_scene(tmp_path / "src", product_type, parts)
+    staged_ws = tmp_path / "ws_staged"
+    _ingest(
+        source,
+        staged_ws,
+        product_type,
+        zarr_sharding=sharding,
+        partial_chunk="error",
+        **_STAGED,
+        **options,
+    )
+    direct = _ingest(
+        source, tmp_path / "ws_direct", product_type, zarr_sharding=sharding, **options
+    )
+
+    staged = staged_ws / "out.zarr"
+    assert_stores_bitwise_equal(staged, direct)
+    root = _open(staged)
+    for group, _res, _channels, dim in _group_names(product_type):
+        counts = np.asarray(root[group]["counts"][0, :, :, 0])
+        first = dim - counts.shape[0]
+        np.testing.assert_array_equal(
+            counts, _expected_counts(0, range(first, dim), dim)
+        )

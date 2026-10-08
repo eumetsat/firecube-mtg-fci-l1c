@@ -141,12 +141,13 @@ firecube ingest mtg_fci_l1c \
 ## Partial scenes
 
 A scene may hold fewer chunks than the full disk, for example the nine chunks
-32 to 40 that a partial download gives you. `partial_chunk` decides what
-happens to the rows that no input file covers.
+32 to 40 that a partial download gives you. Ingest partial scenes with
+`--write-mode direct`; see [Staged write mode](#staged-write-mode-takes-complete-scenes-only).
+`partial_chunk` decides what happens to the rows that no input file covers.
 
 | Value | Behaviour |
 |---|---|
-| `fill` (default) | Rows that no input file covers are not written. They keep the array fill value (`counts` 65535, `pixel_quality` 0, `pixel_time` `NaN`), and rows written by an earlier ingest survive. Ingesting the neighbouring chunks later completes the output chunks that two pieces share. |
+| `fill` (default) | Rows that no input file covers are not written. They keep the array fill value (`counts` 65535, `pixel_quality` 0, `pixel_time` `NaN`). In `direct` write mode, rows written by an earlier ingest survive, so ingesting the neighbouring chunks later completes the output chunks that two pieces share. |
 | `error` | A scene that leaves rows uncovered in an output chunk it would write fails its batch before it writes anything. Other batches of the same run still run, and the run ends failed. The message names the missing BODY chunks. |
 
 Output chunks do not line up with BODY chunks (the default output chunk is 278
@@ -166,6 +167,23 @@ Caveats when you ingest one scene in pieces:
   `subsatellite_longitude`, `platform_altitude`) hold the mean over the files of
   the last piece ingested, not over the whole scene.
 - `pixel_time` at the edge of a piece can differ from a full-scene ingest.
+
+### Staged write mode takes complete scenes only
+
+A `staged` run writes into a local workspace and then replaces, in the target,
+every output chunk (every shard, when the store is sharded) it wrote. It does
+not carry over rows already stored in those chunks, so one piece of a scene
+would reset the rows that other pieces wrote there. In `staged` mode a scene
+must therefore cover every row of each group it writes: the full disk, or the
+whole [stripe](#stripe-stores) window. This applies with either
+`partial_chunk` value. Any other scene fails its batch before anything is
+written, with a message such as:
+
+```text
+Scene fci-scene://FDHSI/20250701000000 does not cover the rows it would write in staged write mode: group 'data_1km' (1km) rows [8618, 8649); missing BODY chunk(s) 31; group 'data_2km' (2km) rows [4309, 4324); missing BODY chunk(s) 31. Staged mode replaces every output chunk it writes in the target, so rows an earlier ingest wrote there would be lost. Use --write-mode direct to ingest a scene in pieces, or give the complete scene.
+```
+
+Rerun with `--write-mode direct`, or add the missing chunk files.
 
 ---
 
@@ -235,13 +253,15 @@ eumdac download -c EO:EUM:DAT:0662 \
 firecube ingest mtg_fci_l1c \
     --input-data /path/to/fci-chunks \
     --target file:///path/to/stripe.zarr \
-    --output-format zarr --write-mode staged \
+    --output-format zarr --write-mode direct \
     --option product_type=FDHSI \
     --option 'fci_chunks=[32,40]'
 ```
 
 The `--entry` patterns match the chunk numbers 0032 to 0040 at the end of the
-file name. Open the result with `xr.open_zarr("/path/to/stripe.zarr", group="data_1km")`.
+file name. The window starts at disk row 8618, inside chunk 31, so chunks 32
+to 40 are a partial scene for it and need `--write-mode direct`; see
+[Staged write mode](#staged-write-mode-takes-complete-scenes-only). Open the result with `xr.open_zarr("/path/to/stripe.zarr", group="data_1km")`.
 
 ---
 
@@ -391,7 +411,7 @@ Same semantics as [`--option time_epoch` / `--option time_slots`](#time-axis-opt
 
 | Variable | Default | Description |
 |---|---|---|
-| `WRITE_MODE` | `direct` | `direct` writes chunks straight to the store; `staged` writes locally first, then uploads |
+| `WRITE_MODE` | `direct` | `direct` writes chunks straight to the store; `staged` writes locally first, then uploads, and refuses [partial scenes](#staged-write-mode-takes-complete-scenes-only) |
 | `STORAGE_TYPE` | inferred from `TARGET` scheme | `local` (from `file://`) or `s3` (from `s3://`); override when inference is wrong |
 | `STORAGE_DRIVER` | `fsspec` | `fsspec` for local. For S3, use **`obstore`** because parallel writes are much faster than `fsspec` (requires the `obstore` extra: `uv sync --extra obstore`) |
 

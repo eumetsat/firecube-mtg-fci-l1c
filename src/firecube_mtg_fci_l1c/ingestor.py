@@ -299,6 +299,40 @@ def _group_coverage(
     return coverages
 
 
+def _uncovered_rows(
+    nc_part_ranges: list[tuple[Path, tuple[int, int]]],
+    y_window: tuple[int, int],
+) -> list[tuple[int, int]]:
+    """Return the half-open ranges of ``y_window`` rows that no part covers."""
+    y_start, y_stop = y_window
+    gaps: list[tuple[int, int]] = []
+    cursor = y_start
+    for _part_path, (part_start, part_stop) in _intersecting_part_ranges(
+        nc_part_ranges, y_window
+    ):
+        if part_start > cursor:
+            gaps.append((cursor, part_start))
+        cursor = max(cursor, min(part_stop, y_stop))
+    if cursor < y_stop:
+        gaps.append((cursor, y_stop))
+    return gaps
+
+
+def _describe_gaps(plan: GroupPlan, gaps: list[tuple[int, int]]) -> str:
+    """Name a group, its uncovered rows and the BODY chunks that hold them."""
+    rows = ", ".join(f"[{start}, {stop})" for start, stop in gaps)
+    missing = _missing_body_chunks(
+        plan.product_type, plan.resolution, plan.dimsize, gaps
+    )
+    chunks = (
+        f"; missing BODY chunk(s) {', '.join(str(n) for n in missing)}"
+        if missing
+        else ""
+    )
+    where = f"group {plan.group!r}" if plan.group else "the root group"
+    return f"{where} ({plan.resolution}) rows {rows}{chunks}"
+
+
 def _missing_body_chunks(
     product_type: str,
     resolution: str,
@@ -708,8 +742,9 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
         covered chunk gets one region write per contiguous covered run, so
         rows no nc_part covers are never written: they keep the array fill
         value, or what an earlier ingest wrote there. Output chunks that meet
-        no nc_part get no write. ``partial_chunk="error"`` is enforced per
-        scene in :meth:`_intents_for_scene` before any intent is emitted.
+        no nc_part get no write. ``partial_chunk="error"`` and the staged
+        write mode's refusal of partial scenes are enforced per scene in
+        :meth:`_intents_for_scene` before any intent is emitted.
 
         Only output chunks inside the plan's window are considered, so parts
         outside it are never decoded. Runs and the assembler work in
@@ -929,8 +964,9 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
                             intents=intents,
                         )
             except ConfigurationError:
-                # A configuration error (partial_chunk="error" on a partial
-                # scene) is not a per-scene failure: it fails the whole batch
+                # A configuration error (a partial scene with
+                # partial_chunk="error" or in staged write mode) is not a
+                # per-scene failure: it fails the whole batch
                 # before the batch writes anything, and core ends the run
                 # failed. Other batches of the run are still processed.
                 raise
@@ -1113,47 +1149,63 @@ class MtgFciL1cIngestor(DirectZarrIngestor):
             part_ranges.append((part_path, rows))
         return part_ranges
 
-    @staticmethod
     def _check_partial_coverage(
+        self,
         label: str,
         plans: list[GroupPlan],
         part_ranges: dict[str, list[tuple[Path, tuple[int, int]]]],
         config: MtgFciL1cConfig,
     ) -> None:
-        """Validate every group's coverage; raise for gaps with ``partial_chunk="error"``.
+        """Validate every group's coverage; raise for a partial scene where it is refused.
 
         Overlapping parts and more than two parts in one output chunk raise
-        :class:`AssemblyPreconditionError` in either mode. Rows of a written
-        output chunk that no part covers raise :class:`ConfigurationError`
-        naming the scene, the group and the missing BODY chunks when
+        :class:`AssemblyPreconditionError` in either mode.
+
+        In ``staged`` write mode a scene must cover the whole window of every
+        group it writes, whatever ``partial_chunk`` says: a staged run
+        replaces each output chunk, or shard, it writes in the target, so a
+        piece of a scene would reset rows that other pieces wrote. Otherwise,
+        rows of a written output chunk that no part covers raise when
         ``partial_chunk`` is ``"error"``; with ``"fill"`` they are left
-        unwritten by :meth:`_emit_spatial_intents`. Only output chunks inside
-        the group's window are checked.
+        unwritten by :meth:`_emit_spatial_intents`. Both errors are
+        :class:`ConfigurationError` naming the scene, the group, the rows and
+        the missing BODY chunks.
+
+        The write mode is read only for a scene that leaves window rows
+        uncovered.
         """
-        problems: list[str] = []
+        chunk_problems: list[str] = []
+        window_problems: list[str] = []
         for plan in plans:
             chunk_y = config.get_group_chunk_shape(plan.resolution)[1]
             coverages = _group_coverage(
                 part_ranges[plan.group], (plan.y_start, plan.y_stop), chunk_y
             )
-            gaps = [gap for coverage in coverages for gap in coverage.gaps]
-            if not gaps or config.partial_chunk != "error":
+            if not coverages:
+                # No part meets the window: the group gets no write.
                 continue
-            rows = ", ".join(f"[{start}, {stop})" for start, stop in gaps)
-            missing = _missing_body_chunks(
-                plan.product_type, plan.resolution, plan.dimsize, gaps
+            window_gaps = _uncovered_rows(
+                part_ranges[plan.group], (plan.y_start, plan.y_stop)
             )
-            chunks = (
-                f"; missing BODY chunk(s) {', '.join(str(n) for n in missing)}"
-                if missing
-                else ""
+            if window_gaps:
+                window_problems.append(_describe_gaps(plan, window_gaps))
+            gaps = [gap for coverage in coverages for gap in coverage.gaps]
+            if gaps:
+                chunk_problems.append(_describe_gaps(plan, gaps))
+        if window_problems and self.engine_config.write_mode == "staged":
+            raise ConfigurationError(
+                f"Scene {label} does not cover the rows it would write in staged "
+                "write mode: "
+                + "; ".join(window_problems)
+                + ". Staged mode replaces every output chunk it writes in the "
+                "target, so rows an earlier ingest wrote there would be lost. "
+                "Use --write-mode direct to ingest a scene in pieces, or give "
+                "the complete scene."
             )
-            where = f"group {plan.group!r}" if plan.group else "the root group"
-            problems.append(f"{where} ({plan.resolution}) rows {rows}{chunks}")
-        if problems:
+        if chunk_problems and config.partial_chunk == "error":
             raise ConfigurationError(
                 f"Scene {label} does not cover output chunks it would write: "
-                + "; ".join(problems)
+                + "; ".join(chunk_problems)
                 + ". Add the missing chunk files, or set --option "
                 "partial_chunk=fill to write only the covered rows."
             )
