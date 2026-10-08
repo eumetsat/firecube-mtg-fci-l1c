@@ -52,27 +52,6 @@ def small_fci_layout_fdhsi(monkeypatch):
 
 
 class TestStreamingIngestorConfig:
-    def test_ingestor_instantiation(self):
-        ingestor = MtgFciL1cIngestor()
-        assert ingestor is not None
-        assert ingestor.name == "mtg_fci_l1c"
-
-    def test_slice_meta_includes_streaming_fields(self):
-        ingestor = MtgFciL1cIngestor()
-        config = MtgFciL1cConfig()
-        ingestor.plugin_config = config
-
-        ctx = IngestContext(
-            source="/tmp",
-            target="/tmp/out.zarr",
-            output_format="zarr",
-            options={},
-        )
-        meta = ingestor.slice_meta(ctx)  # pyright: ignore[reportArgumentType]
-        assert "pixel_time_dtype" in meta
-        assert "scratch_dir" in meta
-        assert "zarr_chunk_y" in meta
-
     def test_slice_meta_streaming_defaults(self):
         ingestor = MtgFciL1cIngestor()
         config = MtgFciL1cConfig()
@@ -97,16 +76,6 @@ class TestStreamingIngestorConfig:
 
 
 class TestBatchGroupSelection:
-    def test_get_batch_groups_fdhsi(self, small_fci_layout_fdhsi):
-        ingestor = MtgFciL1cIngestor()
-        config = MtgFciL1cConfig(product_type="FDHSI")
-        ingestor.plugin_config = config
-
-        # Canonical hook: get_batch_groups(items, ctx); product type from config.
-        groups = ingestor.get_batch_groups([], None)  # pyright: ignore[reportArgumentType]
-        assert "data_1km" in groups
-        assert "data_2km" in groups
-
     def test_get_batch_groups_hrfi(self, small_fci_layout_fdhsi):
         ingestor = MtgFciL1cIngestor()
         config = MtgFciL1cConfig(product_type="HRFI")

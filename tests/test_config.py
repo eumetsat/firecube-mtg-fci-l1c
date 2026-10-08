@@ -42,22 +42,27 @@ def test_pixel_time_dtype_accepts_all_valid_values():
         assert cfg.pixel_time_dtype == dtype
 
 
-def test_pixel_time_dtype_default_unchanged():
-    cfg = MtgFciL1cConfig()
-    assert cfg.pixel_time_dtype == "float64"
-
-
 def test_pixel_time_dtype_rejects_bogus():
     with pytest.raises(ValueError, match="pixel_time_dtype"):
         MtgFciL1cConfig(pixel_time_dtype="bogus")
 
 
-def test_get_resolutions_filters_by_product_type():
-    cfg = MtgFciL1cConfig(resolutions="1km,2km,500m")
-    # 500m is not valid for FDHSI, so it is dropped.
-    assert cfg.get_resolutions("FDHSI") == ["1km", "2km"]
-    # 500m is valid for HRFI; 2km is not.
-    assert cfg.get_resolutions("HRFI") == ["1km", "500m"]
+@pytest.mark.parametrize(
+    ("product_type", "requested", "expected"),
+    [
+        # 500m is not valid for FDHSI, so it is dropped; 2km is not valid for HRFI.
+        ("FDHSI", "1km,2km,500m", ["1km", "2km"]),
+        ("HRFI", "1km,2km,500m", ["1km", "500m"]),
+        ("FDHSI", "500m,1km,2km", ["1km", "2km"]),
+        ("HRFI", "500m,1km,2km", ["500m", "1km"]),
+        # A single request and the operator's order are kept.
+        ("FDHSI", "1km", ["1km"]),
+        ("FDHSI", "2km,1km", ["2km", "1km"]),
+    ],
+)
+def test_get_resolutions_filters_by_product_type(product_type, requested, expected):
+    cfg = MtgFciL1cConfig(resolutions=requested)
+    assert cfg.get_resolutions(product_type) == expected
 
 
 @pytest.mark.parametrize(

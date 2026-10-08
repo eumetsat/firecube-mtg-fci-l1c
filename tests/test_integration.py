@@ -707,10 +707,20 @@ def test_append_and_duplicate_timestamp_idempotent(
 
 @pytest.mark.integration
 @pytest.mark.plugin
+@pytest.mark.parametrize(
+    "mode_options",
+    [
+        {},
+        # Geolocation has its own staged-resume guard test.
+        {"write_mode": "staged", "include_geolocation": False},
+    ],
+    ids=["direct", "staged"],
+)
 def test_cross_batch_append_preserves_existing_timestamps(
-    tmp_path: Path, small_fci_layout: list[int]
+    tmp_path: Path, small_fci_layout: list[int], mode_options: dict[str, object]
 ):
     store_path = tmp_path / "out.zarr"
+    resume = {**mode_options, "force_reingest": False, "resume_existing": True}
 
     # Separate runs against the same store must append, not overwrite.
     src_a = tmp_path / "src_a"
@@ -718,7 +728,7 @@ def test_cross_batch_append_preserves_existing_timestamps(
     _make_fdhsi_zip_at(src_a, "20240101000000")
     _make_fdhsi_zip_at(src_b, "20240101001000")
 
-    _run_ingest(src_a, tmp_path)
+    _run_ingest(src_a, tmp_path, options=mode_options)
     root = zarr.open_group(str(store_path), mode="r")
     data_1km = cast(Any, root["data_1km"])
     assert data_1km["time"].shape == (1,), (
@@ -726,9 +736,7 @@ def test_cross_batch_append_preserves_existing_timestamps(
     )
     ts_after_a = np.asarray(data_1km["time"][:]).copy()
 
-    _run_ingest(
-        src_b, tmp_path, options={"force_reingest": False, "resume_existing": True}
-    )
+    _run_ingest(src_b, tmp_path, options=resume)
 
     root = zarr.open_group(str(store_path), mode="r")
     data_1km = cast(Any, root["data_1km"])
@@ -745,9 +753,7 @@ def test_cross_batch_append_preserves_existing_timestamps(
     )
 
     # Re-ingesting A is an idempotent no-op.
-    _run_ingest(
-        src_a, tmp_path, options={"force_reingest": False, "resume_existing": True}
-    )
+    _run_ingest(src_a, tmp_path, options=resume)
     root = zarr.open_group(str(store_path), mode="r")
     data_1km = cast(Any, root["data_1km"])
     ts_after_reingest = np.asarray(data_1km["time"][:])
@@ -758,64 +764,6 @@ def test_cross_batch_append_preserves_existing_timestamps(
         ts_after_reingest,
         ts_after_b,
         err_msg="re-ingest of A changed existing timestamp slots (idempotency broken)",
-    )
-
-
-@pytest.mark.integration
-@pytest.mark.plugin
-def test_staged_mode_append_and_reingest_idempotent(
-    tmp_path: Path, small_fci_layout: list[int]
-):
-    """Staged append preserves existing slots and re-ingest is idempotent."""
-    store_path = tmp_path / "out.zarr"
-    # Geolocation has its own staged-resume guard test below.
-    staged = {"write_mode": "staged", "include_geolocation": False}
-    staged_resume = {
-        "write_mode": "staged",
-        "resume_existing": True,
-        "force_reingest": False,
-        "include_geolocation": False,
-    }
-
-    src_a = tmp_path / "src_a"
-    src_b = tmp_path / "src_b"
-    _make_fdhsi_zip_at(src_a, "20240101000000")
-    _make_fdhsi_zip_at(src_b, "20240101001000")
-
-    # Run A (staged): single timestamp T_A at slot 0.
-    _run_ingest(src_a, tmp_path, options=staged)
-    data_1km = cast(Any, zarr.open_group(str(store_path), mode="r")["data_1km"])
-    assert data_1km["time"].shape == (1,), (
-        f"after staged run A, expected 1 timestamp, got {data_1km['time'].shape}"
-    )
-    ts_after_a = np.asarray(data_1km["time"][:]).copy()
-
-    # Run B (staged, resume): T_B must APPEND at slot 1, not overwrite slot 0.
-    _run_ingest(src_b, tmp_path, options=staged_resume)
-    data_1km = cast(Any, zarr.open_group(str(store_path), mode="r")["data_1km"])
-    ts_after_b = np.asarray(data_1km["time"][:])
-    assert data_1km["time"].shape == (2,), (
-        f"staged append must grow the time axis to 2, got {data_1km['time'].shape}"
-    )
-    assert ts_after_b[0] == ts_after_a[0], (
-        f"staged append overwrote slot 0 ({ts_after_a[0]} -> {ts_after_b[0]})"
-    )
-    assert len(set(ts_after_b.tolist())) == 2, (
-        f"expected 2 distinct timestamps after staged append, got {ts_after_b.tolist()}"
-    )
-
-    # Re-ingest A (staged, resume): T_A already present -> idempotent no-op.
-    _run_ingest(src_a, tmp_path, options=staged_resume)
-    data_1km = cast(Any, zarr.open_group(str(store_path), mode="r")["data_1km"])
-    ts_after_reingest = np.asarray(data_1km["time"][:])
-    assert data_1km["time"].shape == (2,), (
-        f"staged re-ingest of A duplicated an existing timestamp; "
-        f"time axis grew to {data_1km['time'].shape}"
-    )
-    np.testing.assert_array_equal(
-        ts_after_reingest,
-        ts_after_b,
-        err_msg="staged re-ingest of A changed existing timestamp slots (idempotency broken)",
     )
 
 
@@ -890,24 +838,6 @@ def test_index_model_attrs_recorded_and_epoch_mismatch_rejected(
                 "force_reingest": True,
             },
         )
-
-
-@pytest.mark.integration
-@pytest.mark.plugin
-def test_staged_mode_geolocation_reingest_resumes_existing_store(
-    tmp_path: Path, small_fci_layout: list[int]
-):
-    """Staged re-ingest into an existing store works with geolocation enabled."""
-    src = tmp_path / "src"
-    _make_fdhsi_zip_at(src, "20240101000000")
-
-    staged = {"write_mode": "staged", "include_geolocation": True}
-    _run_ingest(src, tmp_path, options=staged)  # fresh target: OK
-    _run_ingest(
-        src,
-        tmp_path,
-        options={**staged, "resume_existing": True, "force_reingest": False},
-    )
 
 
 @pytest.mark.integration

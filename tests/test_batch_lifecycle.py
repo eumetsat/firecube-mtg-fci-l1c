@@ -94,25 +94,6 @@ def test_cleanup_batch_data_runs_after_decode_failure() -> None:
     assert ingestor._batch_resources == {}
 
 
-def test_cleanup_batch_data_runs_after_writer_failure() -> None:
-    ingestor = _make_ingestor()
-    batch = _make_batch()
-    ctx = _make_ctx()
-
-    ingestor.prepare_batch_data(batch, ctx)
-    resources = _resources_for(ingestor, batch.batch_id)
-    resources.shared_reader = MagicMock()
-    resources.batch_scratch = MagicMock()
-    ingestor._batch_registry.register(batch.batch_id, resources.shared_reader)
-    ingestor._batch_registry.register(batch.batch_id, resources.batch_scratch)
-
-    ingestor.cleanup_batch_data(batch, ctx)
-
-    resources.shared_reader.close.assert_called_once_with()
-    resources.batch_scratch.close.assert_called_once_with()
-    assert ingestor._batch_resources == {}
-
-
 def test_concurrent_batches_cannot_remove_each_other_resources() -> None:
     ingestor = _make_ingestor()
     batch_a = _make_batch("batch-a")

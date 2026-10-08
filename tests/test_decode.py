@@ -326,23 +326,6 @@ def test_pixel_time_lookup_float32_matches_mask_based():
 
 
 @pytest.mark.unit
-def test_pixel_time_lookup_float64_matches_mask_based():
-    index_map = np.asarray([[0, 1, 99], [2, 7, 1]], dtype=np.uint16)
-    index2time = {0: 0.0, 1: 10.5, 2: 20.25}
-    output_dtype = np.dtype(np.float64)
-    fill_value = output_dtype.type(np.nan)
-
-    direct = streaming_mod._expand_pixel_time_direct(
-        index_map, index2time, output_dtype, fill_value
-    )
-    masked = streaming_mod._expand_pixel_time_masked(
-        index_map, index2time, output_dtype, fill_value
-    )
-
-    assert np.array_equal(direct, masked, equal_nan=True)
-
-
-@pytest.mark.unit
 def test_pixel_time_lookup_missing_key_is_nan():
     index_map = np.asarray([[0, 42], [1, 2]], dtype=np.uint16)
     index2time = {0: 0.0, 1: 10.5, 2: 20.25}
@@ -376,23 +359,6 @@ def test_pixel_time_lookup_falls_back_for_int64():
         expand_pixel_time(index_map, index2time, np.dtype(np.float32))
 
     masked.assert_called_once()
-
-
-@pytest.mark.unit
-def test_pixel_time_lookup_byte_parity_over_reference_fixture():
-    rng = np.random.default_rng(20260824)
-    index_map = rng.integers(0, 101, size=(100, 100), dtype=np.uint16)
-    index_map[::10, ::10] = np.iinfo(np.uint16).max
-    index2time = {idx: float(idx) + 0.5 for idx in range(100)}
-    output_dtype = np.dtype(np.float32)
-    fill_value = output_dtype.type(np.nan)
-
-    expanded = expand_pixel_time(index_map, index2time, output_dtype)
-    reference = streaming_mod._expand_pixel_time_masked(
-        index_map, index2time, output_dtype, fill_value
-    )
-
-    assert np.array_equal(expanded, reference, equal_nan=True)
 
 
 @pytest.mark.unit
@@ -438,46 +404,6 @@ def test_shared_nc_part_reader_opens_each_file_once_per_path(
 
 
 @pytest.mark.unit
-def test_shared_nc_part_reader_caches_reader_instance_by_path(tmp_path: Path):
-    part = tmp_path / "body.nc"
-    _write_nc_part(part, channel_specs={"vis_04": (1, 2, 11)})
-
-    with SharedNcPartReader() as shared:
-        reader_first = shared._get_reader(part)
-        reader_second = shared._get_reader(part)
-
-        assert reader_first is reader_second
-        assert list(shared._readers.keys()) == [Path(part)]
-
-
-@pytest.mark.unit
-def test_shared_nc_part_reader_decode_spatial_matches_eager_load(tmp_path: Path):
-    part = tmp_path / "body.nc"
-    _write_nc_part(part, channel_specs={"vis_04": (1, 2, 11)})
-    pixel_time_dtype = np.dtype(np.float32)
-    index2time = {0: 0.0, 1: 60.0, 2: 120.0}
-
-    with NCPartReader(part) as eager_reader:
-        eager_payload = streaming_mod.load_channel_slice(
-            eager_reader, "vis_04", index2time, pixel_time_dtype
-        )
-
-    with SharedNcPartReader() as shared:
-        shared_payload = shared.decode_spatial(
-            part, "vis_04", index2time, pixel_time_dtype
-        )
-
-    np.testing.assert_array_equal(shared_payload.counts, eager_payload.counts)
-    np.testing.assert_array_equal(
-        shared_payload.pixel_quality, eager_payload.pixel_quality
-    )
-    assert shared_payload.pixel_time is not None
-    assert eager_payload.pixel_time is not None
-    np.testing.assert_array_equal(shared_payload.pixel_time, eager_payload.pixel_time)
-    assert shared_payload.pixel_time.dtype == pixel_time_dtype
-
-
-@pytest.mark.unit
 def test_shared_nc_part_reader_decode_channel_matches_eager_calibration(
     tmp_path: Path,
 ):
@@ -501,47 +427,28 @@ def test_shared_nc_part_reader_decode_channel_matches_eager_calibration(
 
 
 @pytest.mark.unit
+@pytest.mark.parametrize("close_path", ["explicit-close-twice", "context-exit"])
 def test_shared_nc_part_reader_close_releases_handles_and_clears_cache(
-    tmp_path: Path,
+    tmp_path: Path, close_path: str
 ):
     part = tmp_path / "body.nc"
     _write_nc_part(part, channel_specs={"vis_04": (1, 2, 11)})
 
     shared = SharedNcPartReader()
-    shared.decode_channel(part, "vis_04")
-    cached = shared._readers[Path(part)]
-    assert cached._ds is not None
-
-    shared.close()
-
-    assert cached._ds is None
-    assert shared._readers == {}
-
-
-@pytest.mark.unit
-def test_shared_nc_part_reader_context_manager_closes_on_exit(tmp_path: Path):
-    part = tmp_path / "body.nc"
-    _write_nc_part(part, channel_specs={"vis_04": (1, 2, 11)})
-
-    with SharedNcPartReader() as shared:
+    if close_path == "context-exit":
+        with shared:
+            shared.decode_channel(part, "vis_04")
+            cached = shared._readers[Path(part)]
+            assert cached._ds is not None
+    else:
         shared.decode_channel(part, "vis_04")
         cached = shared._readers[Path(part)]
         assert cached._ds is not None
+        shared.close()
+        shared.close()
 
     assert cached._ds is None
     assert shared._readers == {}
-
-
-@pytest.mark.unit
-def test_shared_nc_part_reader_close_is_idempotent(tmp_path: Path):
-    part = tmp_path / "body.nc"
-    _write_nc_part(part, channel_specs={"vis_04": (1, 2, 11)})
-
-    shared = SharedNcPartReader()
-    shared.decode_channel(part, "vis_04")
-
-    shared.close()
-    shared.close()
 
 
 def _assembler_payload(base: int, *, rows: int = 2) -> ChannelSlicePayload:

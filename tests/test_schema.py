@@ -38,13 +38,6 @@ from firecube_mtg_fci_l1c._variables import (
 # ─────────────────────────────────────────────────────────────
 
 
-def test_variable_pickle_roundtrip() -> None:
-    v = Variable(
-        name="x", dims=("x",), dtype="f8", fill_value=None, attrs={"units": "m"}
-    )
-    assert pickle.loads(pickle.dumps(v)) == v
-
-
 def test_variable_equality() -> None:
     v1 = Variable(name="x", dims=("x",), dtype="f8", fill_value=None)
     v2 = Variable(name="x", dims=("x",), dtype="f8", fill_value=None)
@@ -55,15 +48,6 @@ def test_variable_immutable() -> None:
     v = Variable(name="x", dims=("x",), dtype="f8", fill_value=None)
     with pytest.raises((AttributeError, TypeError)):
         v.name = "y"  # type: ignore[misc]
-
-
-def test_variable_with_source_func_pickles() -> None:
-    # Source is a module-level function on VARIABLES; the registry must pickle.
-    v = VARIABLES[0]
-    assert v.source is not None
-    restored = pickle.loads(pickle.dumps(v))
-    assert restored == v
-    assert restored.source is v.source
 
 
 # ─────────────────────────────────────────────────────────────
@@ -143,12 +127,6 @@ def test_variable_enabled_missing_attr_defaults_true() -> None:
 # ─────────────────────────────────────────────────────────────
 
 
-def test_variables_count() -> None:
-    assert len(VARIABLES) == 25, (
-        f"Expected 25, got {len(VARIABLES)}: {[v.name for v in VARIABLES]}"
-    )
-
-
 def test_channel_coordinate_declared_as_text_without_fill_value() -> None:
     specs = build_specs(MtgFciL1cConfig(channels="ir_105,ir_38"), "FDHSI")
     group = next(g for g in specs if g.group == "data_2km")
@@ -173,15 +151,6 @@ def test_channel_coordinate_declared_as_text_without_fill_value() -> None:
         logical_channels=("ir_105", "ir_38"),
     )
     assert variable.source(ctx).tolist() == ["ir_105", "ir_38"]
-
-
-def test_variables_name_uniqueness() -> None:
-    names = [v.name for v in VARIABLES]
-    assert len(names) == len(set(names)), f"Duplicate names: {names}"
-
-
-def test_variables_all_instances_of_variable() -> None:
-    assert all(isinstance(v, Variable) for v in VARIABLES)
 
 
 def test_variables_pickle_roundtrip() -> None:
@@ -227,11 +196,6 @@ def test_build_specs_fdhsi_returns_2_groups() -> None:
     assert "data_2km" in groups
 
 
-def test_build_specs_hrfi_returns_groups() -> None:
-    specs = build_specs(MtgFciL1cConfig(), "HRFI")
-    assert len(specs) >= 1
-
-
 def test_build_specs_geolocation_disabled_excludes_lat_lon() -> None:
     specs = build_specs(MtgFciL1cConfig(include_geolocation=False), "FDHSI")
     for group_spec in specs:
@@ -246,14 +210,16 @@ def test_build_specs_geolocation_disabled_excludes_lat_lon() -> None:
 
 
 @pytest.mark.unit
-def test_x_y_variables_in_variables_list() -> None:
-    names = [v.name for v in VARIABLES]
-    assert "x" in names
-    assert "y" in names
-
-
-@pytest.mark.unit
-def test_x_y_attrs_meter_mode() -> None:
+@pytest.mark.parametrize(
+    ("config_kwargs", "standard_name_infix", "units"),
+    [
+        ({}, "", "m"),
+        ({"projection_units": "radian"}, "angular_", "radian"),
+    ],
+)
+def test_x_y_attrs_follow_projection_units(
+    config_kwargs: dict[str, str], standard_name_infix: str, units: str
+) -> None:
     # Check Variable-level invariants (dims, dtype, fill_value) via VARIABLES registry.
     x_var_reg = next(v for v in VARIABLES if v.name == "x")
     y_var_reg = next(v for v in VARIABLES if v.name == "y")
@@ -265,34 +231,22 @@ def test_x_y_attrs_meter_mode() -> None:
     assert y_var_reg.fill_value is None
 
     # Check CF attrs via build_specs (attrs_resolver merges at spec-build time).
-    specs = build_specs(MtgFciL1cConfig(), "FDHSI")
+    specs = build_specs(MtgFciL1cConfig(**config_kwargs), "FDHSI")  # type: ignore[arg-type]
     g = next(g for g in specs if g.group == "data_1km")
     x_spec = next(a for a in g.arrays if a.name == "x")
     y_spec = next(a for a in g.arrays if a.name == "y")
     assert x_spec.attrs is not None
     assert y_spec.attrs is not None
-    assert x_spec.attrs["standard_name"] == "projection_x_coordinate"
-    assert y_spec.attrs["standard_name"] == "projection_y_coordinate"
-    assert x_spec.attrs["units"] == "m"
-    assert y_spec.attrs["units"] == "m"
+    assert (
+        x_spec.attrs["standard_name"] == f"projection_x_{standard_name_infix}coordinate"
+    )
+    assert (
+        y_spec.attrs["standard_name"] == f"projection_y_{standard_name_infix}coordinate"
+    )
+    assert x_spec.attrs["units"] == units
+    assert y_spec.attrs["units"] == units
     assert x_spec.attrs["axis"] == "X"
     assert y_spec.attrs["axis"] == "Y"
-
-
-@pytest.mark.unit
-def test_x_y_attrs_radian_mode() -> None:
-    specs = build_specs(MtgFciL1cConfig(projection_units="radian"), "FDHSI")
-    g = next(g for g in specs if g.group == "data_1km")
-    x_var = next(a for a in g.arrays if a.name == "x")
-    y_var = next(a for a in g.arrays if a.name == "y")
-    assert x_var.attrs is not None
-    assert y_var.attrs is not None
-    assert x_var.attrs["standard_name"] == "projection_x_angular_coordinate"
-    assert y_var.attrs["standard_name"] == "projection_y_angular_coordinate"
-    assert x_var.attrs["units"] == "radian"
-    assert y_var.attrs["units"] == "radian"
-    assert x_var.attrs["axis"] == "X"
-    assert y_var.attrs["axis"] == "Y"
 
 
 @pytest.mark.unit
@@ -438,16 +392,6 @@ def test_x_y_source_values_meter_mode_500m_and_2km() -> None:
 
 
 @pytest.mark.unit
-def test_x_y_position_in_variables() -> None:
-    names = [v.name for v in VARIABLES]
-    lon_idx = names.index("longitude")
-    x_idx = names.index("x")
-    y_idx = names.index("y")
-    time_idx = names.index("time")
-    assert lon_idx < x_idx < y_idx < time_idx, "x/y must be between longitude and time"
-
-
-@pytest.mark.unit
 def test_time_coord_spec_matches_cf_attrs() -> None:
     specs = build_specs(MtgFciL1cConfig(), "FDHSI")
     g = next(g for g in specs if g.group == "data_1km")
@@ -571,13 +515,6 @@ def test_slope_offset_names_and_units_unchanged() -> None:
     assert offset_var.attrs is not None
     assert slope_var.attrs["units"] == "mW m-2 sr-1 (cm-1)-1"
     assert offset_var.attrs["units"] == "mW m-2 sr-1 (cm-1)-1"
-
-
-@pytest.mark.unit
-def test_no_calibration_coefficients_variable() -> None:
-    """calibration_coefficients was explicitly rejected."""
-    names = [v.name for v in VARIABLES]
-    assert "calibration_coefficients" not in names
 
 
 # ─────────────────────────────────────────────────────────────

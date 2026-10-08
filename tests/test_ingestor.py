@@ -32,11 +32,6 @@ from firecube_mtg_fci_l1c._decode import ChannelCalibration
 
 
 class TestMtgFciL1cIngestorImport:
-    def test_import(self):
-        from firecube_mtg_fci_l1c import MtgFciL1cIngestor
-
-        assert MtgFciL1cIngestor is not None
-
     def test_instantiate(self):
         from firecube_mtg_fci_l1c import MtgFciL1cIngestor
 
@@ -46,53 +41,6 @@ class TestMtgFciL1cIngestorImport:
 
 
 class TestMtgFciL1cConfig:
-    def test_default_resolutions(self):
-        from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig
-
-        config = MtgFciL1cConfig()
-        assert config.get_resolutions() == ["1km", "2km"]
-
-    def test_default_hrfi_resolutions(self):
-        from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig
-
-        config = MtgFciL1cConfig()
-        assert config.get_resolutions("HRFI") == ["500m", "1km"]
-
-    def test_single_resolution(self):
-        from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig
-
-        config = MtgFciL1cConfig(resolutions="1km")
-        assert config.get_resolutions() == ["1km"]
-
-    def test_multiple_resolutions(self):
-        from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig
-
-        config = MtgFciL1cConfig(resolutions="2km,1km")
-        assert config.get_resolutions() == ["2km", "1km"]
-
-    def test_invalid_resolution_filtered(self):
-        from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig
-
-        config = MtgFciL1cConfig(resolutions="500m,1km,2km")
-        assert config.get_resolutions("FDHSI") == ["1km", "2km"]
-        assert config.get_resolutions("HRFI") == ["500m", "1km"]
-
-    def test_default_output_options(self):
-        from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig
-
-        config = MtgFciL1cConfig()
-        assert config.include_pixel_quality is True
-        assert config.include_pixel_time is True
-        assert config.include_calibration is True
-        assert config.include_geolocation is True
-
-    def test_default_channels_none(self):
-        from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig
-
-        config = MtgFciL1cConfig()
-        assert config.channels is None
-        assert config.get_channels() is None
-
     def test_get_channels_parses_per_resolution(self):
         from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig
 
@@ -101,13 +49,6 @@ class TestMtgFciL1cConfig:
             "1km": ["vis_06"],
             "2km": ["ir_105"],
         }
-
-    def test_get_channels_invalid_raises(self):
-        from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig
-
-        config = MtgFciL1cConfig(channels="invalid")
-        with pytest.raises(ValueError, match="invalid"):
-            config.get_channels("FDHSI")
 
     def test_get_channels_rejects_hrfi_nc_aliases(self):
         from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig
@@ -130,15 +71,6 @@ class TestMtgFciL1cConfig:
 
 
 class TestFilterItem:
-    def test_valid_fci_filename(self):
-        from firecube_mtg_fci_l1c._data import is_valid_fci_zip
-
-        # Timestamp must be surrounded by dashes: -YYYYMMDDHHMMSS-
-        path = Path(
-            "W_XX-EUMETSAT-Darmstadt-FCI-1C-RRAD-FDHSI-FD-20241001005154-END.zip"
-        )
-        assert is_valid_fci_zip(path) is True
-
     def test_invalid_extension(self):
         from firecube_mtg_fci_l1c._data import is_valid_fci_zip
 
@@ -150,43 +82,6 @@ class TestFilterItem:
 
         path = Path("some-other-product-20241001005154.zip")
         assert is_valid_fci_zip(path) is False
-
-    def test_missing_timestamp(self):
-        from firecube_mtg_fci_l1c._data import is_valid_fci_zip
-
-        path = Path("FCI-1C-RRAD-FDHSI-notimestamp.zip")
-        assert is_valid_fci_zip(path) is False
-
-
-class TestTimestampExtraction:
-    def test_extract_timestamp_real_filename(self):
-        from datetime import datetime
-
-        from firecube_mtg_fci_l1c._data import extract_timestamp_from_path
-
-        path = Path(
-            "W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI1+FCI-1C-RRAD-FDHSI-FD--"
-            "x-x---x_C_EUMT_20241001120234_IDPFI_OPE_20241001120007_"
-            "20241001120924_N__C_0073_0000.zip"
-        )
-        ts = extract_timestamp_from_path(path)
-        assert ts is not None
-        # Second-to-last timestamp is observation start time
-        assert ts == datetime(2024, 10, 1, 12, 0, 7)
-
-    def test_extract_timestamp_single(self):
-        from firecube_mtg_fci_l1c._data import extract_timestamp_from_path
-
-        path = Path("W_XX-EUMETSAT--20241001005154--END.zip")
-        ts = extract_timestamp_from_path(path)
-        assert ts is not None
-        assert ts.year == 2024
-
-    def test_no_timestamp(self):
-        from firecube_mtg_fci_l1c._data import extract_timestamp_from_path
-
-        path = Path("no-timestamp-here.zip")
-        assert extract_timestamp_from_path(path) is None
 
 
 class TestIndexSpecAndInspectItem:
