@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The `time` coordinate now holds each product's start time floored to the full minute (issue #20), for example `12:20:00` instead of `12:20:06`, so `ds.sel(time="2026-09-28T12:20:00")` works. Slots without a product stay `NaT`. Slot placement is unchanged. **Existing stores with unfloored labels need a fresh ingest**: on a preallocated store, `firecube zarr preallocate` and `direct`-mode ingests stop with a `time slot … drift` error; a store ingested without preallocation ends up with mixed labels.
 - Channel names are now the text coordinate `channel` of the `channel` dimension (issue #21), stored as the Zarr v3 `string` data type, so `ds.sel(channel="ir_105")` works without `assign_coords`. **The bytes variable `channel_name` is removed from new stores**; read `ds.channel` instead. Existing stores keep their `channel_name` array and gain `channel` on their next ingest in `direct` write mode; in `staged` write mode they are left unchanged. Golden snapshots regenerated.
 - The lockfile and CI now use firecube 0.1.7; the supported floor stays `firecube>=0.1.5`.
 - [#13](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/13) `fix-fillvalue` now exits with an error on a store that holds no FCI arrays or groups, or that mixes root arrays with `data_<res>/` groups; it used to report such stores as "missing" and exit 0.

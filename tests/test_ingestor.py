@@ -243,7 +243,7 @@ class TestIndexSpecAndInspectItem:
         assert set(spec.groups) == expected_groups
         assert schema_groups == expected_groups
 
-    def test_inspect_item_returns_timestamp_coordinate(self):
+    def test_inspect_item_returns_minute_floored_time_coordinate(self):
         from datetime import datetime
 
         from firecube_mtg_fci_l1c.ingestor import MtgFciL1cIngestor
@@ -253,7 +253,8 @@ class TestIndexSpecAndInspectItem:
         item = Path("W_XX-EUMETSAT--20241001005154--END.zip")
         info = ingestor.inspect_item(item, SimpleNamespace(source="/tmp"))
 
-        assert info == ItemInfo(coordinate=datetime(2024, 10, 1, 0, 51, 54))
+        # Start 00:51:54 -> label 00:51:00.
+        assert info == ItemInfo(coordinate=datetime(2024, 10, 1, 0, 51, 0))
 
     def test_inspect_item_drops_invalid_items(self):
         from firecube_mtg_fci_l1c.ingestor import MtgFciL1cIngestor
@@ -326,7 +327,7 @@ class TestBuildWriteIntentsLogging:
         )
         monkeypatch.setattr(
             ingestor_mod,
-            "extract_timestamp_from_path",
+            "extract_slot_time_from_path",
             lambda _zip_path: datetime.datetime(2024, 1, 1, 0, 0, 0),
         )
 
@@ -553,7 +554,7 @@ class TestVariableDispatch:
         monkeypatch.setattr(streaming_mod, "NCPartReader", FakeReader)
         monkeypatch.setattr(
             ingestor_mod,
-            "extract_timestamp_from_path",
+            "extract_slot_time_from_path",
             lambda _zip_path: datetime.datetime(2024, 1, 1, 0, 0, 0),
         )
 
