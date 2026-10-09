@@ -32,7 +32,7 @@
 # fixes the preallocated store shape. The WINDOW (FROM/TO or SLOT_START/SLOT_END)
 # is only what THIS run ingests. Grow the window later without re-preallocating.
 #
-# FCI_CHUNKS=[first,last] (no spaces) stores only the stripe of the disk those
+# FCI_CHUNKS=[first,last] (no spaces) stores only the rows of the disk those
 # BODY chunks cover; PARTIAL_CHUNK=fill|error says what to do with rows that no
 # input file covers. Both are passed to preallocation and every pod, and only
 # when set.
@@ -93,7 +93,7 @@ EXTRA_OPTIONS="${EXTRA_OPTIONS:-}"                   # extra "--option k=v ..." 
 RESOLUTIONS="${RESOLUTIONS:-}"                        # optional subset, e.g. "1km" or "500m,1km"
 FLAT_STORE="${FLAT_STORE:-}"                          # 1|true|yes|on = arrays at store root (one resolution only)
 CLEANUP_WORKSPACE="${CLEANUP_WORKSPACE:-true}"        # 1|true|yes|on (default) = remove the run workspace after each run; 0|false|no|off = keep it
-FCI_CHUNKS="${FCI_CHUNKS:-}"                          # [first,last] BODY chunk numbers, no spaces: stripe store
+FCI_CHUNKS="${FCI_CHUNKS:-}"                          # [first,last] BODY chunk numbers, no spaces: store only those chunks
 PARTIAL_CHUNK="${PARTIAL_CHUNK:-}"                    # fill|error: rows no input file covers
 FIRECUBE="${FIRECUBE:-firecube}"
 ASSUME_YES="${ASSUME_YES:-0}"

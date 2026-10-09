@@ -71,7 +71,7 @@ Two rules follow from this shape, and most confusion comes from missing them:
 | `tests/test_integration.py` | End-to-end Zarr output behavior and store read-back checks |
 | `tests/test_data.py` | ZIP and chunk filename/product/timestamp helper behavior, scene grouping, input classification |
 | `tests/test_unzipped_input.py` | Loose chunk input end to end: discovery, errors, time label, equality with the ZIP path |
-| `tests/test_stripes.py` | Partial scenes (`partial_chunk`) and stripe stores (`fci_chunks`) end to end |
+| `tests/test_stripes.py` | Partial scenes (`partial_chunk`) and `fci_chunks` stores end to end |
 | `tests/_store_compare.py` | Store comparators for those tests. `assert_stores_bitwise_equal` also runs core's value-level comparison, which is cheap on small test stores and takes hours on a preallocated full-disk store; compare files only at that size |
 | `tests/test_batch_lifecycle.py` | Per-batch resource registration and teardown |
 | `tests/test_scratch.py` | Scratch extraction, zip-slip guard, cleanup |

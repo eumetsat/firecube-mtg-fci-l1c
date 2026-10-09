@@ -1,6 +1,6 @@
 # Static 2D Grid (y, x)
 
-Add a new static 2D array covering the group's grid (the full detector grid, or a stripe's rows), such as `latitude` or `longitude`. The ingestor writes these once per group during the static phase.
+Add a new static 2D array covering the group's grid (the full detector grid, or the rows of `fci_chunks`), such as `latitude` or `longitude`. The ingestor writes these once per group during the static phase.
 
 ## How
 
@@ -10,7 +10,7 @@ The existing `latitude` and `longitude` variables show the full pattern. Both li
 
 ```python
 def _lat_lon_pair(ctx: VariableContext) -> tuple[np.ndarray, np.ndarray] | None:
-    """The group's (lat, lon) rows: the stripe's window, or the full disk."""
+    """The group's (lat, lon) rows: the `fci_chunks` window, or the full disk."""
     if ctx.geo_provider is None:
         return None
     res_m = ctx.geo_provider.resolution_m(ctx.resolution)
@@ -28,7 +28,7 @@ def _latitude_source(ctx: VariableContext) -> np.ndarray | None:
     return None if pair is None else pair[0]
 ```
 
-`ctx.geo_provider` is populated during the static phase. Call `resolution_m(ctx.resolution)` to map a bare resolution string (`"1km"`, `"2km"`, `"500m"`) to metres, then `get_lat_lon(grids_file, res_m)` to get the full-disk grid. A group of a stripe store (`fci_chunks`) holds only the rows of `ctx.y_window`, so pass `rows=ctx.y_window` to get just those rows: the provider then caches only that slice. The provider caches the result on `(grids_file, resolution_m, rows)` so repeated calls within a run are free. Return `None` to skip writing.
+`ctx.geo_provider` is populated during the static phase. Call `resolution_m(ctx.resolution)` to map a bare resolution string (`"1km"`, `"2km"`, `"500m"`) to metres, then `get_lat_lon(grids_file, res_m)` to get the full-disk grid. A group written with `fci_chunks` holds only the rows of `ctx.y_window`, so pass `rows=ctx.y_window` to get just those rows: the provider then caches only that slice. The provider caches the result on `(grids_file, resolution_m, rows)` so repeated calls within a run are free. Return `None` to skip writing.
 
 ### Variable entry
 
@@ -95,7 +95,7 @@ If `get_solar_zenith_angle` is a new provider method, add it to `src/firecube_mt
 
 ## Common mistakes
 
-- Calling `get_lat_lon(res_m)` with a single argument. The signature is `get_lat_lon(grids_file, resolution_m, rows=None)`: pass `ctx.config.fci_grids_file` as the first argument, and `rows=ctx.y_window` when the group may be a stripe.
+- Calling `get_lat_lon(res_m)` with a single argument. The signature is `get_lat_lon(grids_file, resolution_m, rows=None)`: pass `ctx.config.fci_grids_file` as the first argument, and `rows=ctx.y_window` when the group may be written with `fci_chunks`.
 - Defining a local `_resolution_m` helper in `_variables.py`. Use the method on the provider: `ctx.geo_provider.resolution_m(ctx.resolution)`.
 - Returning pixel indices instead of projected or geographic coordinates. The source must return real-world values.
 - Defining the source as a lambda. It must be module-level for pickle-safety.

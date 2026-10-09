@@ -73,7 +73,7 @@ firecube ingest mtg_fci_l1c \
 ```
 
 `--input-data` can also be a directory (or S3 prefix) of unpacked chunk `.nc`
-files instead of ZIPs, complete or partial. To store only a stripe of the disk,
+files instead of ZIPs, complete or partial. To store only some BODY chunks of the disk,
 such as BODY chunks 32 to 40, add `--option 'fci_chunks=[32,40]'`. See
 [FCI chunks](docs/customization.md#fci-chunks).
 

@@ -8,7 +8,7 @@ tuning Zarr storage layout, or deploying multi-pod parallel ingestion.
 
 ## Prerequisites
 
-- Firecube ≥ 0.1.5 with `mtg_fci_l1c` installed.
+- Firecube ≥ 0.1.7 with `mtg_fci_l1c` installed.
 - A Zarr store target: `file:///` for local storage or `s3://` for object storage.
 - For parallel ingestion: all pods must have read access to the same input ZIP
   files, and the Zarr store must be preallocated before the first pod starts.
@@ -27,7 +27,7 @@ slot. Measured on an aarch64 host (NVIDIA GB10) on 2026-10-08 with
 |---|---|---|
 | Full-disk ZIP | about 2.0 GiB (mean 2.017 GiB over 4 runs) | measured |
 | Full-disk unpacked chunks | about 2.0 GiB (mean 2.019 GiB over 2 runs) | measured |
-| Stripe store, `fci_chunks=[32, 40]` | about 1.25 GiB (3 runs, 1.252 to 1.253 GiB) | measured |
+| `fci_chunks=[32, 40]` | about 1.25 GiB (3 runs, 1.252 to 1.253 GiB) | measured |
 
 A single run now and then peaks 50 to 130 MiB higher than the others (highest
 seen: 2.15 GiB). Plan for 2.5 GiB per pod to leave room for that (calculated,

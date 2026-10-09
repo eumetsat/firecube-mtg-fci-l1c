@@ -92,7 +92,7 @@ through `scripts/fci-ingest.sh`.
 
 What the store holds:
 
-- **Rows.** In each group the `y` extent is the stripe's rows widened to that
+- **Rows.** In each group the `y` extent is the rows of the chosen chunks, widened to that
   group's output-chunk grid, so chunk boundaries are those of a full-disk
   store. For `[32,40]` of FDHSI, `data_1km` has 2518 rows (disk rows 8618 to
   11136) and `data_2km` has 1259 rows (disk rows 4309 to 5568). Measured on
@@ -104,7 +104,7 @@ What the store holds:
   preallocate` carries no group attributes at all, as for the CF attributes of
   a full-disk store; read its window from the shape of `y`.
 - **Identity.** The window is part of the store's identity. Ingesting another
-  window, or a full-disk run, into a stripe store (or a stripe into a full-disk
+  window, or a full-disk run, into a store written with `fci_chunks` (or an `fci_chunks` run into a full-disk
   store) is refused with `plugin declares incompatible resolved index`.
 - **Checks.** Every input file's rows are checked against the table of BODY
   chunk rows; a file that does not match stops its scene with an error naming
@@ -114,11 +114,11 @@ What the store holds:
 
 Limits and caveats:
 
-- A stripe store cannot be grown yet. To cover other rows, ingest into a new
+- A store written with `fci_chunks` cannot be grown yet. To cover other rows, ingest into a new
   store.
 - Platform variables (`subsatellite_*`, `platform_altitude`) are means over the
   files you give it.
-- `pixel_time` at the northern edge of the stripe can differ from a full-disk
+- `pixel_time` at the northern edge of the chosen chunks can differ from a full-disk
   ingest unless the next chunk to the north is present.
 - `fci_chunks` is part of the resume identity of a run. Stores ingested before
   the option existed carry no value for it, so a single-pod run into such a
@@ -127,7 +127,7 @@ Limits and caveats:
   to overwrite, as for any resume conflict. See
   [Performance Tuning → Failure Recovery](performance-tuning.md#failure-recovery).
 
-### Example: the northern stripe of one repeat cycle
+### Example: the northern chunks of one repeat cycle
 
 Download chunks 32 to 40 of one cycle with [eumdac](https://user.eumetsat.int/resources/user-guides/eumetsat-data-access-client-eumdac-guide),
 then ingest them. Set the sensing window so that it matches one product, and
@@ -141,7 +141,7 @@ eumdac download -c EO:EUM:DAT:0662 \
 
 firecube ingest mtg_fci_l1c \
     --input-data /path/to/fci-chunks \
-    --target file:///path/to/stripe.zarr \
+    --target file:///path/to/fci-chunks.zarr \
     --output-format zarr --write-mode direct \
     --option product_type=FDHSI \
     --option 'fci_chunks=[32,40]' \
@@ -150,7 +150,7 @@ firecube ingest mtg_fci_l1c \
 
 The `--entry` patterns match the chunk numbers 0032 to 0040 at the end of the
 file name. The window starts at disk row 8618, inside chunk 31, so chunks 32
-to 40 are a partial scene for it and need `--write-mode direct`. Open the result with `xr.open_zarr("/path/to/stripe.zarr", group="data_1km")`.
+to 40 are a partial scene for it and need `--write-mode direct`. Open the result with `xr.open_zarr("/path/to/fci-chunks.zarr", group="data_1km")`.
 
 ---
 

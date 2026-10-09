@@ -49,14 +49,14 @@ Options, rules, and examples are in
 ### FCI chunks
 
 A store ingested with `--option 'fci_chunks=[first,last]'` holds one band of
-the disk. Row 0 of the full disk is the southern edge, so a stripe of high
-chunk numbers is a northern band. In every group:
+the disk. Row 0 of the full disk is the southern edge, so high
+chunk numbers are a northern band. In every group:
 
 - `x` keeps its full width; `y`, `latitude`, `longitude` and the `y` axis of
-  `counts`, `pixel_quality` and `pixel_time` hold only the stripe's rows,
+  `counts`, `pixel_quality` and `pixel_time` hold only the rows of the chosen chunks,
   widened to the group's output-chunk grid.
 - `y` holds the real projection coordinate of each stored row, so the first
-  value is that of the first stripe row, not of the southern edge.
+  value is that of the first stored row, not of the southern edge.
 - Rows of the widened window that the input did not cover stay at the fill
   value.
 

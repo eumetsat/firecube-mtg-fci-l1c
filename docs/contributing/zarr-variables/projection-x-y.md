@@ -55,7 +55,7 @@ def _projection_x_source(ctx: VariableContext) -> np.ndarray | None:
 
 
 def _projection_y_source(ctx: VariableContext) -> np.ndarray | None:
-    # A stripe store holds only its window of rows: y_start..y_stop (the full disk by default).
+    # A store written with fci_chunks holds only its window of rows: y_start..y_stop (the full disk by default).
     return _projection_angle_source(ctx, ctx.y_start, ctx.y_stop)
 
 

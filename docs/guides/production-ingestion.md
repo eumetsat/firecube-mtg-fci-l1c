@@ -11,7 +11,7 @@ Full env-var reference for the script is in
 
 ## Prerequisites
 
-- Firecube ≥ 0.1.5 with the `mtg_fci_l1c` plugin installed.
+- Firecube ≥ 0.1.7 with the `mtg_fci_l1c` plugin installed.
 - Read access to FCI L1C `.zip` files, or to unpacked chunk `.nc` files, at
   `INPUT` (local path, `file://` URI, or `s3://` prefix); not both forms in one
   `INPUT`. The same `INPUT`
@@ -104,7 +104,7 @@ Each pod is a single `firecube ingest` process with `pipeline_workers=1`:
 
 | Resource | Per pod | Notes |
 |---|---|---|
-| RAM | **~2.0 GiB** peak RSS | Measured for FDHSI, 1 km + 2 km, all 16 channels, default options, one full-disk slot; plan for 2.5 GiB. Conditions and the stripe figure in [Performance Tuning → Memory](../performance-tuning.md#memory-considerations). |
+| RAM | **~2.0 GiB** peak RSS | Measured for FDHSI, 1 km + 2 km, all 16 channels, default options, one full-disk slot; plan for 2.5 GiB. Conditions and the `fci_chunks` figure in [Performance Tuning → Memory](../performance-tuning.md#memory-considerations). |
 | CPU | ~1 physical core | numpy / BLAS / HDF5 may internally spawn threads. When packing many pods on one host, set `OMP_NUM_THREADS=1` and `OPENBLAS_NUM_THREADS=1` to avoid oversubscription. |
 
 Total host requirement is roughly **`PARALLELISM × 2.5 GiB` RAM** (calculated)
@@ -188,20 +188,20 @@ bash scripts/fci-ingest.sh
 Host requirement: `12 × 2.5 GiB = 30 GiB` RAM plus 12 cores. Reduce
 `PARALLELISM` for smaller hosts, or split the window across multiple hosts.
 
-## Unpacked Chunks And Stripes
+## Unpacked Chunks And FCI Chunks
 
 `INPUT` can point at unpacked chunk `.nc` files instead of ZIPs, locally or on
 S3. A scene is the chunk
 files of one repeat cycle, and the slot window selects scenes exactly as it
-selects ZIPs. To keep only the northern stripe of the disk, add `FCI_CHUNKS`;
+selects ZIPs. To keep only the northern BODY chunks of the disk, add `FCI_CHUNKS`;
 `PARTIAL_CHUNK` is optional:
 
 ```bash
 TIME_EPOCH=2025-07-01 TIME_SLOTS=144 \
 SLOT_START=0 SLOT_END=1 SLOTS_PER_POD=1 PARALLELISM=1 \
 INPUT=file:///data/fci-chunks \
-TARGET=file:///data/fci_stripe.zarr \
-PRODUCT_NAME=fci-stripe \
+TARGET=file:///data/fci_chunks.zarr \
+PRODUCT_NAME=fci-chunks \
 PRODUCT_TYPE=FDHSI \
 FCI_CHUNKS='[32,40]' \
 ASSUME_YES=1 \
@@ -210,7 +210,7 @@ bash scripts/fci-ingest.sh
 
 The script rejects an `FCI_CHUNKS` that is not two integers in brackets without
 spaces, and a `PARTIAL_CHUNK` other than `fill` or `error`, before it calls
-Firecube. Scenes that leave rows of the stripe or disk uncovered, such as
+Firecube. Scenes that leave rows of the chosen chunks or the disk uncovered, such as
 chunks 32 to 40 alone, need the default `WRITE_MODE=direct`: with
 `WRITE_MODE=staged` they fail before anything is written. Remote chunks are downloaded into each pod's workspace.
 The script passes `--option cleanup_workspace=true` by default, so Firecube
