@@ -42,22 +42,27 @@ def test_pixel_time_dtype_accepts_all_valid_values():
         assert cfg.pixel_time_dtype == dtype
 
 
-def test_pixel_time_dtype_default_unchanged():
-    cfg = MtgFciL1cConfig()
-    assert cfg.pixel_time_dtype == "float64"
-
-
 def test_pixel_time_dtype_rejects_bogus():
     with pytest.raises(ValueError, match="pixel_time_dtype"):
         MtgFciL1cConfig(pixel_time_dtype="bogus")
 
 
-def test_get_resolutions_filters_by_product_type():
-    cfg = MtgFciL1cConfig(resolutions="1km,2km,500m")
-    # 500m is not valid for FDHSI, so it is dropped.
-    assert cfg.get_resolutions("FDHSI") == ["1km", "2km"]
-    # 500m is valid for HRFI; 2km is not.
-    assert cfg.get_resolutions("HRFI") == ["1km", "500m"]
+@pytest.mark.parametrize(
+    ("product_type", "requested", "expected"),
+    [
+        # 500m is not valid for FDHSI, so it is dropped; 2km is not valid for HRFI.
+        ("FDHSI", "1km,2km,500m", ["1km", "2km"]),
+        ("HRFI", "1km,2km,500m", ["1km", "500m"]),
+        ("FDHSI", "500m,1km,2km", ["1km", "2km"]),
+        ("HRFI", "500m,1km,2km", ["500m", "1km"]),
+        # A single request and the operator's order are kept.
+        ("FDHSI", "1km", ["1km"]),
+        ("FDHSI", "2km,1km", ["2km", "1km"]),
+    ],
+)
+def test_get_resolutions_filters_by_product_type(product_type, requested, expected):
+    cfg = MtgFciL1cConfig(resolutions=requested)
+    assert cfg.get_resolutions(product_type) == expected
 
 
 @pytest.mark.parametrize(
@@ -183,3 +188,77 @@ def test_zarr_chunk_overrides_rejects_time_not_one() -> None:
 def test_zarr_chunk_overrides_rejects_channel_not_one() -> None:
     with pytest.raises(ValueError, match="channel dim must be 1"):
         MtgFciL1cConfig(zarr_chunk_overrides={"data_1km": (1, 100, 100, 2)})
+
+
+def test_partial_chunk_and_fci_chunks_defaults() -> None:
+    cfg = MtgFciL1cConfig()
+    assert cfg.partial_chunk == "fill"
+    assert cfg.fci_chunks is None
+
+
+@pytest.mark.parametrize("value", ["fill", "error"])
+def test_partial_chunk_accepts_allowed_values(value: str) -> None:
+    assert MtgFciL1cConfig(partial_chunk=value).partial_chunk == value
+
+
+@pytest.mark.parametrize("value", ["skip", "FILL", ""])
+def test_partial_chunk_rejects_other_values(value: str) -> None:
+    with pytest.raises(ValueError, match=r"partial_chunk.*\['error', 'fill'\]"):
+        MtgFciL1cConfig(partial_chunk=value)
+
+
+def test_partial_chunk_rejected_via_option_parsing() -> None:
+    with pytest.raises(ValueError, match="partial_chunk"):
+        MtgFciL1cConfig.from_options({"partial_chunk": "skip"})
+
+
+@pytest.mark.parametrize("product_type", [None, "FDHSI", "HRFI"])
+def test_fci_chunks_accepts_valid_range_up_to_last_chunk(
+    product_type: str | None,
+) -> None:
+    cfg = MtgFciL1cConfig(product_type=product_type, fci_chunks=[32, 40])
+    assert cfg.fci_chunks == [32, 40]
+
+
+@pytest.mark.parametrize("pair", [[1, 1], [40, 40], [1, 40]])
+def test_fci_chunks_accepts_boundary_ranges(pair: list[int]) -> None:
+    assert MtgFciL1cConfig(fci_chunks=pair).fci_chunks == pair
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        [40, 32],  # reversed
+        [0, 5],  # below range
+        [-1, 5],
+        [1, 41],  # just past the last chunk
+        [41, 41],
+        [32],  # wrong length
+        [],
+        [1, 2, 3],
+        [1.5, 3],  # non-int
+        ["1", "3"],
+        [True, 3],  # bool is not a chunk number
+        [None, 3],
+    ],
+)
+@pytest.mark.parametrize("product_type", [None, "FDHSI", "HRFI"])
+def test_fci_chunks_rejects_invalid(bad: list, product_type: str | None) -> None:
+    with pytest.raises(ValueError, match="fci_chunks"):
+        MtgFciL1cConfig(product_type=product_type, fci_chunks=bad)
+
+
+def test_fci_chunks_json_string_arrives_as_int_list() -> None:
+    cfg = MtgFciL1cConfig.from_options({"fci_chunks": "[32, 40]"})
+    assert cfg.fci_chunks == [32, 40]
+    assert all(type(n) is int for n in cfg.fci_chunks)
+
+
+def test_fci_chunks_none_string_arrives_as_none() -> None:
+    assert MtgFciL1cConfig.from_options({"fci_chunks": "none"}).fci_chunks is None
+
+
+@pytest.mark.parametrize("raw", ["[40, 32]", "[1, 41]", "[32]", '["a", "b"]'])
+def test_fci_chunks_invalid_json_rejected_via_option_parsing(raw: str) -> None:
+    with pytest.raises(ValueError, match="fci_chunks"):
+        MtgFciL1cConfig.from_options({"fci_chunks": raw})

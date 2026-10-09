@@ -30,7 +30,7 @@ import xarray as xr
 import zarr
 from firecube.core.api import RESERVED_ARRAY_ATTRS
 
-from test_integration import _run_ingest
+from tests._support import _run_ingest
 
 pytestmark = [pytest.mark.integration, pytest.mark.plugin]
 
@@ -59,6 +59,7 @@ EXPECTED_COORDS = {"time", "y", "x", "channel", "latitude", "longitude"}
 @pytest.mark.parametrize(
     (
         "zip_fixture",
+        "product_type",
         "resolution",
         "expected_counts",
         "expected_slope",
@@ -68,6 +69,7 @@ EXPECTED_COORDS = {"time", "y", "x", "channel", "latitude", "longitude"}
     [
         pytest.param(
             "fdhsi_zip",
+            "FDHSI",
             "1km",
             [1, 2],
             [1.0, 2.0],
@@ -75,13 +77,16 @@ EXPECTED_COORDS = {"time", "y", "x", "channel", "latitude", "longitude"}
             ["vis_04", "vis_06"],
             id="fdhsi-1km",
         ),
-        pytest.param("hrfi_zip", "500m", [1], [1.0], [0.0], ["vis_06"], id="hrfi-500m"),
+        pytest.param(
+            "hrfi_zip", "HRFI", "500m", [1], [1.0], [0.0], ["vis_06"], id="hrfi-500m"
+        ),
     ],
 )
 def test_flat_store_opens_without_group_and_holds_the_ingested_data(
     request: pytest.FixtureRequest,
     tmp_path: Path,
     zip_fixture: str,
+    product_type: str,
     resolution: str,
     expected_counts: list[int],
     expected_slope: list[float],
@@ -94,6 +99,7 @@ def test_flat_store_opens_without_group_and_holds_the_ingested_data(
         source_zip.parent,
         tmp_path,
         options={"resolutions": resolution, "flat_store": True},
+        product_type=product_type,
     )
 
     root = zarr.open_group(str(store), mode="r")

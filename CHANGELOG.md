@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Loose chunk input: `--input-data` may be a directory or prefix (local or S3, through Firecube source discovery) of unpacked BODY chunk `.nc` files, and the TRAIL chunk if present, instead of ZIP files. The chunk files of one repeat cycle form a scene; a scene may be partial. A scene is labelled with the nominal start of its repeat cycle (cycle 1 is `00:00:00`); ZIPs keep the sensing start floored to the minute. Quicklook and `.xml` files next to the chunks are ignored.
+- `partial_chunk` option (`fill` default, or `error`): `fill` leaves rows that no input file covers unwritten, so they keep the fill value and, in `direct` write mode, rows from earlier ingests survive; `error` fails the batch of a partial scene before it writes anything.
+- `fci_chunks=[first,last]` option: with inclusive BODY chunk numbers (1 to 40), each group holds only those chunks' rows, widened to the group's output-chunk grid, at full width. Groups carry `fci_chunks`, `disk_row_start` and `disk_row_stop` attributes, the window is part of the store identity, pixel data is read only from files inside the window, and every file's rows are checked against a row table. A store written with `fci_chunks` cannot be grown yet. See [Customization](docs/customization.md#fci-chunks).
+- `scripts/fci-ingest.sh`: `FCI_CHUNKS` and `PARTIAL_CHUNK` add `--option fci_chunks=...` and `--option partial_chunk=...` to preallocation and every pod when set; invalid values stop the script before it calls Firecube. The script also stops the shell from expanding `[...]` in option values as file globs.
+- `scripts/fci-ingest.sh`: `CLEANUP_WORKSPACE` (default `true`; `0`/`false`/`no`/`off` to disable) adds `--option cleanup_workspace=true` to preallocation and every pod, so each run's workspace directory is deleted at the end; invalid values stop the script before it calls Firecube.
 - Satellite position and Sun–Earth distance (issue #15): `subsatellite_latitude`, `subsatellite_longitude`, `platform_altitude` and `sun_earth_distance` as `(time,)` variables in every group. The satellite position is the mean over the repeat cycle of the `state/platform` tables (`NaN` when a product lacks them). `sun_earth_distance` is in AU, computed with astropy for the slot time; the product's own `earth_sun_distance` is not used because it holds the Sun–satellite distance. Adds `astropy>=7.0` as a runtime dependency. Golden snapshots regenerated.
 - Radiance conversion constants as per-acquisition `(time, channel)` variables in every group (issue #14): `radiance_unit_conversion_coefficient`, `radiance_to_bt_conversion_coefficient_{wavenumber,a,b}`, `radiance_to_bt_conversion_constant_{c1,c2}`, `channel_effective_solar_irradiance`. Read from the `data/<channel>/measured` scalars of each product, like `slope`/`offset`. float32, `NaN` where the product marks a constant not applicable to a channel. Enabled with `include_calibration`. Slots ingested before a store had these variables read as `NaN`; every product ingested afterwards fills them. Golden snapshots regenerated.
 - IR 3.8 dual-gain calibration (issue #16): `warm_slope` and `warm_offset` `(time, channel)` variables from the `warm_scale_factor`/`warm_add_offset` attributes of `effective_radiance`. They convert `ir_38` counts above 4095, exist only in groups that contain `ir_38` (FDHSI `data_2km`, HRFI `data_1km`), and are `NaN` for the other channels there. Enabled with `include_calibration`. Golden snapshots regenerated.
@@ -19,9 +24,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `product_type` is now a required option (`FDHSI` or `HRFI`). The plugin no longer detects it from the input and no longer falls back to `FDHSI`; without it `firecube ingest` and `firecube zarr preallocate` stop with `product_type is required`. Add `--option product_type=...` to existing commands. `scripts/fci-ingest.sh` already passed `PRODUCT_TYPE` (default `FDHSI`).
+- The supported floor is now `firecube>=0.1.7`.
+- Partial scenes are rejected in `staged` write mode, whatever `partial_chunk` says: a staged run replaces every output chunk (or shard) it writes in the target, so a piece of a scene reset rows that other pieces had written. A scene that leaves rows of a group's disk or `fci_chunks` window uncovered now fails its batch before anything is written, naming the rows and the missing BODY chunks. Ingest scenes in pieces with `--write-mode direct`.
+- Source discovery drops files that are neither FCI ZIPs nor chunk files, and stops with a configuration error when the source holds ZIP and chunk files together (use `--input-filters '["!*.zip"]'` or `'["!*.nc"]'`) or files of the other product type (use `--input-filters`).
+- ZIP member selection now accepts any satellite name in FCI chunk names, as loose input already did.
+- `fci_chunks` joins the resume slice identity. Spans written by earlier versions carry no value for it, so a single-pod run (no `--slot-start`/`--slot-end`) into such a store can report `ResumeConflictError`; continue with `--option resume_existing=true` or overwrite with `--option force_reingest=true`.
 - The `time` coordinate now holds each product's start time floored to the full minute (issue #20), for example `12:20:00` instead of `12:20:06`, so `ds.sel(time="2026-09-28T12:20:00")` works. Slots without a product stay `NaT`. Slot placement is unchanged. **Existing stores with unfloored labels need a fresh ingest**: on a preallocated store, `firecube zarr preallocate` and `direct`-mode ingests stop with a `time slot … drift` error; a store ingested without preallocation ends up with mixed labels.
 - Channel names are now the text coordinate `channel` of the `channel` dimension (issue #21), stored as the Zarr v3 `string` data type, so `ds.sel(channel="ir_105")` works without `assign_coords`. **The bytes variable `channel_name` is removed from new stores**; read `ds.channel` instead. Existing stores keep their `channel_name` array and gain `channel` on their next ingest in `direct` write mode; in `staged` write mode they are left unchanged. Golden snapshots regenerated.
-- The lockfile and CI now use firecube 0.1.7; the supported floor stays `firecube>=0.1.5`.
+- The lockfile and CI use firecube 0.1.7.
 - [#13](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/13) `fix-fillvalue` now exits with an error on a store that holds no FCI arrays or groups, or that mixes root arrays with `data_<res>/` groups; it used to report such stores as "missing" and exit 0.
 - A `resolutions` or `channels` selection that leaves no resolution to write is rejected with a configuration error naming both options, instead of failing inside Firecube.
 - Plugin simplification pass. Behaviour-preserving except where noted:
@@ -36,11 +47,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Product-type auto-detection from the input and the silent `FDHSI` fallback (see Changed).
 - `FCI_PROJ_OFFSET_RAD` from `_constants.py` (internal, obsolete with the #8 fix).
-- `discover_source_files` override. Core's default handles FCI sources correctly and additionally passes `storage_config`, which the override omitted — so the override could not read remote (S3) sources, and returned zero files instead of raising `ConfigurationError` when the source directory was missing.
+- The former `discover_source_files` override, which omitted `storage_config` and so could not read remote (S3) sources. The current override calls Firecube's discovery and only classifies what it returns.
 
 ### Fixed
 
+- The performance docs quoted a stale 14.6 GiB peak per worker. A full-disk FDHSI slot peaks at about 2.0 GiB (measured, see [Performance Tuning](docs/performance-tuning.md#memory-considerations)), and the docs no longer list per-option savings that were not re-measured.
 - The time-axis index now honours the `channels` filter: a channel selection that leaves a resolution without channels no longer declares that resolution's group.
 - `_scratch.register_cleanup_thread` now prunes finished threads. One thread was registered per batch and never released, so the registry grew by one entry for every batch a process handled; only threads still running are retained now.
 - Batch resource teardown no longer runs while `_batch_resources_lock` is held. Closing a batch's readers closes ~40 NetCDF handles; holding the lock across that blocked concurrent `prepare_batch_data` calls and dispatch-time payload lookups.

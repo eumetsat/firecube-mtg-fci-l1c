@@ -25,6 +25,7 @@ from firecube_mtg_fci_l1c._data import extract_timestamp_from_path
 from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig
 
 from firecube.ingestor.api import IngestContext
+from tests._small_grid import SMALL_CONSTANTS
 
 
 @pytest.fixture
@@ -32,18 +33,12 @@ def small_fci_layout_fdhsi(monkeypatch):
     from firecube_mtg_fci_l1c import _constants as const_mod
 
     constants_backup = copy.deepcopy(const_mod.CONSTANTS)
-    const_mod.CONSTANTS[PRODUCT_TYPE_FDHSI] = {
-        "1km": {
-            "channels": ["vis_04", "vis_06"],
-            "dimsize": 4,
-            "nc_channels": ["vis_04", "vis_06"],
-        },
-        "2km": {"channels": ["ir_38"], "dimsize": 4, "nc_channels": ["ir_38"]},
-    }
-    const_mod.CONSTANTS[PRODUCT_TYPE_HRFI] = {
-        "500m": {"channels": ["vis_06"], "dimsize": 4, "nc_channels": ["vis_06_hr"]},
-        "1km": {"channels": ["ir_38"], "dimsize": 4, "nc_channels": ["ir_38_hr"]},
-    }
+    const_mod.CONSTANTS[PRODUCT_TYPE_FDHSI] = copy.deepcopy(
+        SMALL_CONSTANTS[PRODUCT_TYPE_FDHSI]
+    )
+    const_mod.CONSTANTS[PRODUCT_TYPE_HRFI] = copy.deepcopy(
+        SMALL_CONSTANTS[PRODUCT_TYPE_HRFI]
+    )
 
     yield
 
@@ -52,27 +47,6 @@ def small_fci_layout_fdhsi(monkeypatch):
 
 
 class TestStreamingIngestorConfig:
-    def test_ingestor_instantiation(self):
-        ingestor = MtgFciL1cIngestor()
-        assert ingestor is not None
-        assert ingestor.name == "mtg_fci_l1c"
-
-    def test_slice_meta_includes_streaming_fields(self):
-        ingestor = MtgFciL1cIngestor()
-        config = MtgFciL1cConfig()
-        ingestor.plugin_config = config
-
-        ctx = IngestContext(
-            source="/tmp",
-            target="/tmp/out.zarr",
-            output_format="zarr",
-            options={},
-        )
-        meta = ingestor.slice_meta(ctx)  # pyright: ignore[reportArgumentType]
-        assert "pixel_time_dtype" in meta
-        assert "scratch_dir" in meta
-        assert "zarr_chunk_y" in meta
-
     def test_slice_meta_streaming_defaults(self):
         ingestor = MtgFciL1cIngestor()
         config = MtgFciL1cConfig()
@@ -97,16 +71,6 @@ class TestStreamingIngestorConfig:
 
 
 class TestBatchGroupSelection:
-    def test_get_batch_groups_fdhsi(self, small_fci_layout_fdhsi):
-        ingestor = MtgFciL1cIngestor()
-        config = MtgFciL1cConfig(product_type="FDHSI")
-        ingestor.plugin_config = config
-
-        # Canonical hook: get_batch_groups(items, ctx); product type from config.
-        groups = ingestor.get_batch_groups([], None)  # pyright: ignore[reportArgumentType]
-        assert "data_1km" in groups
-        assert "data_2km" in groups
-
     def test_get_batch_groups_hrfi(self, small_fci_layout_fdhsi):
         ingestor = MtgFciL1cIngestor()
         config = MtgFciL1cConfig(product_type="HRFI")

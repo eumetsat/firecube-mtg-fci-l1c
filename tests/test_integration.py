@@ -14,13 +14,12 @@
 
 from __future__ import annotations
 
-import copy
 import datetime
 import zipfile
+from types import SimpleNamespace
 from pathlib import Path
 from typing import Any, cast
 
-import h5netcdf
 import numpy as np
 import pytest
 import xarray as xr
@@ -29,211 +28,20 @@ from firecube_mtg_fci_l1c import MtgFciL1cIngestor
 from firecube_mtg_fci_l1c._constants import (
     PRODUCT_TYPE_FDHSI,
     PRODUCT_TYPE_HRFI,
-    get_nc_part_prefix,
 )
-from firecube_mtg_fci_l1c._data import validate_no_mixed_products
 from firecube_mtg_fci_l1c.config import MtgFciL1cConfig
 from firecube_mtg_fci_l1c._variables import build_specs
 
 from firecube.core.cf.validator import validate_cf18
-from firecube.core.product.identity import ProductIdentity
-from firecube.core.storage.binding import StorageBinding
-from firecube.core.storage.driver_config import StorageDriverConfig
-from firecube.core.storage.session import StorageSession
-from firecube.core.storage.uri import StorageUri
 from firecube.ingestor.api import IngestContext, StorageContext
-
-
-def _make_local_storage_session(target_path: Path) -> StorageSession:
-    # Inlined from firecube.tests.helpers.storage.make_local_session
-    # (core test helpers are not importable from plugin packages).
-    uri = StorageUri.from_local_path(target_path)
-    binding = StorageBinding(
-        identity=ProductIdentity.from_uri(uri, "zarr", product_name=target_path.name),
-        driver=StorageDriverConfig(driver="fsspec"),
-    )
-    return StorageSession(binding)
-
-
-_NC_FLOAT32_FILL = 9.96921e36
-
-
-def _write_nc_part_netcdf(
-    path: Path,
-    nc_channels: list[str],
-    dimsize: int,
-    radiance_attrs: dict[str, dict[str, float]] | None = None,
-    counts: dict[str, np.ndarray] | None = None,
-    measured_scalars: dict[str, dict[str, float]] | None = None,
-    state_tables: dict[str, list[float]] | None = None,
-) -> None:
-    with h5netcdf.File(path, "w") as ds:
-        ds.attrs["time_coverage_start"] = "20240101000000"
-
-        ds.dimensions["n_time"] = 2
-        ds.create_variable("index", ("n_time",), data=np.array([0, 1], dtype=np.uint16))
-        time_var = ds.create_variable("time", ("n_time",), data=np.array([0.0, 60.0]))
-        time_var.attrs["_FillValue"] = 0.0
-        # Index-dimensioned tables such as state/platform/platform_altitude.
-        for table_path, values in (state_tables or {}).items():
-            group_path, _, name = table_path.rpartition("/")
-            group = ds
-            for part in group_path.split("/"):
-                group = (
-                    group[part] if part in group.groups else group.create_group(part)
-                )
-            group.create_variable(
-                name, ("n_time",), data=np.asarray(values, dtype=np.float32)
-            )
-
-        data_group = ds.create_group("data")
-        for i, channel in enumerate(nc_channels):
-            channel_group = data_group.create_group(channel)
-            measured = channel_group.create_group("measured")
-            measured.dimensions["y"] = dimsize
-            measured.dimensions["x"] = dimsize
-
-            radiance = measured.create_variable(
-                "effective_radiance",
-                ("y", "x"),
-                data=(counts or {}).get(
-                    channel, np.full((dimsize, dimsize), i + 1, dtype=np.uint16)
-                ),
-            )
-            radiance.attrs["scale_factor"] = float(i + 1)
-            radiance.attrs["add_offset"] = float(i)
-            for name, value in (radiance_attrs or {}).get(channel, {}).items():
-                radiance.attrs[name] = np.float32(value)
-
-            for name, value in (measured_scalars or {}).get(channel, {}).items():
-                # Mirrors the L1C float32 measured scalars and their default fill.
-                measured.create_variable(
-                    name,
-                    (),
-                    data=np.float32(value),
-                    fillvalue=np.float32(_NC_FLOAT32_FILL),
-                )
-
-            measured.create_variable("start_position_row", (), data=np.int32(1))
-            measured.create_variable("end_position_row", (), data=np.int32(dimsize))
-            measured.create_variable(
-                "pixel_quality",
-                ("y", "x"),
-                data=np.zeros((dimsize, dimsize), dtype=np.uint8),
-            )
-            measured.create_variable(
-                "index_map",
-                ("y", "x"),
-                data=np.ones((dimsize, dimsize), dtype=np.uint16),
-            )
-
-
-def _make_zip_with_nc_part(
-    zip_path: Path,
-    product_type: str,
-    nc_channels: list[str],
-    dimsize: int,
-    radiance_attrs: dict[str, dict[str, float]] | None = None,
-    counts: dict[str, np.ndarray] | None = None,
-    measured_scalars: dict[str, dict[str, float]] | None = None,
-    state_tables: dict[str, list[float]] | None = None,
-) -> Path:
-    tmp_nc = zip_path.with_suffix(".nc")
-    _write_nc_part_netcdf(
-        tmp_nc,
-        nc_channels=nc_channels,
-        dimsize=dimsize,
-        radiance_attrs=radiance_attrs,
-        counts=counts,
-        measured_scalars=measured_scalars,
-        state_tables=state_tables,
-    )
-    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_STORED) as zf:
-        zf.write(tmp_nc, arcname=f"{get_nc_part_prefix(product_type)}0001.nc")
-    tmp_nc.unlink()
-    return zip_path
-
-
-def _run_ingest(
-    source: Path, workspace: Path, options: dict[str, object] | None = None
-) -> Path:
-    output_name = "out.zarr"
-    target_path = workspace / output_name
-    ingestor = MtgFciL1cIngestor()
-    ctx = IngestContext(
-        source=str(source),
-        target=str(target_path),
-        output_format="zarr",
-        storage=StorageContext(output=_make_local_storage_session(target_path)),
-        options={
-            "force_reingest": True,
-            "write_mode": "direct",
-            # Fixtures use 2024-01-01 timestamps (pre-dating real FCI data); anchor
-            # the deterministic slot index there so they map to compact slots 0,1,...
-            "time_epoch": "2024-01-01",
-            **(options or {}),
-        },
-    )
-    result = ingestor.run(ctx)
-    result_path = Path(str(result.output_path))
-    if result_path.exists():
-        return result_path
-    return target_path
-
-
-@pytest.fixture
-def small_fci_layout(monkeypatch):
-    from firecube_mtg_fci_l1c import _constants as const_mod
-    from firecube_mtg_fci_l1c.geolocation import provider as geolocation_mod
-
-    constants_backup = copy.deepcopy(const_mod.CONSTANTS)
-    const_mod.CONSTANTS[PRODUCT_TYPE_FDHSI] = {
-        "1km": {
-            "channels": ["vis_04", "vis_06"],
-            "dimsize": 4,
-            "nc_channels": ["vis_04", "vis_06"],
-        },
-        "2km": {"channels": ["ir_38"], "dimsize": 4, "nc_channels": ["ir_38"]},
-    }
-    const_mod.CONSTANTS[PRODUCT_TYPE_HRFI] = {
-        "500m": {"channels": ["vis_06"], "dimsize": 4, "nc_channels": ["vis_06_hr"]},
-        "1km": {"channels": ["ir_38"], "dimsize": 4, "nc_channels": ["ir_38_hr"]},
-    }
-
-    compute_calls: list[int] = []
-
-    def _fake_compute_latlon(_resolution_m: int):
-        compute_calls.append(_resolution_m)
-        lat = np.zeros((4, 4), dtype=np.float32)
-        lon = np.zeros((4, 4), dtype=np.float32)
-        lat[0, 0] = np.nan
-        lon[0, 0] = np.nan
-        return lat, lon
-
-    monkeypatch.setattr(geolocation_mod, "compute_latlon", _fake_compute_latlon)
-    yield compute_calls
-    const_mod.CONSTANTS.clear()
-    const_mod.CONSTANTS.update(constants_backup)
-
-
-@pytest.fixture
-def fdhsi_zip(tmp_path: Path, small_fci_layout) -> Path:
-    src = tmp_path / "fdhsi"
-    src.mkdir()
-    zip_path = src / "W_XX-FCI-1C-RRAD-FDHSI-FD-20240101000000-END.zip"
-    return _make_zip_with_nc_part(
-        zip_path, PRODUCT_TYPE_FDHSI, ["vis_04", "vis_06", "ir_38"], dimsize=4
-    )
-
-
-@pytest.fixture
-def hrfi_zip(tmp_path: Path, small_fci_layout) -> Path:
-    src = tmp_path / "hrfi"
-    src.mkdir()
-    zip_path = src / "W_XX-FCI-1C-RRAD-HRFI-FD-20240101000000-END.zip"
-    return _make_zip_with_nc_part(
-        zip_path, PRODUCT_TYPE_HRFI, ["vis_06_hr", "ir_38_hr"], dimsize=4
-    )
+from tests._support import (
+    _NC_FLOAT32_FILL,
+    _make_fdhsi_zip_at,
+    _make_local_storage_session,
+    _make_zip_with_nc_part,
+    _run_ingest,
+    _write_scene_chunks,
+)
 
 
 @pytest.mark.integration
@@ -248,21 +56,10 @@ def test_fdhsi_groups_created(tmp_path: Path, fdhsi_zip: Path):
 @pytest.mark.integration
 @pytest.mark.plugin
 def test_hrfi_groups_created(tmp_path: Path, hrfi_zip: Path):
-    out = _run_ingest(hrfi_zip.parent, tmp_path)
+    out = _run_ingest(hrfi_zip.parent, tmp_path, product_type=PRODUCT_TYPE_HRFI)
     root = zarr.open_group(str(out), mode="r")
     assert "data_500m" in root
     assert "data_1km" in root
-
-
-@pytest.mark.integration
-@pytest.mark.plugin
-def test_mixed_rejection(tmp_path: Path, fdhsi_zip: Path, hrfi_zip: Path):
-    mixed = tmp_path / "mixed"
-    mixed.mkdir()
-    (mixed / fdhsi_zip.name).write_bytes(fdhsi_zip.read_bytes())
-    (mixed / hrfi_zip.name).write_bytes(hrfi_zip.read_bytes())
-    with pytest.raises(ValueError, match=r"[Mm]ixed"):
-        validate_no_mixed_products(list(mixed.glob("*.zip")))
 
 
 @pytest.mark.integration
@@ -659,14 +456,6 @@ def test_ingest_channels_option_filters_output(tmp_path: Path, fdhsi_zip: Path):
         assert "counts" not in list(data_2km.array_keys())
 
 
-def _make_fdhsi_zip_at(src_dir: Path, ts_str: str) -> Path:
-    src_dir.mkdir(parents=True, exist_ok=True)
-    zip_path = src_dir / f"W_XX-FCI-1C-RRAD-FDHSI-FD-{ts_str}-END.zip"
-    return _make_zip_with_nc_part(
-        zip_path, PRODUCT_TYPE_FDHSI, ["vis_04", "vis_06", "ir_38"], dimsize=4
-    )
-
-
 @pytest.mark.integration
 @pytest.mark.plugin
 def test_append_and_duplicate_timestamp_idempotent(
@@ -713,10 +502,20 @@ def test_append_and_duplicate_timestamp_idempotent(
 
 @pytest.mark.integration
 @pytest.mark.plugin
+@pytest.mark.parametrize(
+    "mode_options",
+    [
+        {},
+        # Geolocation has its own staged-resume guard test.
+        {"write_mode": "staged", "include_geolocation": False},
+    ],
+    ids=["direct", "staged"],
+)
 def test_cross_batch_append_preserves_existing_timestamps(
-    tmp_path: Path, small_fci_layout: list[int]
+    tmp_path: Path, small_fci_layout: list[int], mode_options: dict[str, object]
 ):
     store_path = tmp_path / "out.zarr"
+    resume = {**mode_options, "force_reingest": False, "resume_existing": True}
 
     # Separate runs against the same store must append, not overwrite.
     src_a = tmp_path / "src_a"
@@ -724,7 +523,7 @@ def test_cross_batch_append_preserves_existing_timestamps(
     _make_fdhsi_zip_at(src_a, "20240101000000")
     _make_fdhsi_zip_at(src_b, "20240101001000")
 
-    _run_ingest(src_a, tmp_path)
+    _run_ingest(src_a, tmp_path, options=mode_options)
     root = zarr.open_group(str(store_path), mode="r")
     data_1km = cast(Any, root["data_1km"])
     assert data_1km["time"].shape == (1,), (
@@ -732,9 +531,7 @@ def test_cross_batch_append_preserves_existing_timestamps(
     )
     ts_after_a = np.asarray(data_1km["time"][:]).copy()
 
-    _run_ingest(
-        src_b, tmp_path, options={"force_reingest": False, "resume_existing": True}
-    )
+    _run_ingest(src_b, tmp_path, options=resume)
 
     root = zarr.open_group(str(store_path), mode="r")
     data_1km = cast(Any, root["data_1km"])
@@ -751,9 +548,7 @@ def test_cross_batch_append_preserves_existing_timestamps(
     )
 
     # Re-ingesting A is an idempotent no-op.
-    _run_ingest(
-        src_a, tmp_path, options={"force_reingest": False, "resume_existing": True}
-    )
+    _run_ingest(src_a, tmp_path, options=resume)
     root = zarr.open_group(str(store_path), mode="r")
     data_1km = cast(Any, root["data_1km"])
     ts_after_reingest = np.asarray(data_1km["time"][:])
@@ -764,64 +559,6 @@ def test_cross_batch_append_preserves_existing_timestamps(
         ts_after_reingest,
         ts_after_b,
         err_msg="re-ingest of A changed existing timestamp slots (idempotency broken)",
-    )
-
-
-@pytest.mark.integration
-@pytest.mark.plugin
-def test_staged_mode_append_and_reingest_idempotent(
-    tmp_path: Path, small_fci_layout: list[int]
-):
-    """Staged append preserves existing slots and re-ingest is idempotent."""
-    store_path = tmp_path / "out.zarr"
-    # Geolocation has its own staged-resume guard test below.
-    staged = {"write_mode": "staged", "include_geolocation": False}
-    staged_resume = {
-        "write_mode": "staged",
-        "resume_existing": True,
-        "force_reingest": False,
-        "include_geolocation": False,
-    }
-
-    src_a = tmp_path / "src_a"
-    src_b = tmp_path / "src_b"
-    _make_fdhsi_zip_at(src_a, "20240101000000")
-    _make_fdhsi_zip_at(src_b, "20240101001000")
-
-    # Run A (staged): single timestamp T_A at slot 0.
-    _run_ingest(src_a, tmp_path, options=staged)
-    data_1km = cast(Any, zarr.open_group(str(store_path), mode="r")["data_1km"])
-    assert data_1km["time"].shape == (1,), (
-        f"after staged run A, expected 1 timestamp, got {data_1km['time'].shape}"
-    )
-    ts_after_a = np.asarray(data_1km["time"][:]).copy()
-
-    # Run B (staged, resume): T_B must APPEND at slot 1, not overwrite slot 0.
-    _run_ingest(src_b, tmp_path, options=staged_resume)
-    data_1km = cast(Any, zarr.open_group(str(store_path), mode="r")["data_1km"])
-    ts_after_b = np.asarray(data_1km["time"][:])
-    assert data_1km["time"].shape == (2,), (
-        f"staged append must grow the time axis to 2, got {data_1km['time'].shape}"
-    )
-    assert ts_after_b[0] == ts_after_a[0], (
-        f"staged append overwrote slot 0 ({ts_after_a[0]} -> {ts_after_b[0]})"
-    )
-    assert len(set(ts_after_b.tolist())) == 2, (
-        f"expected 2 distinct timestamps after staged append, got {ts_after_b.tolist()}"
-    )
-
-    # Re-ingest A (staged, resume): T_A already present -> idempotent no-op.
-    _run_ingest(src_a, tmp_path, options=staged_resume)
-    data_1km = cast(Any, zarr.open_group(str(store_path), mode="r")["data_1km"])
-    ts_after_reingest = np.asarray(data_1km["time"][:])
-    assert data_1km["time"].shape == (2,), (
-        f"staged re-ingest of A duplicated an existing timestamp; "
-        f"time axis grew to {data_1km['time'].shape}"
-    )
-    np.testing.assert_array_equal(
-        ts_after_reingest,
-        ts_after_b,
-        err_msg="staged re-ingest of A changed existing timestamp slots (idempotency broken)",
     )
 
 
@@ -900,24 +637,6 @@ def test_index_model_attrs_recorded_and_epoch_mismatch_rejected(
 
 @pytest.mark.integration
 @pytest.mark.plugin
-def test_staged_mode_geolocation_reingest_resumes_existing_store(
-    tmp_path: Path, small_fci_layout: list[int]
-):
-    """Staged re-ingest into an existing store works with geolocation enabled."""
-    src = tmp_path / "src"
-    _make_fdhsi_zip_at(src, "20240101000000")
-
-    staged = {"write_mode": "staged", "include_geolocation": True}
-    _run_ingest(src, tmp_path, options=staged)  # fresh target: OK
-    _run_ingest(
-        src,
-        tmp_path,
-        options={**staged, "resume_existing": True, "force_reingest": False},
-    )
-
-
-@pytest.mark.integration
-@pytest.mark.plugin
 def test_reused_ingestor_emits_static_for_each_target(
     tmp_path: Path, small_fci_layout: list[int]
 ):
@@ -940,6 +659,7 @@ def test_reused_ingestor_emits_static_for_each_target(
                 "force_reingest": True,
                 "write_mode": "direct",
                 "time_epoch": "2024-01-01",
+                "product_type": PRODUCT_TYPE_FDHSI,
                 "resolutions": "1km",
             },
         )
@@ -1225,7 +945,7 @@ def test_zarr_metadata_invariants(tmp_path: Path, fdhsi_zip: Path, hrfi_zip: Pat
     # Given: an HRFI ingest
     hrfi_ws = tmp_path / "hrfi_ws"
     hrfi_ws.mkdir()
-    _run_ingest(hrfi_zip.parent, hrfi_ws)
+    _run_ingest(hrfi_zip.parent, hrfi_ws, product_type=PRODUCT_TYPE_HRFI)
     root_hrfi = zarr.open_group(str(hrfi_ws / "out.zarr"), mode="r")
 
     # Then: only HRFI groups exist
@@ -1271,6 +991,7 @@ def test_partial_failure_metrics_preserved(tmp_path: Path, small_fci_layout: lis
             "force_reingest": True,
             "write_mode": "direct",
             "time_epoch": "2024-01-01",
+            "product_type": PRODUCT_TYPE_FDHSI,
         },
     )
     result = ingestor.run(ctx)
@@ -1402,3 +1123,158 @@ def test_cf_advisor_zero_errors_per_group(
             f"CF advisor reported {report.summary.errors} errors for {product_type}/{group} "
             f"(include_geolocation={include_geolocation}):\n{_format_errors(report)}"
         )
+
+
+# --- Loose chunk input ------------------------------------------------------
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+def test_loose_chunks_of_two_cycles_ingest_into_two_slots(
+    tmp_path: Path, small_fci_layout: list[int]
+):
+    src = tmp_path / "loose"
+    _write_scene_chunks(src, start="20240101000002", cycle=1, values=(5, 6))
+    _write_scene_chunks(src, start="20240101001003", cycle=2, values=(7, 8))
+    # Not a chunk: discovered by suffix, then ignored.
+    (src / "notes.nc").write_bytes(b"not netcdf")
+
+    out = _run_ingest(src, tmp_path, options={"include_geolocation": False})
+
+    data_1km = cast(Any, zarr.open_group(str(out), mode="r")["data_1km"])
+    assert data_1km["time"][:].tolist() == [
+        datetime.datetime(2024, 1, 1, 0, 0),
+        datetime.datetime(2024, 1, 1, 0, 10),
+    ]
+    counts = np.asarray(data_1km["counts"][:])
+    # (slot, rows, channel) -> BODY value + channel offset.
+    np.testing.assert_array_equal(counts[0, :2, :, 0], np.full((2, 4), 5))
+    np.testing.assert_array_equal(counts[0, 2:, :, 0], np.full((2, 4), 6))
+    np.testing.assert_array_equal(counts[1, :2, :, 1], np.full((2, 4), 8))
+    np.testing.assert_array_equal(counts[1, 2:, :, 1], np.full((2, 4), 9))
+    counts_2km = np.asarray(
+        cast(Any, zarr.open_group(str(out), mode="r"))["data_2km"]["counts"][:]
+    )
+    np.testing.assert_array_equal(
+        counts_2km[1, :, :, 0], [[9] * 4] * 2 + [[10] * 4] * 2
+    )
+
+
+def _intent_signature(intent: Any) -> tuple[Any, ...]:
+    """Identity and resolved payload of one intent, comparable across runs."""
+    data = intent.data() if callable(intent.data) else intent.data
+    array = np.asarray(data)
+    if array.dtype.kind in "biufcmM":
+        payload: Any = array.tobytes()
+    else:
+        payload = repr(array.tolist())
+    slot = getattr(intent, "coordinate", getattr(intent, "ts_index", None))
+    y_slice = intent.y_slice
+    return (
+        type(intent).__name__,
+        getattr(intent, "kind", None),
+        intent.group,
+        intent.array,
+        slot,
+        None if y_slice is None else (y_slice.start, y_slice.stop),
+        intent.channel_index,
+        array.dtype.str,
+        array.shape,
+        payload,
+    )
+
+
+class _RecordingMaterializer:
+    def __init__(self) -> None:
+        self.calls: list[Any] = []
+
+    def __call__(self, item: Any) -> Path:
+        self.calls.append(item)
+        return Path(str(item))
+
+
+class _ForbiddenScratch:
+    def __init__(self, *_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("a chunk-bundle batch must not create ZIP scratch")
+
+
+def _build_intent_signatures(
+    item: Any, scratch_dir: Path, materializer: _RecordingMaterializer
+) -> list[tuple[Any, ...]]:
+    ingestor = MtgFciL1cIngestor()
+    ingestor.plugin_config = MtgFciL1cConfig(
+        product_type=PRODUCT_TYPE_FDHSI,
+        time_epoch="2024-01-01",
+        include_geolocation=False,
+        scratch_dir=str(scratch_dir),
+    )
+    batch: Any = SimpleNamespace(items=[item], metadata={}, batch_id="batch_0000")
+    ctx: Any = SimpleNamespace(
+        run_id="run-1", option=lambda *_args: None, materialize=materializer
+    )
+    try:
+        intents = ingestor.build_write_intents(batch, ctx)
+        assert batch.metadata["plugin_failure_counters"] == {
+            "files_processed": 1,
+            "files_failed": 0,
+            "zip_errors": [],
+        }
+        return [_intent_signature(intent) for intent in intents]
+    finally:
+        ingestor.cleanup_batch_data(batch, ctx)
+
+
+@pytest.mark.integration
+@pytest.mark.plugin
+def test_chunk_bundle_and_zip_of_the_same_files_give_identical_intents(
+    tmp_path: Path, small_fci_layout: list[int], monkeypatch
+):
+    import firecube_mtg_fci_l1c._scratch as scratch_mod
+    from firecube_mtg_fci_l1c._data import SceneBundle
+
+    loose = tmp_path / "loose"
+    parts = _write_scene_chunks(loose, start="20240101000002", cycle=1, values=(5, 6))
+    zips = tmp_path / "zips"
+    zips.mkdir()
+    zip_path = zips / (
+        "W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI1+FCI-1C-RRAD-FDHSI-FD--x-x---x_C_EUMT_"
+        "20240101000318_IDPFI_OPE_20240101000002_20240101000934_N__O_0001_0000.zip"
+    )
+    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_STORED) as zf:
+        for part in reversed(parts):  # archive order must not matter
+            zf.write(part, arcname=part.name)
+
+    discoverer = MtgFciL1cIngestor()
+    discoverer.plugin_config = MtgFciL1cConfig(product_type=PRODUCT_TYPE_FDHSI)
+    bundles = list(
+        discoverer.discover_source_files(cast(Any, SimpleNamespace(source=str(loose))))
+    )
+    assert len(bundles) == 1 and isinstance(bundles[0], SceneBundle)
+    bundle = bundles[0]
+
+    zip_materializer = _RecordingMaterializer()
+    zip_signatures = _build_intent_signatures(
+        str(zip_path), tmp_path / "zip-scratch", zip_materializer
+    )
+
+    bundle_materializer = _RecordingMaterializer()
+    with monkeypatch.context() as patch:
+        patch.setattr(scratch_mod, "BatchScratch", _ForbiddenScratch)
+        bundle_signatures = _build_intent_signatures(
+            bundle, tmp_path / "bundle-scratch", bundle_materializer
+        )
+
+    assert zip_materializer.calls == [str(zip_path)]
+    assert bundle_materializer.calls == [str(part) for part in parts]
+    assert not (tmp_path / "bundle-scratch").exists()
+    # Index 1 is in BODY 1 (time 20) and BODY 2 (time 30); BODY 2 is read
+    # later, as from the ZIP, so it wins.
+    pixel_times = [
+        np.frombuffer(sig[9], dtype=sig[7])
+        for sig in bundle_signatures
+        if sig[0] == "IndexedWrite" and sig[3] == "pixel_time"
+    ]
+    assert pixel_times
+    for values in pixel_times:
+        np.testing.assert_array_equal(values, np.full(values.shape, 30.0))
+    assert bundle_signatures == zip_signatures

@@ -10,6 +10,7 @@ products into direct-region Zarr stores.
 | Install the plugin | [Installation](#installation) |
 | Run one local ingest | [Quickstart](#quickstart) |
 | Run production ingestion | [Production Ingestion](#production-ingestion) |
+| Store only some BODY chunks of the disk | [FCI chunks](docs/customization.md#fci-chunks) |
 | Navigate all docs | [docs/index.md](docs/index.md) |
 | Understand the Zarr layout, variables, channel names, and quality bits | [FCI Data in Zarr](docs/fci-data-in-zarr.md) |
 | Configure plugin options, script variables, grids, chunks, or shards | [Customization](docs/customization.md) |
@@ -24,7 +25,7 @@ products into direct-region Zarr stores.
 Requirements:
 
 - [uv](https://docs.astral.sh/uv/)
-- Firecube 0.1.5 or newer
+- Firecube 0.1.7 or newer
 
 Clone the plugin and install it into the Firecube environment:
 
@@ -58,15 +59,23 @@ eumdac download -c EO:EUM:DAT:0662 \
     -o /path/to/fci-zips
 ```
 
-Ingest a local FDHSI slot into a local Zarr store:
+Ingest a local FDHSI slot into a local Zarr store. `product_type` is required:
+pass `FDHSI` or `HRFI`; the plugin does not infer it from the input.
 
 ```bash
 firecube ingest mtg_fci_l1c \
     --input-data /path/to/fci-zips \
     --target file:///path/to/output.zarr \
     --output-format zarr \
-    --write-mode staged
+    --write-mode direct \
+    --option product_type=FDHSI \
+    --option cleanup_workspace=true
 ```
+
+`--input-data` can also be a directory (or S3 prefix) of unpacked chunk `.nc`
+files instead of ZIPs, complete or partial. To store only some BODY chunks of the disk,
+such as BODY chunks 32 to 40, add `--option 'fci_chunks=[32,40]'`. See
+[FCI chunks](docs/customization.md#fci-chunks).
 
 To ingest only one channel, pass the `channels` option:
 
@@ -75,8 +84,10 @@ firecube ingest mtg_fci_l1c \
     --input-data /path/to/fci-zips \
     --target file:///path/to/output-vis-06.zarr \
     --output-format zarr \
-    --write-mode staged \
-    --option channels=vis_06
+    --write-mode direct \
+    --option product_type=FDHSI \
+    --option channels=vis_06 \
+    --option cleanup_workspace=true
 ```
 
 See [Customization](docs/customization.md) for all plugin options and
@@ -185,7 +196,8 @@ firecube ingest mtg_fci_l1c \
     --option time_slots="$SLOTS" \
     --option fci_grids_file="$GRIDS" \
     --slot-start 0 \
-    --slot-end 6
+    --slot-end 6 \
+    --option cleanup_workspace=true
 ```
 
 4. Verify the store has the expected groups:

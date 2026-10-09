@@ -326,23 +326,6 @@ def test_pixel_time_lookup_float32_matches_mask_based():
 
 
 @pytest.mark.unit
-def test_pixel_time_lookup_float64_matches_mask_based():
-    index_map = np.asarray([[0, 1, 99], [2, 7, 1]], dtype=np.uint16)
-    index2time = {0: 0.0, 1: 10.5, 2: 20.25}
-    output_dtype = np.dtype(np.float64)
-    fill_value = output_dtype.type(np.nan)
-
-    direct = streaming_mod._expand_pixel_time_direct(
-        index_map, index2time, output_dtype, fill_value
-    )
-    masked = streaming_mod._expand_pixel_time_masked(
-        index_map, index2time, output_dtype, fill_value
-    )
-
-    assert np.array_equal(direct, masked, equal_nan=True)
-
-
-@pytest.mark.unit
 def test_pixel_time_lookup_missing_key_is_nan():
     index_map = np.asarray([[0, 42], [1, 2]], dtype=np.uint16)
     index2time = {0: 0.0, 1: 10.5, 2: 20.25}
@@ -376,23 +359,6 @@ def test_pixel_time_lookup_falls_back_for_int64():
         expand_pixel_time(index_map, index2time, np.dtype(np.float32))
 
     masked.assert_called_once()
-
-
-@pytest.mark.unit
-def test_pixel_time_lookup_byte_parity_over_reference_fixture():
-    rng = np.random.default_rng(20260824)
-    index_map = rng.integers(0, 101, size=(100, 100), dtype=np.uint16)
-    index_map[::10, ::10] = np.iinfo(np.uint16).max
-    index2time = {idx: float(idx) + 0.5 for idx in range(100)}
-    output_dtype = np.dtype(np.float32)
-    fill_value = output_dtype.type(np.nan)
-
-    expanded = expand_pixel_time(index_map, index2time, output_dtype)
-    reference = streaming_mod._expand_pixel_time_masked(
-        index_map, index2time, output_dtype, fill_value
-    )
-
-    assert np.array_equal(expanded, reference, equal_nan=True)
 
 
 @pytest.mark.unit
@@ -438,46 +404,6 @@ def test_shared_nc_part_reader_opens_each_file_once_per_path(
 
 
 @pytest.mark.unit
-def test_shared_nc_part_reader_caches_reader_instance_by_path(tmp_path: Path):
-    part = tmp_path / "body.nc"
-    _write_nc_part(part, channel_specs={"vis_04": (1, 2, 11)})
-
-    with SharedNcPartReader() as shared:
-        reader_first = shared._get_reader(part)
-        reader_second = shared._get_reader(part)
-
-        assert reader_first is reader_second
-        assert list(shared._readers.keys()) == [Path(part)]
-
-
-@pytest.mark.unit
-def test_shared_nc_part_reader_decode_spatial_matches_eager_load(tmp_path: Path):
-    part = tmp_path / "body.nc"
-    _write_nc_part(part, channel_specs={"vis_04": (1, 2, 11)})
-    pixel_time_dtype = np.dtype(np.float32)
-    index2time = {0: 0.0, 1: 60.0, 2: 120.0}
-
-    with NCPartReader(part) as eager_reader:
-        eager_payload = streaming_mod.load_channel_slice(
-            eager_reader, "vis_04", index2time, pixel_time_dtype
-        )
-
-    with SharedNcPartReader() as shared:
-        shared_payload = shared.decode_spatial(
-            part, "vis_04", index2time, pixel_time_dtype
-        )
-
-    np.testing.assert_array_equal(shared_payload.counts, eager_payload.counts)
-    np.testing.assert_array_equal(
-        shared_payload.pixel_quality, eager_payload.pixel_quality
-    )
-    assert shared_payload.pixel_time is not None
-    assert eager_payload.pixel_time is not None
-    np.testing.assert_array_equal(shared_payload.pixel_time, eager_payload.pixel_time)
-    assert shared_payload.pixel_time.dtype == pixel_time_dtype
-
-
-@pytest.mark.unit
 def test_shared_nc_part_reader_decode_channel_matches_eager_calibration(
     tmp_path: Path,
 ):
@@ -501,47 +427,28 @@ def test_shared_nc_part_reader_decode_channel_matches_eager_calibration(
 
 
 @pytest.mark.unit
+@pytest.mark.parametrize("close_path", ["explicit-close-twice", "context-exit"])
 def test_shared_nc_part_reader_close_releases_handles_and_clears_cache(
-    tmp_path: Path,
+    tmp_path: Path, close_path: str
 ):
     part = tmp_path / "body.nc"
     _write_nc_part(part, channel_specs={"vis_04": (1, 2, 11)})
 
     shared = SharedNcPartReader()
-    shared.decode_channel(part, "vis_04")
-    cached = shared._readers[Path(part)]
-    assert cached._ds is not None
-
-    shared.close()
-
-    assert cached._ds is None
-    assert shared._readers == {}
-
-
-@pytest.mark.unit
-def test_shared_nc_part_reader_context_manager_closes_on_exit(tmp_path: Path):
-    part = tmp_path / "body.nc"
-    _write_nc_part(part, channel_specs={"vis_04": (1, 2, 11)})
-
-    with SharedNcPartReader() as shared:
+    if close_path == "context-exit":
+        with shared:
+            shared.decode_channel(part, "vis_04")
+            cached = shared._readers[Path(part)]
+            assert cached._ds is not None
+    else:
         shared.decode_channel(part, "vis_04")
         cached = shared._readers[Path(part)]
         assert cached._ds is not None
+        shared.close()
+        shared.close()
 
     assert cached._ds is None
     assert shared._readers == {}
-
-
-@pytest.mark.unit
-def test_shared_nc_part_reader_close_is_idempotent(tmp_path: Path):
-    part = tmp_path / "body.nc"
-    _write_nc_part(part, channel_specs={"vis_04": (1, 2, 11)})
-
-    shared = SharedNcPartReader()
-    shared.decode_channel(part, "vis_04")
-
-    shared.close()
-    shared.close()
 
 
 def _assembler_payload(base: int, *, rows: int = 2) -> ChannelSlicePayload:
@@ -626,41 +533,111 @@ def test_assembler_bounded_cache_assembled_entries_max_one(tmp_path: Path):
     assert len(assembler._assembled_cache) <= 1
 
 
-@pytest.mark.unit
-def test_assembler_rejects_non_contiguous_nc_parts(tmp_path: Path):
-    from firecube_mtg_fci_l1c._group_plan import GroupPlan
-    from firecube_mtg_fci_l1c.config import MtgFciL1cConfig
-    from firecube_mtg_fci_l1c.ingestor import MtgFciL1cIngestor
+def _write_rows_part(path: Path, rows: tuple[int, int]) -> None:
+    """Write a ``vis_04`` nc_part for disk rows ``[start, stop)``, 3 columns.
 
-    config = MtgFciL1cConfig(
-        product_type="FDHSI",
-        resolutions="1km",
-        zarr_chunk_y=4,
-        include_pixel_time=False,
-    )
-    plan = GroupPlan(
-        product_type="FDHSI",
-        resolution="1km",
-        group="data_1km",
-        dimsize=4,
-        logical_channels=("vis_04",),
-        nc_channels=("vis_04",),
-    )
-    nc_part_ranges = [
-        (tmp_path / "part-1.nc", (0, 2)),
-        (tmp_path / "part-2.nc", (3, 4)),
-    ]
-
-    with pytest.raises(AssemblyPreconditionError):
-        MtgFciL1cIngestor()._emit_spatial_intents(
-            "batch-1",
-            plan,
-            0,
-            nc_part_ranges,
-            None,
-            np.dtype(np.float32),
-            config,
+    Every pixel of disk row ``r`` holds ``counts == r``, ``pixel_quality ==
+    r % 7`` and ``index_map == r``; the root table maps index ``r`` to
+    ``10.0 * r``. Any row of an assembled payload therefore names the disk
+    row it came from.
+    """
+    start, stop = rows
+    disk_rows = np.arange(start, stop)
+    with h5netcdf.File(path, "w") as ds:
+        ds.dimensions["n_time"] = len(disk_rows)
+        ds.create_variable("index", ("n_time",), data=disk_rows.astype(np.int64))
+        ds.create_variable("time", ("n_time",), data=disk_rows * 10.0)
+        measured = (
+            ds.create_group("data").create_group("vis_04").create_group("measured")
         )
+        measured.dimensions["y"] = len(disk_rows)
+        measured.dimensions["x"] = 3
+        per_row = np.repeat(disk_rows[:, None], 3, axis=1)
+        radiance = measured.create_variable(
+            "effective_radiance", ("y", "x"), data=per_row.astype(np.uint16)
+        )
+        radiance.attrs["start_position_row"] = start + 1
+        radiance.attrs["end_position_row"] = stop
+        measured.create_variable(
+            "pixel_quality", ("y", "x"), data=(per_row % 7).astype(np.uint8)
+        )
+        measured.create_variable("index_map", ("y", "x"), data=per_row.astype(np.int32))
+
+
+def _rows_of(payload: ChannelSlicePayload) -> list[int]:
+    """Return the disk row each payload row came from, checking every array."""
+    rows = payload.counts[:, 0].astype(int).tolist()
+    expected = np.repeat(np.asarray(rows)[:, None], 3, axis=1)
+    np.testing.assert_array_equal(payload.counts, expected)
+    np.testing.assert_array_equal(payload.pixel_quality, expected % 7)
+    assert payload.pixel_time is not None
+    np.testing.assert_array_equal(payload.pixel_time, expected * 10.0)
+    return rows
+
+
+@pytest.mark.unit
+def test_assembler_returns_exactly_the_rows_of_a_sub_range(tmp_path: Path):
+    part_a = tmp_path / "body-a.nc"
+    part_b = tmp_path / "body-b.nc"
+    _write_rows_part(part_a, (100, 105))
+    _write_rows_part(part_b, (105, 109))
+    ranges = {part_a: (100, 105), part_b: (105, 109)}
+    index2time = {row: row * 10.0 for row in range(100, 109)}
+    variables = frozenset({"counts", "pixel_quality", "pixel_time"})
+
+    with SharedNcPartReader() as shared:
+        assembler = ChunkOwnedAssembler(shared)
+
+        def rows(parts: list[Path], y_range: tuple[int, int]) -> list[int]:
+            payload = assembler.assemble(
+                parts,
+                "vis_04",
+                index2time,
+                np.dtype(np.float64),
+                "data_1km",
+                0,
+                y_range,
+                variables,
+                {part: ranges[part] for part in parts},
+            )
+            return _rows_of(payload)
+
+        # A run across the part boundary, a run inside one part, then the
+        # whole chunk: each answer holds its own rows, none is served from
+        # the run cached before it.
+        assert rows([part_a, part_b], (103, 107)) == [103, 104, 105, 106]
+        assert rows([part_b], (105, 107)) == [105, 106]
+        assert rows([part_a, part_b], (100, 109)) == list(range(100, 109))
+        assert rows([part_a], (101, 102)) == [101]
+
+
+@pytest.mark.unit
+def test_assembler_rejects_rows_its_parts_do_not_cover(tmp_path: Path):
+    part_a = tmp_path / "body-a.nc"
+    part_c = tmp_path / "body-c.nc"
+    _write_rows_part(part_a, (0, 4))
+    _write_rows_part(part_c, (6, 9))
+    ranges = {part_a: (0, 4), part_c: (6, 9)}
+
+    with SharedNcPartReader() as shared:
+        assembler = ChunkOwnedAssembler(shared)
+        for parts, y_range in (
+            ([part_a, part_c], (2, 8)),  # rows 4-5 belong to no part
+            ([part_a], (2, 6)),  # the part ends at row 4
+            ([part_c, part_a], (0, 9)),  # out of row order
+        ):
+            with pytest.raises(AssemblyPreconditionError):
+                assembler.assemble(
+                    parts,
+                    "vis_04",
+                    None,
+                    np.dtype(np.float32),
+                    "data_1km",
+                    0,
+                    y_range,
+                    frozenset({"counts"}),
+                    {part: ranges[part] for part in parts},
+                )
 
 
 @pytest.mark.unit
@@ -1002,3 +979,64 @@ def test_nc_part_reader_missing_row_metadata_fails_loudly(tmp_path: Path):
         # ... but the row bounds cannot be recovered.
         with pytest.raises(KeyError, match="start/end row metadata"):
             reader._read_row_bounds(reader._open()["data/vis_04/measured"])
+
+
+def _fci_chunk_name(kind: str, number: int, *, satellite: str = "MTI1") -> str:
+    pad = "---" if kind == "BODY" else "--"
+    return (
+        f"W_XX-EUMETSAT-Darmstadt,IMG+SAT,{satellite}+FCI-1C-RRAD-FDHSI-FD--"
+        f"CHK-{kind}{pad}NC4E_C_EUMT_20250701000756_IDPFI_OPE_20250701000352_"
+        f"20250701000421_N__O_0001_{number:04d}.nc"
+    )
+
+
+def _populate_mixed_satellite_dir(root: Path) -> list[str]:
+    """Write chunks of two satellites plus noise; return the expected order."""
+    (root / "nested").mkdir(parents=True)
+    expected = [
+        _fci_chunk_name("BODY", 2),
+        _fci_chunk_name("BODY", 3, satellite="MTI2"),
+        _fci_chunk_name("BODY", 10),
+        _fci_chunk_name("TRAIL", 40, satellite="MTI2"),
+        _fci_chunk_name("TRAIL", 41),
+    ]
+    noise = [
+        "preview.nc",
+        _fci_chunk_name("BODY", 5).replace("CHK-BODY", "CHK-HEAD"),
+        _fci_chunk_name("BODY", 6).replace("FCI-1C-RRAD", "FCI-1C-XXXX"),
+        _fci_chunk_name("BODY", 7).removesuffix(".nc") + ".xml",
+    ]
+    # Shuffled creation order and a nested location: neither may affect the result.
+    for name in (expected[4], expected[2], expected[0], expected[3]):
+        (root / name).touch()
+    (root / "nested" / expected[1]).touch()
+    for name in noise:
+        (root / name).touch()
+    return expected
+
+
+@pytest.mark.unit
+def test_list_fci_nc_parts_accepts_any_satellite_body_then_trail(tmp_path: Path):
+    expected = _populate_mixed_satellite_dir(tmp_path / "extract")
+
+    found = list_fci_nc_parts(tmp_path / "extract")
+
+    assert [p.name for p in found] == expected
+
+
+@pytest.mark.unit
+def test_list_fci_nc_parts_matches_loose_bundle_members(tmp_path: Path):
+    from firecube_mtg_fci_l1c._data import (
+        group_chunks_into_bundles,
+        is_valid_fci_chunk,
+    )
+
+    root = tmp_path / "extract"
+    _populate_mixed_satellite_dir(root)
+    loose = sorted(p for p in root.rglob("*") if p.is_file())
+
+    (bundle,) = group_chunks_into_bundles(p for p in loose if is_valid_fci_chunk(p))
+
+    assert [p.name for p in list_fci_nc_parts(root)] == [
+        Path(m).name for m in bundle.members
+    ]

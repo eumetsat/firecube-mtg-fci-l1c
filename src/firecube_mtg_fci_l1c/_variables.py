@@ -165,31 +165,38 @@ def _warm_offset_source(ctx: VariableContext) -> np.ndarray | None:
     return vec if found else None
 
 
-def _latitude_source(ctx: VariableContext) -> np.ndarray | None:
+def _lat_lon_pair(ctx: VariableContext) -> tuple[np.ndarray, np.ndarray] | None:
+    """Return the group's ``(lat, lon)`` rows: the stripe's window, or the full disk."""
     if ctx.geo_provider is None:
         return None
     res_m = ctx.geo_provider.resolution_m(ctx.resolution)
     if res_m is None:
         return None
-    lat, _lon = ctx.geo_provider.get_lat_lon(ctx.config.fci_grids_file, res_m)
-    return lat
+    if ctx.y_window is None:
+        return ctx.geo_provider.get_lat_lon(ctx.config.fci_grids_file, res_m)
+    return ctx.geo_provider.get_lat_lon(
+        ctx.config.fci_grids_file, res_m, rows=ctx.y_window
+    )
+
+
+def _latitude_source(ctx: VariableContext) -> np.ndarray | None:
+    pair = _lat_lon_pair(ctx)
+    return None if pair is None else pair[0]
 
 
 def _longitude_source(ctx: VariableContext) -> np.ndarray | None:
-    if ctx.geo_provider is None:
-        return None
-    res_m = ctx.geo_provider.resolution_m(ctx.resolution)
-    if res_m is None:
-        return None
-    _lat, lon = ctx.geo_provider.get_lat_lon(ctx.config.fci_grids_file, res_m)
-    return lon
+    pair = _lat_lon_pair(ctx)
+    return None if pair is None else pair[1]
 
 
-def _projection_angle_source(ctx: VariableContext) -> np.ndarray | None:
-    """Return the geos scan angle (radians) or distance (metres) of each pixel centre.
+def _projection_angle_source(
+    ctx: VariableContext, start: int, stop: int
+) -> np.ndarray | None:
+    """Return the geos scan angle (radians) or distance (metres) of pixel centres.
 
-    Shared by ``x`` and ``y``: the FCI fixed grid is square and symmetric around
-    the sub-satellite point, so index ``i`` on either axis sits at
+    Covers indices ``start``..``stop - 1`` of one axis. Shared by ``x`` and
+    ``y``: the FCI fixed grid is square and symmetric around the sub-satellite
+    point, so index ``i`` on either axis sits at
     ``(i - (dimsize / 2 - 0.5)) * scale``. This equals the L1C files' own
     ``x``/``y`` for packed column/row ``i + 1`` (their ``add_offset`` is
     ``(dimsize / 2 + 0.5) * |scale|`` per resolution), negated for ``x``
@@ -200,18 +207,18 @@ def _projection_angle_source(ctx: VariableContext) -> np.ndarray | None:
         return None
     scale = FCI_PROJ_SCALE_RAD_PER_INDEX[ctx.resolution]
     centre = ctx.dimsize / 2 - 0.5
-    rad = (np.arange(ctx.dimsize, dtype=np.float64) - centre) * scale
+    rad = (np.arange(start, stop, dtype=np.float64) - centre) * scale
     if ctx.config.projection_units in ("meter", "metre"):
         return rad * MTG_PERSPECTIVE_POINT_HEIGHT_M
     return rad
 
 
 def _projection_x_source(ctx: VariableContext) -> np.ndarray | None:
-    return _projection_angle_source(ctx)
+    return _projection_angle_source(ctx, 0, ctx.dimsize)
 
 
 def _projection_y_source(ctx: VariableContext) -> np.ndarray | None:
-    return _projection_angle_source(ctx)
+    return _projection_angle_source(ctx, ctx.y_start, ctx.y_stop)
 
 
 def _slot_geometry_value(ctx: VariableContext, name: str) -> np.ndarray | None:

@@ -11,9 +11,11 @@ Full env-var reference for the script is in
 
 ## Prerequisites
 
-- Firecube ≥ 0.1.5 with the `mtg_fci_l1c` plugin installed.
-- Read access to FCI L1C `.zip` files at `INPUT` (local path, `file://` URI,
-  or `s3://` prefix). The same `INPUT` is passed to every pod.
+- Firecube ≥ 0.1.7 with the `mtg_fci_l1c` plugin installed.
+- Read access to FCI L1C `.zip` files, or to unpacked chunk `.nc` files, at
+  `INPUT` (local path, `file://` URI, or `s3://` prefix); not both forms in one
+  `INPUT`. The same `INPUT`
+  is passed to every pod.
 - For local `TARGET`: any writable local filesystem.
 - For S3 `TARGET`: Firecube installed with the `obstore` extra
   (`uv sync --extra obstore`) plus valid AWS credentials in the environment.
@@ -102,18 +104,12 @@ Each pod is a single `firecube ingest` process with `pipeline_workers=1`:
 
 | Resource | Per pod | Notes |
 |---|---|---|
-| RAM | **~14.6 GiB** peak RSS | Measured baseline for FDHSI, 1 km + 2 km, all 16 channels, `pixel_time_dtype=float64`. Feature-flag reductions in [Performance Tuning → Memory](../performance-tuning.md#memory-considerations). |
+| RAM | **~2.0 GiB** peak RSS | Measured for FDHSI, 1 km + 2 km, all 16 channels, default options, one full-disk slot; plan for 2.5 GiB. Conditions and the `fci_chunks` figure in [Performance Tuning → Memory](../performance-tuning.md#memory-considerations). |
 | CPU | ~1 physical core | numpy / BLAS / HDF5 may internally spawn threads. When packing many pods on one host, set `OMP_NUM_THREADS=1` and `OPENBLAS_NUM_THREADS=1` to avoid oversubscription. |
 
-Total host requirement is roughly **`PARALLELISM × 14.6 GiB` RAM** plus one
-core per pod:
-
-| Host RAM | Safe `PARALLELISM` |
-|---|---|
-| 32 GiB | 2 |
-| 64 GiB | 4 |
-| 128 GiB | 8 |
-| 256 GiB | 16 |
+Total host requirement is roughly **`PARALLELISM × 2.5 GiB` RAM** (calculated)
+plus one core per pod. For example, `PARALLELISM=8` needs about 20 GiB and
+`PARALLELISM=16` about 40 GiB.
 
 For higher throughput, scale across multiple hosts (see [Multi-Host Scaling](#multi-host-scaling)).
 
@@ -133,6 +129,9 @@ those steps and adds fan-out, logging, and idempotent re-runs.
 | `--option fci_grids_file=...` | `GRIDS_FILE` |
 | `--option resolutions=...` | `RESOLUTIONS` |
 | `--option flat_store=true` | `FLAT_STORE=1` (see [Flat store layout](../customization.md#flat-store-layout)) |
+| `--option product_type=...` | `PRODUCT_TYPE` (default `FDHSI`) |
+| `--option fci_chunks=[32,40]` | `FCI_CHUNKS=[32,40]` (see [FCI chunks](../customization.md#fci-chunks)) |
+| `--option partial_chunk=...` | `PARTIAL_CHUNK` |
 | `--slot-start`, `--slot-end` | `SLOT_START`, `SLOT_END` |
 | number of parallel processes | `PARALLELISM` |
 
@@ -160,7 +159,7 @@ PARALLELISM=8 \
 bash scripts/fci-ingest.sh
 ```
 
-Host requirement: `8 × 14.6 GiB ≈ 117 GiB` RAM plus 8 cores.
+Host requirement: `8 × 2.5 GiB = 20 GiB` RAM plus 8 cores.
 
 ### S3 with the `obstore` driver
 
@@ -186,8 +185,37 @@ LOG_ROOT=/root/logs \
 bash scripts/fci-ingest.sh
 ```
 
-Host requirement: `12 × 14.6 GiB ≈ 175 GiB` RAM plus 12 cores. Reduce
+Host requirement: `12 × 2.5 GiB = 30 GiB` RAM plus 12 cores. Reduce
 `PARALLELISM` for smaller hosts, or split the window across multiple hosts.
+
+## Unpacked Chunks And FCI Chunks
+
+`INPUT` can point at unpacked chunk `.nc` files instead of ZIPs, locally or on
+S3. A scene is the chunk
+files of one repeat cycle, and the slot window selects scenes exactly as it
+selects ZIPs. To keep only the northern BODY chunks of the disk, add `FCI_CHUNKS`;
+`PARTIAL_CHUNK` is optional:
+
+```bash
+TIME_EPOCH=2025-07-01 TIME_SLOTS=144 \
+SLOT_START=0 SLOT_END=1 SLOTS_PER_POD=1 PARALLELISM=1 \
+INPUT=file:///data/fci-chunks \
+TARGET=file:///data/fci_chunks.zarr \
+PRODUCT_NAME=fci-chunks \
+PRODUCT_TYPE=FDHSI \
+FCI_CHUNKS='[32,40]' \
+ASSUME_YES=1 \
+bash scripts/fci-ingest.sh
+```
+
+The script rejects an `FCI_CHUNKS` that is not two integers in brackets without
+spaces, and a `PARTIAL_CHUNK` other than `fill` or `error`, before it calls
+Firecube. Scenes that leave rows of the chosen chunks or the disk uncovered, such as
+chunks 32 to 40 alone, need the default `WRITE_MODE=direct`: with
+`WRITE_MODE=staged` they fail before anything is written. Remote chunks are downloaded into each pod's workspace.
+The script passes `--option cleanup_workspace=true` by default, so Firecube
+deletes each workspace directory at the end of its run. Set
+`CLEANUP_WORKSPACE=0` to keep the workspaces.
 
 ## Multi-Host Scaling
 
@@ -211,6 +239,7 @@ firecube zarr preallocate mtg_fci_l1c \
     --storage-driver obstore \
     --write-mode direct \
     --input-data file:///data/fci-zips \
+    --option product_type=FDHSI \
     --option time_epoch=2024-09-24 \
     --option time_slots=1008 \
     --option fci_grids_file=/shared/fci_grids.npz
@@ -249,7 +278,7 @@ Production-specific failures:
 | Symptom | Cause | Recovery |
 |---|---|---|
 | `FAIL` lines in `$LOGDIR/results.txt` | Individual pods exited non-zero | Read the per-pod log at `$LOGDIR/pod_<start>_<end>.log`, fix the cause, then re-run with the same `SLOT_START`/`SLOT_END`. Successful slots are no-ops with `FORCE_REINGEST=1` |
-| Host OOM during phase 1 | `PARALLELISM × 14.6 GiB` exceeds available RAM | Lower `PARALLELISM` or split the window across more hosts |
+| Host OOM during phase 1 | `PARALLELISM × 2.5 GiB` exceeds available RAM | Lower `PARALLELISM` or split the window across more hosts |
 | Slow S3 writes with default driver | Using `fsspec` for parallel S3 | Switch to `STORAGE_DRIVER=obstore` and install the `obstore` extra |
 
 ## Operational Notes

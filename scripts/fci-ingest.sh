@@ -22,7 +22,7 @@
 #   * a pod writes ALL resolution groups for its range -> NO --slot-group
 #   * every pod gets the SAME --input-data; the engine resolves each item's
 #     inspect_item coordinate against the declared axis and keeps only the
-#     ZIPs whose slot falls in [slot_start, slot_end)
+#     ZIPs (or unpacked-chunk scenes) whose slot falls in [slot_start, slot_end)
 #   * mode="floor": split on whole-slot boundaries only (never split a cycle)
 #
 # Two-phase: (0) generate shared geo grids once + preallocate the axis, then
@@ -32,15 +32,27 @@
 # fixes the preallocated store shape. The WINDOW (FROM/TO or SLOT_START/SLOT_END)
 # is only what THIS run ingests. Grow the window later without re-preallocating.
 #
+# FCI_CHUNKS=[first,last] (no spaces) stores only the rows of the disk those
+# BODY chunks cover; PARTIAL_CHUNK=fill|error says what to do with rows that no
+# input file covers. Both are passed to preallocation and every pod, and only
+# when set.
+#
 # FLAT_STORE=1 writes the arrays at the store root instead of data_<res>/. It
 # needs exactly one effective resolution (e.g. RESOLUTIONS=1km); the plugin
 # rejects more, and Firecube rejects switching the layout of an existing store.
+#
+# WRITE_MODE defaults to direct. CLEANUP_WORKSPACE defaults to true and passes
+# --option cleanup_workspace=true to preallocation and every pod; set it to 0 to
+# keep the workspace.
 #
 # LOGS: every run writes to /root/logs/fci-ingest-<timestamp>-<pid>/ —
 # run.log is the full terminal transcript (review with `less -R` instead of
 # scrolling screen/tmux), pod_<start>_<end>.log is each pod's firecube output,
 # results.txt the ok/FAIL lines. Override the location with LOGDIR or LOG_ROOT.
 set -euo pipefail
+# No pathname expansion: option values such as fci_chunks=[32,40] are glob
+# patterns to the shell and must reach firecube literally.
+set -f
 
 # ---- logging ---------------------------------------------------------------
 LOG_ROOT="${LOG_ROOT:-/root/logs}"
@@ -52,7 +64,7 @@ fmt_dur() { local s=$1; printf '%dh%02dm%02ds' $((s/3600)) $((s%3600/60)) $((s%6
 # ---- what to ingest --------------------------------------------------------
 PLUGIN="${PLUGIN:-mtg_fci_l1c}"
 PRODUCT_TYPE="${PRODUCT_TYPE:-FDHSI}"                 # FDHSI | HRFI
-INPUT="${INPUT:-/data/fci-zips}"                      # dir of FCI L1C .zip files (same for all pods)
+INPUT="${INPUT:-/data/fci-zips}"                      # dir of FCI L1C .zip files OR unpacked chunk .nc files, not both (same for all pods)
 TARGET="${TARGET:-s3://mtg-fci-l1c.zarr/}"            # product store URI (s3:// or file://)
 PRODUCT_NAME="${PRODUCT_NAME:-}"                      # logical name; default = target basename
 
@@ -80,6 +92,9 @@ EXTRACT_WORKERS="${EXTRACT_WORKERS:-}"               # parallel ZIP extraction p
 EXTRA_OPTIONS="${EXTRA_OPTIONS:-}"                   # extra "--option k=v ..." appended to every invocation
 RESOLUTIONS="${RESOLUTIONS:-}"                        # optional subset, e.g. "1km" or "500m,1km"
 FLAT_STORE="${FLAT_STORE:-}"                          # 1|true|yes|on = arrays at store root (one resolution only)
+CLEANUP_WORKSPACE="${CLEANUP_WORKSPACE:-true}"        # 1|true|yes|on (default) = remove the run workspace after each run; 0|false|no|off = keep it
+FCI_CHUNKS="${FCI_CHUNKS:-}"                          # [first,last] BODY chunk numbers, no spaces: store only those chunks
+PARTIAL_CHUNK="${PARTIAL_CHUNK:-}"                    # fill|error: rows no input file covers
 FIRECUBE="${FIRECUBE:-firecube}"
 ASSUME_YES="${ASSUME_YES:-0}"
 
@@ -149,6 +164,23 @@ case "${FLAT_STORE,,}" in
   ""|0|false|no|off) ;;
   *) echo "ERROR: FLAT_STORE='$FLAT_STORE' is not a boolean (use 1/true/yes/on or 0/false/no/off)." >&2; exit 2 ;;
 esac
+case "${CLEANUP_WORKSPACE,,}" in
+  1|true|yes|on) COMMON_OPTS+=(--option "cleanup_workspace=true") ;;
+  0|false|no|off) ;;
+  *) echo "ERROR: CLEANUP_WORKSPACE='$CLEANUP_WORKSPACE' is not a boolean (use 1/true/yes/on or 0/false/no/off)." >&2; exit 2 ;;
+esac
+if [[ -n "$FCI_CHUNKS" ]]; then
+  if [[ ! "$FCI_CHUNKS" =~ ^\[[0-9]+,[0-9]+\]$ ]]; then
+    echo "ERROR: FCI_CHUNKS='$FCI_CHUNKS' is not [first,last] (two integers, no spaces, e.g. [32,40])." >&2; exit 2
+  fi
+  COMMON_OPTS+=(--option "fci_chunks=$FCI_CHUNKS")
+fi
+if [[ -n "$PARTIAL_CHUNK" ]]; then
+  case "$PARTIAL_CHUNK" in
+    fill|error) COMMON_OPTS+=(--option "partial_chunk=$PARTIAL_CHUNK") ;;
+    *) echo "ERROR: PARTIAL_CHUNK='$PARTIAL_CHUNK' is not fill or error." >&2; exit 2 ;;
+  esac
+fi
 # deliberate word-splitting: EXTRA_OPTIONS is a flat "--option k=v ..." string
 # shellcheck disable=SC2206
 [[ -n "$EXTRA_OPTIONS" ]] && COMMON_OPTS+=($EXTRA_OPTIONS)
@@ -292,6 +324,7 @@ if [[ ! -s "$LOGDIR/fanout-plan.tsv" ]]; then
   echo "ERROR: fan-out plan is empty. Nothing to ingest." >&2; exit 2
 fi
 cat "$LOGDIR/fanout-plan.tsv" | xargs -P "$PARALLELISM" -n3 bash -c '
+  set -f  # the pod shell starts fresh: keep COMMON_STR free of globbing
   idx=$1; s=$2; e=$3
   static=false; [[ "$s" == "$STATIC_OWNER_START" ]] && static=true
   log="$LOGDIR/pod_${s}_${e}.log"

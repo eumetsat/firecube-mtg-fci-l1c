@@ -135,6 +135,225 @@ CHUNK_DEFAULTS_BY_RESOLUTION: dict[str, int] = {
     "2km": 139,
 }
 
+# Number of BODY chunks (``..._CHK-BODY---`` nc_parts) in a full-disk product.
+BODY_CHUNK_COUNT: dict[str, int] = {
+    PRODUCT_TYPE_FDHSI: 40,
+    PRODUCT_TYPE_HRFI: 40,
+}
+
+# Row span of each BODY chunk in the full-disk grid.
+#
+# BODY_CHUNK_ROWS[product_type][resolution][chunk - 1] -> (r0, r1): 0-based,
+# half-open row range that BODY chunk number ``chunk`` (1-based) covers. Spans
+# tile 0..dimsize without gap or overlap. Chunk heights are not uniform (the
+# real products have a few taller and shorter chunks), so they cannot be derived
+# from a fixed rows-per-chunk. Measured from real FCI L1C products: three FDHSI
+# dates and one HRFI date.
+BODY_CHUNK_ROWS: dict[str, dict[str, tuple[tuple[int, int], ...]]] = {
+    "FDHSI": {
+        "1km": (
+            (0, 278),
+            (278, 556),
+            (556, 835),
+            (835, 1113),
+            (1113, 1392),
+            (1392, 1670),
+            (1670, 1948),
+            (1948, 2227),
+            (2227, 2505),
+            (2505, 2784),
+            (2784, 3062),
+            (3062, 3340),
+            (3340, 3619),
+            (3619, 3897),
+            (3897, 4176),
+            (4176, 4454),
+            (4454, 4732),
+            (4732, 5011),
+            (5011, 5289),
+            (5289, 5568),
+            (5568, 5846),
+            (5846, 6124),
+            (6124, 6403),
+            (6403, 6681),
+            (6681, 6960),
+            (6960, 7258),
+            (7258, 7556),
+            (7556, 7856),
+            (7856, 8133),
+            (8133, 8391),
+            (8391, 8649),
+            (8649, 8908),
+            (8908, 9187),
+            (9187, 9465),
+            (9465, 9744),
+            (9744, 10022),
+            (10022, 10300),
+            (10300, 10579),
+            (10579, 10857),
+            (10857, 11136),
+        ),
+        "2km": (
+            (0, 139),
+            (139, 278),
+            (278, 417),
+            (417, 556),
+            (556, 696),
+            (696, 835),
+            (835, 974),
+            (974, 1113),
+            (1113, 1252),
+            (1252, 1392),
+            (1392, 1531),
+            (1531, 1670),
+            (1670, 1809),
+            (1809, 1948),
+            (1948, 2088),
+            (2088, 2227),
+            (2227, 2366),
+            (2366, 2505),
+            (2505, 2644),
+            (2644, 2784),
+            (2784, 2923),
+            (2923, 3062),
+            (3062, 3201),
+            (3201, 3340),
+            (3340, 3480),
+            (3480, 3629),
+            (3629, 3778),
+            (3778, 3928),
+            (3928, 4066),
+            (4066, 4195),
+            (4195, 4324),
+            (4324, 4454),
+            (4454, 4593),
+            (4593, 4732),
+            (4732, 4872),
+            (4872, 5011),
+            (5011, 5150),
+            (5150, 5289),
+            (5289, 5428),
+            (5428, 5568),
+        ),
+    },
+    "HRFI": {
+        "500m": (
+            (0, 557),
+            (557, 1113),
+            (1113, 1671),
+            (1671, 2227),
+            (2227, 2785),
+            (2785, 3341),
+            (3341, 3897),
+            (3897, 4455),
+            (4455, 5011),
+            (5011, 5569),
+            (5569, 6125),
+            (6125, 6681),
+            (6681, 7239),
+            (7239, 7795),
+            (7795, 8353),
+            (8353, 8909),
+            (8909, 9465),
+            (9465, 10023),
+            (10023, 10579),
+            (10579, 11137),
+            (11137, 11693),
+            (11693, 12249),
+            (12249, 12807),
+            (12807, 13363),
+            (13363, 13921),
+            (13921, 14517),
+            (14517, 15113),
+            (15113, 15714),
+            (15714, 16267),
+            (16267, 16783),
+            (16783, 17299),
+            (17299, 17817),
+            (17817, 18375),
+            (18375, 18931),
+            (18931, 19489),
+            (19489, 20045),
+            (20045, 20601),
+            (20601, 21159),
+            (21159, 21715),
+            (21715, 22272),
+        ),
+        "1km": (
+            (0, 278),
+            (278, 556),
+            (556, 835),
+            (835, 1113),
+            (1113, 1392),
+            (1392, 1670),
+            (1670, 1948),
+            (1948, 2227),
+            (2227, 2505),
+            (2505, 2784),
+            (2784, 3062),
+            (3062, 3340),
+            (3340, 3619),
+            (3619, 3897),
+            (3897, 4176),
+            (4176, 4454),
+            (4454, 4732),
+            (4732, 5011),
+            (5011, 5289),
+            (5289, 5568),
+            (5568, 5846),
+            (5846, 6124),
+            (6124, 6403),
+            (6403, 6681),
+            (6681, 6960),
+            (6960, 7258),
+            (7258, 7556),
+            (7556, 7856),
+            (7856, 8133),
+            (8133, 8391),
+            (8391, 8649),
+            (8649, 8908),
+            (8908, 9187),
+            (9187, 9465),
+            (9465, 9744),
+            (9744, 10022),
+            (10022, 10300),
+            (10300, 10579),
+            (10579, 10857),
+            (10857, 11136),
+        ),
+    },
+}
+
+
+def stripe_rows(
+    product_type: str, resolution: str, first: int, last: int
+) -> tuple[int, int]:
+    """Return the ``(r0, r1)`` row span of BODY chunks ``first``..``last``.
+
+    Chunk numbers are 1-based and inclusive; the result is 0-based half-open.
+    Raises ``ValueError`` for an unknown product/resolution or a range that is
+    reversed or outside ``1..BODY_CHUNK_COUNT[product_type]``.
+    """
+    by_resolution = BODY_CHUNK_ROWS.get(product_type)
+    if by_resolution is None:
+        raise ValueError(
+            f"Unknown product type: {product_type!r}. "
+            f"Expected one of {sorted(BODY_CHUNK_ROWS)}"
+        )
+    rows = by_resolution.get(resolution)
+    if rows is None:
+        raise ValueError(
+            f"Unknown resolution {resolution!r} for {product_type}. "
+            f"Expected one of {sorted(by_resolution)}"
+        )
+    if not 1 <= first <= last <= len(rows):
+        raise ValueError(
+            f"BODY chunk range [{first}, {last}] must satisfy "
+            f"1 <= first <= last <= {len(rows)}"
+        )
+    return rows[first - 1][0], rows[last - 1][1]
+
+
 # FCI geostationary projection angular sampling geometry.
 #
 # Derived from source NetCDF data/<channel>/measured/x and y coordinate

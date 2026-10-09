@@ -19,6 +19,10 @@ fan-out plan, the slot-range ingest pods and the drift check. ``FIRECUBE``
 points at the 4x4-layout shim from ``_small_grid_cli``, so preallocate and
 ingest write real, tiny stores. The script sends stderr into its stdout log,
 so assertions read stdout.
+
+The option tests use a recorder in place of ``firecube``: it appends every
+call's arguments to a file and fails ``zarr slots`` so the script takes its
+local fan-out plan. They assert on the recorded command lines.
 """
 
 from __future__ import annotations
@@ -31,7 +35,7 @@ import pytest
 import zarr
 
 from _small_grid_cli import install_firecube_shim
-from test_integration import _make_fdhsi_zip_at
+from tests._support import _make_fdhsi_zip_at
 
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts" / "fci-ingest.sh"
 
@@ -54,7 +58,15 @@ def _env(
     tmp_path: Path, input_dir: Path, firecube: Path, **overrides: str
 ) -> dict[str, str]:
     env = os.environ.copy()
-    for name in ("FLAT_STORE", "EXTRA_OPTIONS", "RESOLUTIONS", "SHIM_FAIL_ZARR_SLOTS"):
+    for name in (
+        "FLAT_STORE",
+        "CLEANUP_WORKSPACE",
+        "EXTRA_OPTIONS",
+        "RESOLUTIONS",
+        "SHIM_FAIL_ZARR_SLOTS",
+        "FCI_CHUNKS",
+        "PARTIAL_CHUNK",
+    ):
         env.pop(name, None)
     env.update(
         FIRECUBE=str(firecube),
@@ -74,10 +86,13 @@ def _env(
     return env
 
 
-def _run(env: dict[str, str]) -> subprocess.CompletedProcess[str]:
+def _run(
+    env: dict[str, str], cwd: Path | None = None
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["bash", str(SCRIPT_PATH)],
         env=env,
+        cwd=cwd,
         capture_output=True,
         text=True,
         timeout=300,
@@ -180,8 +195,9 @@ def test_flat_store_with_two_resolutions_is_rejected(
     assert not (tmp_path / "store.zarr" / "counts").exists()
 
 
-def test_invalid_flat_store_value_stops_before_any_firecube_call(
-    tmp_path: Path, input_dir: Path
+@pytest.mark.parametrize("name", ["FLAT_STORE", "CLEANUP_WORKSPACE"])
+def test_invalid_boolean_option_stops_before_any_firecube_call(
+    tmp_path: Path, input_dir: Path, name: str
 ) -> None:
     calls = tmp_path / "firecube-calls"
     recorder = tmp_path / "firecube"
@@ -191,10 +207,150 @@ def test_invalid_flat_store_value_stops_before_any_firecube_call(
     recorder.chmod(0o755)
 
     result = _run(
-        _env(tmp_path, input_dir, recorder, FLAT_STORE="maybe", RESOLUTIONS="1km")
+        _env(tmp_path, input_dir, recorder, RESOLUTIONS="1km", **{name: "maybe"})
     )
 
     assert result.returncode == 2, _output(result)
-    assert "FLAT_STORE='maybe' is not a boolean" in result.stdout, _output(result)
+    assert f"{name}='maybe' is not a boolean" in result.stdout, _output(result)
     assert not calls.exists()
     assert not (tmp_path / "store.zarr").exists()
+
+
+def _recorder(tmp_path: Path) -> tuple[Path, Path]:
+    """Return ``(firecube stand-in, calls file)``; ``zarr slots`` fails on purpose."""
+    calls = tmp_path / "firecube-calls"
+    recorder = tmp_path / "firecube"
+    recorder.write_text(
+        "#!/usr/bin/env bash\n"
+        f'echo "$@" >> "{calls}"\n'
+        '[[ "$1 $2" == "zarr slots" ]] && exit 2\n'
+        "exit 0\n",
+        encoding="utf-8",
+    )
+    recorder.chmod(0o755)
+    return recorder, calls
+
+
+def _recorded(calls: Path) -> dict[str, list[str]]:
+    """Group the recorded command lines by verb: preallocate, slots, ingest."""
+    verbs = {
+        "zarr preallocate": "preallocate",
+        "zarr slots": "slots",
+        "ingest": "ingest",
+    }
+    grouped: dict[str, list[str]] = {name: [] for name in verbs.values()}
+    for line in calls.read_text(encoding="utf-8").splitlines():
+        for prefix, name in verbs.items():
+            if line.startswith(prefix):
+                grouped[name].append(line)
+    return grouped
+
+
+def test_fci_chunks_and_partial_chunk_reach_every_firecube_call(
+    tmp_path: Path, input_dir: Path
+) -> None:
+    recorder, calls = _recorder(tmp_path)
+
+    _run(
+        _env(
+            tmp_path,
+            input_dir,
+            recorder,
+            TIME_SLOTS="2",
+            FCI_CHUNKS="[32,40]",
+            PARTIAL_CHUNK="error",
+        )
+    )
+
+    recorded = _recorded(calls)
+    assert [len(recorded[verb]) for verb in ("preallocate", "slots", "ingest")] == [
+        1,
+        1,
+        2,
+    ]
+    for line in (line for lines in recorded.values() for line in lines):
+        assert "--option fci_chunks=[32,40]" in line, line
+        assert "--option partial_chunk=error" in line, line
+        assert "--option cleanup_workspace=true" in line, line
+
+
+def test_fci_chunks_and_partial_chunk_are_absent_when_unset(
+    tmp_path: Path, input_dir: Path
+) -> None:
+    recorder, calls = _recorder(tmp_path)
+
+    _run(_env(tmp_path, input_dir, recorder, CLEANUP_WORKSPACE="0"))
+
+    recorded = _recorded(calls)
+    assert recorded["preallocate"], "preallocate was not called"
+    assert recorded["ingest"], "ingest was not called"
+    for line in (line for lines in recorded.values() for line in lines):
+        assert "--option fci_chunks=" not in line, line
+        assert "--option partial_chunk=" not in line, line
+        assert "--option cleanup_workspace" not in line, line
+
+
+@pytest.mark.parametrize("product_type", ["FDHSI", "HRFI"])
+def test_product_type_reaches_every_firecube_call(
+    tmp_path: Path, input_dir: Path, product_type: str
+) -> None:
+    recorder, calls = _recorder(tmp_path)
+
+    _run(_env(tmp_path, input_dir, recorder, PRODUCT_TYPE=product_type))
+
+    lines = [line for group in _recorded(calls).values() for line in group]
+    assert len(lines) == 3
+    for line in lines:
+        assert f"--option product_type={product_type}" in line, line
+
+
+def test_product_type_defaults_to_fdhsi(tmp_path: Path, input_dir: Path) -> None:
+    recorder, calls = _recorder(tmp_path)
+    env = _env(tmp_path, input_dir, recorder)
+    del env["PRODUCT_TYPE"]
+
+    _run(env)
+
+    lines = [line for group in _recorded(calls).values() for line in group]
+    assert len(lines) == 3
+    for line in lines:
+        assert "--option product_type=FDHSI" in line, line
+
+
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("FCI_CHUNKS", "32,40"),
+        ("FCI_CHUNKS", "[32, 40]"),
+        ("FCI_CHUNKS", "[32,x]"),
+        ("PARTIAL_CHUNK", "maybe"),
+    ],
+)
+def test_invalid_fci_chunks_or_partial_chunk_stops_before_any_firecube_call(
+    tmp_path: Path, input_dir: Path, name: str, value: str
+) -> None:
+    recorder, calls = _recorder(tmp_path)
+
+    result = _run(_env(tmp_path, input_dir, recorder, **{name: value}))
+
+    assert result.returncode == 2, _output(result)
+    assert f"{name}='{value}'" in result.stdout, _output(result)
+    assert not calls.exists()
+
+
+def test_bracketed_option_value_is_not_expanded_as_a_file_glob(
+    tmp_path: Path, input_dir: Path
+) -> None:
+    """``fci_chunks=[32,40]`` is a glob pattern to the shell; it must stay literal."""
+    recorder, calls = _recorder(tmp_path)
+    workdir = tmp_path / "cwd"
+    workdir.mkdir()
+    (workdir / "fci_chunks=3").touch()
+
+    _run(_env(tmp_path, input_dir, recorder, FCI_CHUNKS="[32,40]"), cwd=workdir)
+
+    ingest_lines = _recorded(calls)["ingest"]
+    assert ingest_lines, "ingest was not called"
+    for line in ingest_lines:
+        assert "--option fci_chunks=[32,40]" in line, line
+        assert "fci_chunks=3" not in line, line

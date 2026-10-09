@@ -48,7 +48,7 @@ Keep the root README user/operator focused.
 
 ## Firecube And Zarr Invariants
 
-- Current plugin version is `0.2.0`. Firecube baseline is `0.1.5`; the lockfile and CI use `0.1.7`.
+- Current plugin version is `0.2.0`. Firecube baseline is `0.1.7`; the lockfile and CI use `0.1.7`.
 - The plugin uses Firecube direct-region Zarr behavior. Link core mechanics to
   Firecube public docs instead of duplicating them:
   - Direct Region Zarr: `https://eumetsat.github.io/firecube/concepts/output-formats/zarr/direct-region/`
@@ -67,13 +67,14 @@ Keep the root README user/operator focused.
 ## Where Things Live
 
 - Plugin config: `src/firecube_mtg_fci_l1c/config.py`
-- Product, channel, and grid constants: `src/firecube_mtg_fci_l1c/_constants.py`
+- Product, channel, and grid constants, and the BODY chunk row table: `src/firecube_mtg_fci_l1c/_constants.py`
 - Zarr variable declarations and source functions: `src/firecube_mtg_fci_l1c/_variables.py`
 - `Variable`/`VariableContext` and array/group spec building: `src/firecube_mtg_fci_l1c/_schema.py`
-- Per-resolution plans and group naming (`data_<res>` or root for `flat_store`):
-  `src/firecube_mtg_fci_l1c/_group_plan.py`
+- Per-resolution plans, group naming (`data_<res>` or root for `flat_store`), and
+  `fci_chunks` row windows: `src/firecube_mtg_fci_l1c/_group_plan.py`
 - Ingest orchestration and write intents: `src/firecube_mtg_fci_l1c/ingestor.py`
-- Input ZIP helpers (product type, timestamps, source files): `src/firecube_mtg_fci_l1c/_data.py`
+- Input helpers for ZIPs and loose chunk files (product type, timestamps, chunk
+  names, per-cycle scene bundles): `src/firecube_mtg_fci_l1c/_data.py`
 - NetCDF nc_part streaming reads: `src/firecube_mtg_fci_l1c/_decode.py`
 - Geolocation helpers and grid CLI: `src/firecube_mtg_fci_l1c/geolocation/`
   and `src/firecube_mtg_fci_l1c/plugin_cli.py`

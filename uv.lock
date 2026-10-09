@@ -654,7 +654,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "astropy", specifier = ">=7.0" },
-    { name = "firecube", specifier = ">=0.1.5" },
+    { name = "firecube", specifier = ">=0.1.7" },
     { name = "h5netcdf", specifier = ">=1.8" },
     { name = "mypy", marker = "extra == 'dev'" },
     { name = "numpy", specifier = ">=2.4" },

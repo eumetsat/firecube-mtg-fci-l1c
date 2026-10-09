@@ -27,7 +27,9 @@ from firecube_mtg_fci_l1c.ingestor import MtgFciL1cConfig, MtgFciL1cIngestor
 def test_slot_index_formula():
     """Formula: (date - epoch).days * 144 + hour * 6 + minute // 10."""
     ingestor = MtgFciL1cIngestor()
-    ingestor.plugin_config = MtgFciL1cConfig(time_epoch="2000-01-01", time_slots=1008)
+    ingestor.plugin_config = MtgFciL1cConfig(
+        product_type="FDHSI", time_epoch="2000-01-01", time_slots=1008
+    )
     ctx = IngestContext(
         source="/tmp", target="/tmp/out.zarr", output_format="zarr", options={}
     )

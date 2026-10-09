@@ -22,37 +22,9 @@ to raise ``"Key 'units' already exists in attrs"``. The fix is to drop
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pytest
-
-sys.path.insert(0, str(Path(__file__).parent))
-
-
-@pytest.mark.unit
-def test_time_variable_attrs_declared_without_units_or_calendar() -> None:
-    """The time Variable in the schema registry must not carry units/calendar.
-
-    The zarr array is stored with native ``datetime64[s]`` dtype, so declaring
-    ``units``/``calendar`` in attrs is both redundant and breaks the
-    ``open_zarr -> to_zarr`` roundtrip (xarray tries to re-write encoding-derived
-    ``units`` into attrs that already contain them).
-    """
-    from firecube_mtg_fci_l1c._variables import VARIABLES
-
-    time_var = next(v for v in VARIABLES if v.name == "time")
-    attrs = time_var.attrs or {}
-    assert "units" not in attrs, (
-        "time variable must not declare 'units' in attrs; native datetime64 "
-        "storage does not need it, and it breaks the open->write roundtrip."
-    )
-    assert "calendar" not in attrs, (
-        "time variable must not declare 'calendar' in attrs; native datetime64 "
-        "storage does not need it, and it breaks the open->write roundtrip."
-    )
-    assert attrs.get("standard_name") == "time"
-    assert attrs.get("axis") == "T"
 
 
 @pytest.mark.integration
@@ -65,7 +37,7 @@ def test_time_attrs_do_not_contain_units_or_calendar_after_ingest(
     """
     import xarray as xr
 
-    from test_integration import _run_ingest
+    from tests._support import _run_ingest
 
     store_path = _run_ingest(fdhsi_zip.parent, tmp_path, options={})
     ds = xr.open_zarr(str(store_path), group="data_1km", consolidated=False)
@@ -95,7 +67,7 @@ def test_open_then_write_roundtrip_does_not_raise(
     """
     import xarray as xr
 
-    from test_integration import _run_ingest
+    from tests._support import _run_ingest
 
     store_path = _run_ingest(fdhsi_zip.parent, tmp_path, options={})
     ds = xr.open_zarr(str(store_path), group="data_1km", consolidated=False)

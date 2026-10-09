@@ -33,9 +33,9 @@ from ._constants import (
     CONSTANTS,
     FCI_CONVERSION_CONSTANT_NAMES,
     SLOT_GEOMETRY_SOURCES,
-    get_nc_part_prefix,
     nc_channel_resolution_map,
 )
+from ._data import is_valid_fci_chunk
 
 _PART_NUMBER_RE = re.compile(r"(\d+)\.nc$", re.IGNORECASE)
 _BOUNDED_UNSIGNED_DTYPES = frozenset(
@@ -561,8 +561,41 @@ class _AssembledKey:
     pixel_time_dtype: np.dtype
 
 
+def _require_exact_tiling(
+    nc_parts: list[Path],
+    part_row_ranges: dict[Path, tuple[int, int]],
+    y_range: tuple[int, int],
+) -> None:
+    """Raise unless ``nc_parts``, in order, cover ``y_range`` without gap or overlap.
+
+    Each part's rows are clipped to ``y_range``; the clipped spans must follow
+    one another from ``y_range[0]`` to ``y_range[1]``.
+    """
+    y_start, y_end = y_range
+    cursor = y_start
+    for part in nc_parts:
+        part_start, part_end = part_row_ranges[Path(part)]
+        clipped_start = max(part_start, y_start)
+        clipped_end = min(part_end, y_end)
+        if clipped_start != cursor or clipped_end <= clipped_start:
+            raise AssemblyPreconditionError(
+                f"nc_part rows {part_start}-{part_end} of {Path(part).name} do not "
+                f"continue rows y={y_range} at row {cursor}."
+            )
+        cursor = clipped_end
+    if cursor != y_end:
+        raise AssemblyPreconditionError(
+            f"nc_parts cover rows y={y_range} only through row {cursor}."
+        )
+
+
 class ChunkOwnedAssembler:
-    """Assemble output chunks from at most two nc_parts with bounded caches."""
+    """Assemble output rows from at most two nc_parts with bounded caches.
+
+    The rows are an output chunk, or one contiguous covered run inside an
+    output chunk when the scene lacks the rows around it. The assembled cache
+    is keyed by those rows, so a run never answers for its whole chunk.
+    """
 
     def __init__(self, shared_reader: SharedNcPartReader) -> None:
         self._reader = shared_reader
@@ -584,12 +617,18 @@ class ChunkOwnedAssembler:
         variable_set: frozenset[str],
         part_row_ranges: dict[Path, tuple[int, int]] | None = None,
     ) -> ChannelSlicePayload:
-        """Assemble one output chunk from at most two nc_parts."""
+        """Assemble rows ``y_range`` from at most two nc_parts.
+
+        With ``part_row_ranges``, ``nc_parts`` must cover ``y_range`` exactly,
+        in row order, and the result holds exactly ``y_range``'s rows.
+        """
         if len(nc_parts) > 2:
             raise AssemblyPreconditionError(
                 f"Output chunk y={y_range} intersects {len(nc_parts)} nc_parts; "
                 "max supported is 2. Reduce zarr_chunk_y or file an issue."
             )
+        if part_row_ranges is not None:
+            _require_exact_tiling(nc_parts, part_row_ranges, y_range)
 
         index2time_ref = _IdentityRef(index2time)
         assembled_key = _AssembledKey(
@@ -774,31 +813,15 @@ def list_fci_nc_parts(extracted_dir: Path) -> list[Path]:
     """List FCI BODY/TRAIL nc_parts in an extracted ZIP directory.
 
     BODY parts come first (sorted by numeric part number, then by filename),
-    followed by TRAIL parts. Only files matching the FCI BODY/TRAIL naming
-    convention (built from ``get_nc_part_prefix(product_type)`` and its TRAIL
-    counterpart) are returned; other ``.nc`` members are ignored.
+    followed by TRAIL parts. Selection uses ``is_valid_fci_chunk``, the same
+    predicate as unpacked-chunk input, so any satellite name is accepted and
+    other ``.nc`` members are ignored.
     """
-    prefix_pairs: list[tuple[str, str]] = []
-    for product_type in CONSTANTS:
-        body = get_nc_part_prefix(product_type)
-        trail = body.replace("BODY", "TRAIL")
-        prefix_pairs.append((body, trail))
-
     parts: list[tuple[Path, int]] = []
     for path in Path(extracted_dir).rglob("*.nc"):
-        name = path.name
-        classification: int | None = None
-        for body_prefix, trail_prefix in prefix_pairs:
-            if name.startswith(body_prefix):
-                classification = 0
-                break
-            if name.startswith(trail_prefix):
-                classification = 1
-                break
-
-        if classification is None:
+        if not is_valid_fci_chunk(path):
             continue
-        parts.append((path, classification))
+        parts.append((path, 1 if "CHK-TRAIL" in path.name else 0))
 
     def _part_number(path: Path) -> int:
         match = _PART_NUMBER_RE.search(path.name)

@@ -25,7 +25,6 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-import sys
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -37,8 +36,7 @@ import zarr
 from firecube_mtg_fci_l1c.config import MtgFciL1cConfig
 from firecube_mtg_fci_l1c._variables import build_specs
 
-sys.path.insert(0, str(Path(__file__).parent))
-from test_integration import _run_ingest  # noqa: E402
+from tests._support import _run_ingest
 
 GOLDEN_FILE = Path(__file__).parent / "golden" / "output_snapshots.json"
 
@@ -141,7 +139,7 @@ def _snapshot_case(
 
     workspace = tmp_path / name
     workspace.mkdir()
-    out = _run_ingest(source_dir, workspace, options=options)
+    out = _run_ingest(source_dir, workspace, options=options, product_type=product_type)
     structure = _capture_zarr_structure(out)
     _assert_matches_declared_topology(structure, expected)
 
