@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#27](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/27) `license` global attribute on every group: the EUMETSAT licence that applies to the 10-minute FCI Level 1 data under the EUMETSAT Data Policy. It is not an SPDX identifier.
 - [#27](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/27) `crs_wkt`/`spatial_ref` carry a `USAGE` block with the full-disk bounding box. The CRS itself is unchanged.
+- [#27](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/27) `central_wavelength` `(channel,)` coordinate (`standard_name` `radiation_wavelength`, in um) with the specified central wavelength of each channel. Every variable along `channel` lists it in its `coordinates` attribute.
 - Loose chunk input: `--input-data` may be a directory or prefix (local or S3, through Firecube source discovery) of unpacked BODY chunk `.nc` files, and the TRAIL chunk if present, instead of ZIP files. The chunk files of one repeat cycle form a scene; a scene may be partial. A scene is labelled with the nominal start of its repeat cycle (cycle 1 is `00:00:00`); ZIPs keep the sensing start floored to the minute. Quicklook and `.xml` files next to the chunks are ignored.
 - `partial_chunk` option (`fill` default, or `error`): `fill` leaves rows that no input file covers unwritten, so they keep the fill value and, in `direct` write mode, rows from earlier ingests survive; `error` fails the batch of a partial scene before it writes anything.
 - `fci_chunks=[first,last]` option: with inclusive BODY chunk numbers (1 to 40), each group holds only those chunks' rows, widened to the group's output-chunk grid, at full width. Groups carry `fci_chunks`, `disk_row_start` and `disk_row_stop` attributes, the window is part of the store identity, pixel data is read only from files inside the window, and every file's rows are checked against a row table. A store written with `fci_chunks` cannot be grown yet. See [Customization](docs/customization.md#fci-chunks).
@@ -26,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- [#27](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/27) The `channel` coordinate is stored as fixed-width bytes with `_Encoding` `utf-8` instead of variable-length text; xarray still decodes it to text, so `ds.sel(channel="ir_105")` works.
+- [#27](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/27) `counts` lists `slope` and `offset` in its `ancillary_variables` attribute.
 - [#27](https://github.com/eumetsat/firecube-mtg-fci-l1c/issues/27) `subsatellite_latitude`, `subsatellite_longitude`, `platform_altitude` and `sun_earth_distance` are stored as one chunk per time step instead of one dense chunk. The `time` coordinate stays dense. Existing stores do not match the new chunking: ingest into a new store. Golden snapshots regenerated.
 - `product_type` is now a required option (`FDHSI` or `HRFI`). The plugin no longer detects it from the input and no longer falls back to `FDHSI`; without it `firecube ingest` and `firecube zarr preallocate` stop with `product_type is required`. Add `--option product_type=...` to existing commands. `scripts/fci-ingest.sh` already passed `PRODUCT_TYPE` (default `FDHSI`).
 - The supported floor is now `firecube>=0.1.7`.

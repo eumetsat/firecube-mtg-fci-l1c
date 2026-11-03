@@ -409,6 +409,29 @@ FCI_CONVERSION_CONSTANT_NAMES: tuple[str, ...] = (
     "channel_effective_solar_irradiance",
 )
 
+# Specified central wavelength (micrometres) per logical channel, as in
+# data/<channel>/central_wavelength_specified of the L1C files (rounded to the
+# file's float32 values). data/<channel>/central_wavelength_actual is a fill
+# value in current products, so the specified value is used.
+CHANNEL_CENTRAL_WAVELENGTH_UM: dict[str, float] = {
+    "vis_04": 0.444,
+    "vis_05": 0.51,
+    "vis_06": 0.64,
+    "vis_08": 0.865,
+    "vis_09": 0.914,
+    "nir_13": 1.38,
+    "nir_16": 1.61,
+    "nir_22": 2.25,
+    "ir_38": 3.8,
+    "wv_63": 6.3,
+    "wv_73": 7.35,
+    "ir_87": 8.7,
+    "ir_97": 9.66,
+    "ir_105": 10.5,
+    "ir_123": 12.3,
+    "ir_133": 13.3,
+}
+
 # Logical channels with dual-gain (cold/warm) calibration. Only these carry
 # meaningful warm_scale_factor/warm_add_offset; the L1C files set them to 0.0
 # for every other channel.

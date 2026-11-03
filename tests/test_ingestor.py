@@ -1339,7 +1339,7 @@ def test_partial_chunk_error_batch_leaves_static_coordinates_to_later_batches(
         ("data_2km", ["ir_38"]),
     ]:
         group = root[group_name]
-        assert group["channel"][:].tolist() == channels
+        assert group["channel"][:].tolist() == [ch.encode() for ch in channels]
         for axis in ("x", "y"):
             expected = np.asarray(reference_root[group_name][axis][:])
             assert np.count_nonzero(expected) == expected.size

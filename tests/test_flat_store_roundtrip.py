@@ -53,7 +53,7 @@ EXPECTED_DATA_VARS = {
     "sun_earth_distance",
     "spatial_ref",
 }
-EXPECTED_COORDS = {"time", "y", "x", "channel", "latitude", "longitude"}
+EXPECTED_COORDS = {"time", "y", "x", "channel", "central_wavelength", "latitude", "longitude"}
 
 
 @pytest.mark.parametrize(
@@ -167,7 +167,7 @@ def test_flat_root_arrays_equal_the_grouped_arrays_from_the_same_input(
     grouped = grouped_root["data_1km"]
 
     assert sorted(flat_root.array_keys()) == sorted(grouped.array_keys())
-    assert len(list(flat_root.array_keys())) == 23
+    assert len(list(flat_root.array_keys())) == 24
 
     for name in sorted(flat_root.array_keys()):
         flat_array = flat_root[name]

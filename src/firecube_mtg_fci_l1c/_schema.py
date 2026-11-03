@@ -255,6 +255,9 @@ def _effective_fill_value(variable: Variable, dtype: Any) -> Any:
     return variable.fill_value
 
 
+# Variables along ``channel`` that are themselves channel coordinates.
+_CHANNEL_COORDS = frozenset({"channel", "central_wavelength"})
+
 # Sentinel used in _ARRAY_SPEC_BUILDER keys so the dispatch mapping is
 # independent of the runtime ``time_coord_name`` parameter.
 _TIME_DIM_KEY = "__time__"
@@ -463,6 +466,11 @@ def _build_array_spec(
                 attrs = dict(resolved)
             else:
                 attrs.update(resolved)
+    if "channel" in dims and variable.name not in _CHANNEL_COORDS:
+        # Attach the per-channel wavelength as an auxiliary coordinate.
+        attrs = dict(attrs or {})
+        coordinates = attrs.get("coordinates", "").split()
+        attrs["coordinates"] = " ".join([*coordinates, "central_wavelength"])
 
     builder = _ARRAY_SPEC_BUILDER.get(_normalize_dims_key(dims, time_coord_name))
     if builder is None:

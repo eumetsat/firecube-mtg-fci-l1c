@@ -133,9 +133,10 @@ def test_channel_coordinate_written_as_text_and_selectable_by_name(
     arr = data_1km["channel"]
     assert arr.shape == (2,)
     assert arr.metadata.dimension_names == ("channel",)
-    # Zarr v3 variable-length UTF-8, not fixed-width bytes.
-    assert arr.metadata.to_dict()["data_type"] == "string"
-    assert np.asarray(arr[:]).tolist() == ["vis_04", "vis_06"]
+    # Fixed-width bytes, decoded to text by xarray through _Encoding.
+    assert arr.metadata.to_dict()["data_type"]["name"] == "null_terminated_bytes"
+    assert arr.attrs["_Encoding"] == "utf-8"
+    assert np.asarray(arr[:]).tolist() == [b"vis_04", b"vis_06"]
     # xarray cannot decode a _FillValue attribute on string variables.
     assert "_FillValue" not in dict(arr.attrs)
     assert "channel_name" not in data_1km
@@ -179,7 +180,7 @@ def test_channel_coordinate_static_replay_is_idempotent(
     root = zarr.open_group(str(out), mode="r")
     data_1km = cast(Any, root["data_1km"])
     np.testing.assert_array_equal(np.asarray(data_1km["channel"][:]), first)
-    assert first.tolist() == ["vis_04", "vis_06"]
+    assert first.tolist() == [b"vis_04", b"vis_06"]
 
 
 @pytest.mark.integration

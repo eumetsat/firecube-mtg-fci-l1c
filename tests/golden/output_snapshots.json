@@ -1,6 +1,6 @@
 {
   "fdhsi_defaults": {
-    "hash": "9ad40b06b0bbf5a64d942d1dae8e0752cb173672277e4169572cbd75df98c608",
+    "hash": "f11c758d7209e11dd87fcff0812ae5004c091271e1e234ceb96cb0afeef54b03",
     "options": {},
     "product_type": "FDHSI",
     "structure": {
@@ -11,8 +11,29 @@
       "groups": {
         "data_1km": {
           "arrays": {
+            "central_wavelength": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "Specified central wavelength of channel",
+                "standard_name": "radiation_wavelength",
+                "units": "um"
+              },
+              "chunks": [
+                2
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "has_static_marker": true,
+              "shape": [
+                2
+              ]
+            },
             "channel": {
               "attrs": {
+                "_Encoding": "utf-8",
                 "firecube_static_written": true,
                 "long_name": "FCI logical channel name"
               },
@@ -22,7 +43,7 @@
               "dimension_names": [
                 "channel"
               ],
-              "dtype": "StringDType()",
+              "dtype": "|S6",
               "fill_value": "",
               "has_static_marker": true,
               "shape": [
@@ -32,6 +53,7 @@
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+                "coordinates": "central_wavelength",
                 "long_name": "Channel effective solar irradiance at 1 AU",
                 "units": "mW m-2 (cm-1)-1"
               },
@@ -54,8 +76,8 @@
             "counts": {
               "attrs": {
                 "_FillValue": 65535,
-                "ancillary_variables": "pixel_quality pixel_time",
-                "coordinates": "latitude longitude",
+                "ancillary_variables": "pixel_quality pixel_time slope offset",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI raw detector counts",
                 "units": "1"
@@ -130,6 +152,7 @@
             },
             "offset": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration offset",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -152,7 +175,7 @@
             "pixel_quality": {
               "attrs": {
                 "_FillValue": 0,
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "flag_masks": [
                   1,
                   2,
@@ -193,7 +216,7 @@
             "pixel_time": {
               "attrs": {
                 "calendar": "standard",
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI per-pixel observation time",
                 "standard_name": "time",
@@ -242,6 +265,7 @@
             "radiance_to_bt_conversion_coefficient_a": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient A",
                 "units": "1"
               },
@@ -264,6 +288,7 @@
             "radiance_to_bt_conversion_coefficient_b": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient B",
                 "units": "K"
               },
@@ -286,6 +311,7 @@
             "radiance_to_bt_conversion_coefficient_wavenumber": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
                 "units": "cm-1"
               },
@@ -308,6 +334,7 @@
             "radiance_to_bt_conversion_constant_c1": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C1",
                 "units": "mW m-2 sr-1 (cm-1)-4"
               },
@@ -330,6 +357,7 @@
             "radiance_to_bt_conversion_constant_c2": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C2",
                 "units": "cm K"
               },
@@ -351,6 +379,7 @@
             },
             "radiance_unit_conversion_coefficient": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
                 "units": "W mW-1 cm-1 um-1"
               },
@@ -372,6 +401,7 @@
             },
             "slope": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration slope",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -541,8 +571,29 @@
         },
         "data_2km": {
           "arrays": {
+            "central_wavelength": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "Specified central wavelength of channel",
+                "standard_name": "radiation_wavelength",
+                "units": "um"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "has_static_marker": true,
+              "shape": [
+                1
+              ]
+            },
             "channel": {
               "attrs": {
+                "_Encoding": "utf-8",
                 "firecube_static_written": true,
                 "long_name": "FCI logical channel name"
               },
@@ -552,7 +603,7 @@
               "dimension_names": [
                 "channel"
               ],
-              "dtype": "StringDType()",
+              "dtype": "|S6",
               "fill_value": "",
               "has_static_marker": true,
               "shape": [
@@ -562,6 +613,7 @@
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+                "coordinates": "central_wavelength",
                 "long_name": "Channel effective solar irradiance at 1 AU",
                 "units": "mW m-2 (cm-1)-1"
               },
@@ -584,8 +636,8 @@
             "counts": {
               "attrs": {
                 "_FillValue": 65535,
-                "ancillary_variables": "pixel_quality pixel_time",
-                "coordinates": "latitude longitude",
+                "ancillary_variables": "pixel_quality pixel_time slope offset",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI raw detector counts",
                 "units": "1"
@@ -660,6 +712,7 @@
             },
             "offset": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration offset",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -682,7 +735,7 @@
             "pixel_quality": {
               "attrs": {
                 "_FillValue": 0,
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "flag_masks": [
                   1,
                   2,
@@ -723,7 +776,7 @@
             "pixel_time": {
               "attrs": {
                 "calendar": "standard",
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI per-pixel observation time",
                 "standard_name": "time",
@@ -772,6 +825,7 @@
             "radiance_to_bt_conversion_coefficient_a": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient A",
                 "units": "1"
               },
@@ -794,6 +848,7 @@
             "radiance_to_bt_conversion_coefficient_b": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient B",
                 "units": "K"
               },
@@ -816,6 +871,7 @@
             "radiance_to_bt_conversion_coefficient_wavenumber": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
                 "units": "cm-1"
               },
@@ -838,6 +894,7 @@
             "radiance_to_bt_conversion_constant_c1": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C1",
                 "units": "mW m-2 sr-1 (cm-1)-4"
               },
@@ -860,6 +917,7 @@
             "radiance_to_bt_conversion_constant_c2": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C2",
                 "units": "cm K"
               },
@@ -881,6 +939,7 @@
             },
             "radiance_unit_conversion_coefficient": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
                 "units": "W mW-1 cm-1 um-1"
               },
@@ -902,6 +961,7 @@
             },
             "slope": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration slope",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1020,6 +1080,7 @@
             "warm_offset": {
               "attrs": {
                 "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "coordinates": "central_wavelength",
                 "long_name": "FCI warm calibration offset",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1042,6 +1103,7 @@
             "warm_slope": {
               "attrs": {
                 "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "coordinates": "central_wavelength",
                 "long_name": "FCI warm calibration slope",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1117,7 +1179,7 @@
     }
   },
   "hrfi_defaults": {
-    "hash": "652ea5f5eb6eb0ae9be77fde78d6e968f05614ab4a75c59e0f5f3e9806e7e7f5",
+    "hash": "27705b98bfe44bd25d4ba6f4e5b5b5fe0b2594fa6839a075de2a85df889684f4",
     "options": {},
     "product_type": "HRFI",
     "structure": {
@@ -1128,8 +1190,29 @@
       "groups": {
         "data_1km": {
           "arrays": {
+            "central_wavelength": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "Specified central wavelength of channel",
+                "standard_name": "radiation_wavelength",
+                "units": "um"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "has_static_marker": true,
+              "shape": [
+                1
+              ]
+            },
             "channel": {
               "attrs": {
+                "_Encoding": "utf-8",
                 "firecube_static_written": true,
                 "long_name": "FCI logical channel name"
               },
@@ -1139,7 +1222,7 @@
               "dimension_names": [
                 "channel"
               ],
-              "dtype": "StringDType()",
+              "dtype": "|S6",
               "fill_value": "",
               "has_static_marker": true,
               "shape": [
@@ -1149,6 +1232,7 @@
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+                "coordinates": "central_wavelength",
                 "long_name": "Channel effective solar irradiance at 1 AU",
                 "units": "mW m-2 (cm-1)-1"
               },
@@ -1171,8 +1255,8 @@
             "counts": {
               "attrs": {
                 "_FillValue": 65535,
-                "ancillary_variables": "pixel_quality pixel_time",
-                "coordinates": "latitude longitude",
+                "ancillary_variables": "pixel_quality pixel_time slope offset",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI raw detector counts",
                 "units": "1"
@@ -1247,6 +1331,7 @@
             },
             "offset": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration offset",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1269,7 +1354,7 @@
             "pixel_quality": {
               "attrs": {
                 "_FillValue": 0,
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "flag_masks": [
                   1,
                   2,
@@ -1310,7 +1395,7 @@
             "pixel_time": {
               "attrs": {
                 "calendar": "standard",
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI per-pixel observation time",
                 "standard_name": "time",
@@ -1359,6 +1444,7 @@
             "radiance_to_bt_conversion_coefficient_a": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient A",
                 "units": "1"
               },
@@ -1381,6 +1467,7 @@
             "radiance_to_bt_conversion_coefficient_b": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient B",
                 "units": "K"
               },
@@ -1403,6 +1490,7 @@
             "radiance_to_bt_conversion_coefficient_wavenumber": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
                 "units": "cm-1"
               },
@@ -1425,6 +1513,7 @@
             "radiance_to_bt_conversion_constant_c1": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C1",
                 "units": "mW m-2 sr-1 (cm-1)-4"
               },
@@ -1447,6 +1536,7 @@
             "radiance_to_bt_conversion_constant_c2": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C2",
                 "units": "cm K"
               },
@@ -1468,6 +1558,7 @@
             },
             "radiance_unit_conversion_coefficient": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
                 "units": "W mW-1 cm-1 um-1"
               },
@@ -1489,6 +1580,7 @@
             },
             "slope": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration slope",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1607,6 +1699,7 @@
             "warm_offset": {
               "attrs": {
                 "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "coordinates": "central_wavelength",
                 "long_name": "FCI warm calibration offset",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1629,6 +1722,7 @@
             "warm_slope": {
               "attrs": {
                 "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "coordinates": "central_wavelength",
                 "long_name": "FCI warm calibration slope",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1702,8 +1796,29 @@
         },
         "data_500m": {
           "arrays": {
+            "central_wavelength": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "Specified central wavelength of channel",
+                "standard_name": "radiation_wavelength",
+                "units": "um"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "has_static_marker": true,
+              "shape": [
+                1
+              ]
+            },
             "channel": {
               "attrs": {
+                "_Encoding": "utf-8",
                 "firecube_static_written": true,
                 "long_name": "FCI logical channel name"
               },
@@ -1713,7 +1828,7 @@
               "dimension_names": [
                 "channel"
               ],
-              "dtype": "StringDType()",
+              "dtype": "|S6",
               "fill_value": "",
               "has_static_marker": true,
               "shape": [
@@ -1723,6 +1838,7 @@
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+                "coordinates": "central_wavelength",
                 "long_name": "Channel effective solar irradiance at 1 AU",
                 "units": "mW m-2 (cm-1)-1"
               },
@@ -1745,8 +1861,8 @@
             "counts": {
               "attrs": {
                 "_FillValue": 65535,
-                "ancillary_variables": "pixel_quality pixel_time",
-                "coordinates": "latitude longitude",
+                "ancillary_variables": "pixel_quality pixel_time slope offset",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI raw detector counts",
                 "units": "1"
@@ -1821,6 +1937,7 @@
             },
             "offset": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration offset",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1843,7 +1960,7 @@
             "pixel_quality": {
               "attrs": {
                 "_FillValue": 0,
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "flag_masks": [
                   1,
                   2,
@@ -1884,7 +2001,7 @@
             "pixel_time": {
               "attrs": {
                 "calendar": "standard",
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI per-pixel observation time",
                 "standard_name": "time",
@@ -1933,6 +2050,7 @@
             "radiance_to_bt_conversion_coefficient_a": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient A",
                 "units": "1"
               },
@@ -1955,6 +2073,7 @@
             "radiance_to_bt_conversion_coefficient_b": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient B",
                 "units": "K"
               },
@@ -1977,6 +2096,7 @@
             "radiance_to_bt_conversion_coefficient_wavenumber": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
                 "units": "cm-1"
               },
@@ -1999,6 +2119,7 @@
             "radiance_to_bt_conversion_constant_c1": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C1",
                 "units": "mW m-2 sr-1 (cm-1)-4"
               },
@@ -2021,6 +2142,7 @@
             "radiance_to_bt_conversion_constant_c2": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C2",
                 "units": "cm K"
               },
@@ -2042,6 +2164,7 @@
             },
             "radiance_unit_conversion_coefficient": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
                 "units": "W mW-1 cm-1 um-1"
               },
@@ -2063,6 +2186,7 @@
             },
             "slope": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration slope",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
