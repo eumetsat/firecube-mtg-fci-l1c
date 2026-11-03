@@ -135,7 +135,8 @@ def test_channel_coordinate_declared_as_text_without_fill_value() -> None:
     assert channel.dimension_names == ("channel",)
     assert channel.shape == (2,)
     assert channel.time_indexed is False
-    assert isinstance(channel.dtype, np.dtypes.StringDType)
+    assert channel.dtype == np.dtype("S6")
+    assert channel.attrs["_Encoding"] == "utf-8"
     assert channel.fill_value is None
     assert "channel" in group.coord_names
 
@@ -150,7 +151,7 @@ def test_channel_coordinate_declared_as_text_without_fill_value() -> None:
         n_channels=2,
         logical_channels=("ir_105", "ir_38"),
     )
-    assert variable.source(ctx).tolist() == ["ir_105", "ir_38"]
+    assert variable.source(ctx).tolist() == [b"ir_105", b"ir_38"]
 
 
 def test_variables_pickle_roundtrip() -> None:
@@ -427,7 +428,7 @@ def test_counts_cf_attrs() -> None:
     c = next(v for v in VARIABLES if v.name == "counts")
     assert c.attrs is not None
     assert c.attrs["grid_mapping"] == "spatial_ref"
-    assert c.attrs["ancillary_variables"] == "pixel_quality pixel_time"
+    assert c.attrs["ancillary_variables"] == "pixel_quality pixel_time slope offset"
     assert c.attrs["units"] == "1"
     assert "standard_name" not in c.attrs
 
@@ -479,10 +480,11 @@ def test_coordinates_attr_conditional_geolocation_on() -> None:
     specs = build_specs(MtgFciL1cConfig(include_geolocation=True), "FDHSI")
     g = next(g for g in specs if g.group == "data_1km")
     a = {arr.name: dict(arr.attrs or {}) for arr in g.arrays}
-    assert a["counts"]["coordinates"] == "latitude longitude"
-    assert a["pixel_quality"]["coordinates"] == "latitude longitude"
-    assert a["pixel_time"]["coordinates"] == "latitude longitude"
-    assert "coordinates" not in a.get("slope", {})
+    geo = "latitude longitude central_wavelength"
+    assert a["counts"]["coordinates"] == geo
+    assert a["pixel_quality"]["coordinates"] == geo
+    assert a["pixel_time"]["coordinates"] == geo
+    assert a["slope"]["coordinates"] == "central_wavelength"
     assert "coordinates" not in a.get("x", {})
 
 
@@ -491,9 +493,8 @@ def test_coordinates_attr_absent_when_geolocation_off() -> None:
     specs = build_specs(MtgFciL1cConfig(include_geolocation=False), "FDHSI")
     g = next(g for g in specs if g.group == "data_1km")
     a = {arr.name: dict(arr.attrs or {}) for arr in g.arrays}
-    assert "coordinates" not in a.get("counts", {})
-    assert "coordinates" not in a.get("pixel_quality", {})
-    assert "coordinates" not in a.get("pixel_time", {})
+    for name in ("counts", "pixel_quality", "pixel_time"):
+        assert a[name]["coordinates"] == "central_wavelength"
 
 
 # ─────────────────────────────────────────────────────────────
@@ -1138,3 +1139,56 @@ def test_slice_meta_tells_stripes_apart_but_not_partial_modes() -> None:
     # partial_chunk picks which rows of a partial scene are written; the slice
     # is the same, so a mode change must still meet the resume guard.
     assert error_mode == full
+
+
+@pytest.mark.unit
+def test_time_only_variables_have_one_chunk_per_time_step() -> None:
+    """Issue #27: ``(time,)`` variables are chunked per slot; the coord stays dense."""
+    specs = build_specs(MtgFciL1cConfig(), "FDHSI")
+    for group in specs:
+        time_only = [a for a in group.arrays if a.dimension_names == (TIME_COORD_NAME,)]
+        assert {a.name for a in time_only} > {TIME_COORD_NAME}
+        for array in time_only:
+            expected = None if array.name == TIME_COORD_NAME else (1,)
+            assert array.chunks == expected, array.name
+
+
+@pytest.mark.unit
+def test_license_global_attribute_is_the_eumetsat_licence() -> None:
+    """Issue #27: every group carries the EUMETSAT licence, not CC-BY-4.0."""
+    for group in build_specs(MtgFciL1cConfig(), "FDHSI"):
+        assert group.attrs["license"].startswith("EUMETSAT Data Licence")
+        assert "CC-BY" not in group.attrs["license"]
+
+
+def test_central_wavelength_is_a_channel_coordinate() -> None:
+    """Per-channel specified central wavelength, attached as a coordinate."""
+    specs = build_specs(MtgFciL1cConfig(channels="ir_105,ir_38"), "FDHSI")
+    group = next(g for g in specs if g.group == "data_2km")
+    arrays = {a.name: a for a in group.arrays}
+    wavelength = arrays["central_wavelength"]
+
+    assert wavelength.dimension_names == ("channel",)
+    assert wavelength.time_indexed is False
+    assert wavelength.attrs["standard_name"] == "radiation_wavelength"
+    assert wavelength.attrs["units"] == "um"
+    for name, array in arrays.items():
+        dims = array.dimension_names or ()
+        if "channel" in dims and name not in ("channel", "central_wavelength"):
+            assert "central_wavelength" in array.attrs["coordinates"].split(), name
+    assert "latitude longitude central_wavelength" == arrays["counts"].attrs["coordinates"]
+
+    variable = next(v for v in VARIABLES if v.name == "central_wavelength")
+    ctx = VariableContext(
+        group="data_2km",
+        resolution="2km",
+        product_type="FDHSI",
+        config=MtgFciL1cConfig(),
+        dimsize=5568,
+        n_channels=2,
+        logical_channels=["ir_105", "ir_38"],
+    )
+    assert variable.source is not None
+    np.testing.assert_array_equal(
+        variable.source(ctx), np.array([10.5, 3.8], dtype=np.float32)
+    )

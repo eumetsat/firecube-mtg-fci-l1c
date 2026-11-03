@@ -370,6 +370,15 @@ FCI_PROJ_SCALE_RAD_PER_INDEX: dict[str, float] = {
     "1km": 2.79435763233999e-05,
     "2km": 5.58871526468e-05,
 }
+# Licence of the 10-minute FCI Level 1 data, written as the ``license`` global
+# attribute. Under the EUMETSAT Data Policy only the hourly repeat cycles are
+# CC-BY-4.0; the 10-minute data is "Recommended" data under the EUMETSAT
+# licence, which has no SPDX identifier. Do not replace it with CC-BY-4.0.
+FCI_DATA_LICENSE: str = (
+    "EUMETSAT Data Licence (EUMETSAT Data Policy, Recommended Meteosat data): "
+    "https://www.eumetsat.int/data-policy"
+)
+
 # MTG geostationary perspective point height in metres.
 # Matches the source NetCDF perspective_point_height attribute on MTG L1C.
 # Static (not read per-scene) to avoid I/O; the value is fixed for MTG-I1.
@@ -399,6 +408,29 @@ FCI_CONVERSION_CONSTANT_NAMES: tuple[str, ...] = (
     "radiance_to_bt_conversion_constant_c2",
     "channel_effective_solar_irradiance",
 )
+
+# Specified central wavelength (micrometres) per logical channel, as in
+# data/<channel>/central_wavelength_specified of the L1C files (rounded to the
+# file's float32 values). data/<channel>/central_wavelength_actual is a fill
+# value in current products, so the specified value is used.
+CHANNEL_CENTRAL_WAVELENGTH_UM: dict[str, float] = {
+    "vis_04": 0.444,
+    "vis_05": 0.51,
+    "vis_06": 0.64,
+    "vis_08": 0.865,
+    "vis_09": 0.914,
+    "nir_13": 1.38,
+    "nir_16": 1.61,
+    "nir_22": 2.25,
+    "ir_38": 3.8,
+    "wv_63": 6.3,
+    "wv_73": 7.35,
+    "ir_87": 8.7,
+    "ir_97": 9.66,
+    "ir_105": 10.5,
+    "ir_123": 12.3,
+    "ir_133": 13.3,
+}
 
 # Logical channels with dual-gain (cold/warm) calibration. Only these carry
 # meaningful warm_scale_factor/warm_add_offset; the L1C files set them to 0.0

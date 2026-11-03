@@ -27,7 +27,7 @@ from firecube.ingestor.api import (  # pyright: ignore[reportMissingImports]
     ZarrGroupSpec,
 )
 
-from ._constants import CONSTANTS
+from ._constants import CONSTANTS, FCI_DATA_LICENSE
 from ._group_plan import group_name, stripe_window
 from .config import MtgFciL1cConfig
 
@@ -147,6 +147,7 @@ def _group_attrs(
         "institution": "EUMETSAT",
         "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
         "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
+        "license": FCI_DATA_LICENSE,
     }
     if fci_chunks is not None and y_window is not None:
         attrs["fci_chunks"] = [int(n) for n in fci_chunks]
@@ -254,6 +255,9 @@ def _effective_fill_value(variable: Variable, dtype: Any) -> Any:
     return variable.fill_value
 
 
+# Variables along ``channel`` that are themselves channel coordinates.
+_CHANNEL_COORDS = frozenset({"channel", "central_wavelength"})
+
 # Sentinel used in _ARRAY_SPEC_BUILDER keys so the dispatch mapping is
 # independent of the runtime ``time_coord_name`` parameter.
 _TIME_DIM_KEY = "__time__"
@@ -345,13 +349,18 @@ def _build_array_time_channel(
 def _build_array_time_only(
     spec: _ArraySpecInputs, ctx: VariableContext
 ) -> ZarrArraySpec:
-    """Build the ``(time,)`` time-indexed coordinate/scalar spec."""
+    """Build the ``(time,)`` time-indexed coordinate/scalar spec.
+
+    The time coordinate leaves chunking to core (dense); every other
+    ``(time,)`` variable is stored as one chunk per time step.
+    """
     del ctx
+    is_time_coord = spec.dims == (spec.variable.name,)
     return ZarrArraySpec(
         name=spec.variable.name,
         shape=(1,),
         dtype=spec.dtype,
-        chunks=None,
+        chunks=None if is_time_coord else (1,),
         fill_value=spec.fill_value,
         time_indexed=True,
         dimension_names=spec.dims,
@@ -457,6 +466,11 @@ def _build_array_spec(
                 attrs = dict(resolved)
             else:
                 attrs.update(resolved)
+    if "channel" in dims and variable.name not in _CHANNEL_COORDS:
+        # Attach the per-channel wavelength as an auxiliary coordinate.
+        attrs = dict(attrs or {})
+        coordinates = attrs.get("coordinates", "").split()
+        attrs["coordinates"] = " ".join([*coordinates, "central_wavelength"])
 
     builder = _ARRAY_SPEC_BUILDER.get(_normalize_dims_key(dims, time_coord_name))
     if builder is None:

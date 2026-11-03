@@ -18,17 +18,19 @@ Implements the inverse geostationary (GEOS) satellite projection for the
 MTG FCI instrument. Converts (row, column) pixel indices on the FCI detector
 grid into geographic (latitude, longitude) coordinates on Earth's surface.
 
-The math follows the formulas in the FCI L1 Dataset User Guide [FCIL1DUG],
-using refined constants from the EUMETSAT CONV document.
+The math follows the formulas in the FCI L1 Dataset User Guide [FCIL1DUG].
+Scan angles use the same per-pixel scale and centre as the cube's ``x``/``y``
+(``FCI_PROJ_SCALE_RAD_PER_INDEX``), so latitude/longitude agree with the
+declared ``spatial_ref`` projection.
 
-Note: This module is FCI-specific. The grid sampling angles, scan origin
-offsets, and detector dimensions are all specific to the FCI instrument
+Note: This module is FCI-specific. The grid sampling angles
+and detector dimensions are all specific to the FCI instrument
 on Meteosat Third Generation (MTG) satellites. Other instruments (e.g.
 MSG/SEVIRI) use pre-computed lat/lon lookup tables instead.
 
 Coordinate expectations:
-    - Input pixel coordinates follow the FCI fixed-grid convention with 1-based
-      detector indices used by the projection formulas.
+    - Pixel indices are 0-based; index ``i`` sits at scan angle
+      ``(i - (dimsize / 2 - 0.5)) * scale`` on either axis.
     - Returned arrays use the FCI native ``[row, col]`` order: row 0 is the
       southern edge and col 0 is the western edge of the full-disk image,
       matching the row order of the L1C files and of the cube's ``y``/``x``.
@@ -44,42 +46,7 @@ from __future__ import annotations
 
 import numpy as np
 
-# ---------------------------------------------------------------------------
-# FCI detector grid constants (from EUMETSAT CONV document)
-#
-# Each FCI channel observes a fixed-size grid of pixels covering the full
-# Earth disk. The detector scans East-to-West (columns) and South-to-North
-# (rows). These constants define the angular spacing and starting position
-# of the grid for each spatial sampling distance (SSD).
-#
-# SSD "0.5" = 500m channels, "1" = 1km channels, "2" = 2km channels.
-# ---------------------------------------------------------------------------
-
-# Angular step between adjacent pixels (degrees per pixel).
-# Smaller values = finer resolution = more pixels covering the same angular range.
-GRID_SAMPLING_DEG: dict[str, float] = {
-    "0.5": 0.00080053344196,  # 500m: ~0.0008 deg/pixel
-    "1": 0.0016010668837,  # 1km:  ~0.0016 deg/pixel
-    "2": 0.0032021337647,  # 2km:  ~0.0032 deg/pixel
-}
-
-# Scan start angle for columns (East-West), in degrees.
-# This is the angular offset of column 1 from the sub-satellite point.
-# Positive = East of sub-satellite point.
-COLUMN_ORIGIN_DEG: dict[str, float] = {
-    "0.5": 8.9143401430,
-    "1": 8.9139398750,
-    "2": 8.9131393340,
-}
-
-# Scan start angle for rows (South-North), in degrees.
-# This is the angular offset of row 1 from the sub-satellite point.
-# Negative = South of sub-satellite point (scan goes upward).
-ROW_ORIGIN_DEG: dict[str, float] = {
-    "0.5": -8.9143401430,
-    "1": -8.9139398750,
-    "2": -8.9131393340,
-}
+from .._constants import FCI_PROJ_SCALE_RAD_PER_INDEX
 
 # Full-disk detector size (pixels) per resolution.
 # The FCI detector is square: dimsize x dimsize pixels.
@@ -89,8 +56,8 @@ DIMSIZE_BY_RESOLUTION: dict[int, int] = {
     2000: 5568,  # 2km:   5568 x  5568 =  ~31 million pixels
 }
 
-# Maps resolution in meters to the SSD key used in the grid constant dicts.
-_SSD_KEY: dict[int, str] = {500: "0.5", 1000: "1", 2000: "2"}
+# Maps resolution in meters to the key of FCI_PROJ_SCALE_RAD_PER_INDEX.
+_RESOLUTION_LABEL: dict[int, str] = {500: "500m", 1000: "1km", 2000: "2km"}
 
 
 def compute_latlon(
@@ -141,25 +108,22 @@ def compute_latlon(
         raise ValueError(msg)
 
     dimsize = DIMSIZE_BY_RESOLUTION[resolution_m]
-    ssd = _SSD_KEY[resolution_m]
     half = dimsize // 2
 
-    # Convert grid constants from degrees to radians for trig operations
-    grid_sampling_rad = np.deg2rad(GRID_SAMPLING_DEG[ssd])
-    col_origin_rad = np.deg2rad(COLUMN_ORIGIN_DEG[ssd])
-    row_origin_rad = np.deg2rad(ROW_ORIGIN_DEG[ssd])
+    # Angular step between adjacent pixels (radians), shared with x/y.
+    grid_sampling_rad = FCI_PROJ_SCALE_RAD_PER_INDEX[_RESOLUTION_LABEL[resolution_m]]
+    centre = dimsize / 2 - 0.5
 
-    # Build 1D coordinate arrays for the top-right quadrant.
-    # We compute rows 1..half (top half) and columns half+1..dimsize (right half).
-    # The GEOS projection formulas use 1-based pixel indices.
-    rows = np.arange(1, half + 1, dtype=np.float64)
-    cols = np.arange(half + 1, dimsize + 1, dtype=np.float64)
+    # Build 1D index arrays for the top-right quadrant.
+    # We compute rows 0..half-1 (top half) and columns half..dimsize-1 (right half).
+    rows = np.arange(0, half, dtype=np.float64)
+    cols = np.arange(half, dimsize, dtype=np.float64)
 
     # Convert pixel indices to GEOS scanning angles (radians).
     # lambda_s = East-West angle for each column (decreases with column index)
     # phi_s = North-South angle for each row (increases with row index)
-    lambda_s = col_origin_rad - (cols - 1.0) * grid_sampling_rad
-    phi_s = row_origin_rad + (rows - 1.0) * grid_sampling_rad
+    lambda_s = (centre - cols) * grid_sampling_rad
+    phi_s = (rows - centre) * grid_sampling_rad
 
     # --- Vectorized GEOS inverse projection ---
     # Broadcast to 2D: rows along axis 0, cols along axis 1

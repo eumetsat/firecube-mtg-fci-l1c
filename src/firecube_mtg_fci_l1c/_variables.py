@@ -33,6 +33,8 @@ import numpy as np  # pyright: ignore[reportMissingImports]
 
 from . import _schema
 from ._constants import (
+    CHANNEL_CENTRAL_WAVELENGTH_UM,
+    CONSTANTS,
     DUAL_GAIN_CHANNELS,
     FCI_PROJ_SCALE_RAD_PER_INDEX,
     MTG_PERSPECTIVE_POINT_HEIGHT_M,
@@ -53,7 +55,12 @@ __all__ = [
 ]
 
 # Variable-length UTF-8 text; stored as the Zarr v3 ``string`` data type.
-_STRING_DTYPE = np.dtypes.StringDType()
+# Channel labels as fixed-width bytes, wide enough for every logical channel
+# name. The ``_Encoding`` attribute makes xarray decode them to text.
+_CHANNEL_LABEL_WIDTH = max(
+    len(ch) for res in CONSTANTS.values() for info in res.values() for ch in info["channels"]
+)
+_CHANNEL_LABEL_DTYPE = np.dtype(f"S{_CHANNEL_LABEL_WIDTH}")
 
 # Time coordinate name. Wired to the ingestor's time_dim_name. Change here only.
 TIME_COORD_NAME = "time"
@@ -74,7 +81,10 @@ _MTG_GEOS_WKT: str = (
     'PARAMETER["Satellite Height",35786400,LENGTHUNIT["metre",1]]],'
     "CS[Cartesian,2],"
     'AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],'
-    'AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]]]'
+    'AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],'
+    'USAGE[SCOPE["Meteosat Third Generation FCI full-disk imagery"],'
+    'AREA["MTG FCI full disk, sub-satellite longitude 0"],'
+    "BBOX[-81.3,-81.3,81.3,81.3]]]"
 )
 
 assert f'Satellite Height",{int(MTG_PERSPECTIVE_POINT_HEIGHT_M)},' in _MTG_GEOS_WKT, (
@@ -250,8 +260,19 @@ def _time_source(ctx: VariableContext) -> None:
 
 
 def _channel_source(ctx: VariableContext) -> np.ndarray:
-    """Return channel names as variable-length strings."""
-    return np.asarray(ctx.logical_channels, dtype=_STRING_DTYPE)
+    """Return channel names as fixed-width bytes."""
+    return np.asarray(ctx.logical_channels, dtype=_CHANNEL_LABEL_DTYPE)
+
+
+def _central_wavelength_source(ctx: VariableContext) -> np.ndarray:
+    """Return the specified central wavelength (um) of each channel.
+
+    An unknown channel name gives NaN.
+    """
+    return np.asarray(
+        [CHANNEL_CENTRAL_WAVELENGTH_UM.get(ch, np.nan) for ch in ctx.logical_channels],
+        dtype=np.float32,
+    )
 
 
 def _calibration_field(ctx: VariableContext, field: str) -> np.ndarray | None:
@@ -382,7 +403,7 @@ VARIABLES: list[Variable] = [
             "units": "1",
             "long_name": "FCI raw detector counts",
             "grid_mapping": "spatial_ref",
-            "ancillary_variables": "pixel_quality pixel_time",
+            "ancillary_variables": "pixel_quality pixel_time slope offset",
         },
         source=_counts_source,
         attrs_resolver=_geo_coordinates_resolver,
@@ -584,12 +605,24 @@ VARIABLES: list[Variable] = [
     Variable(
         name="channel",
         dims=("channel",),
-        dtype=_STRING_DTYPE,
+        dtype=_CHANNEL_LABEL_DTYPE,
         # No fill value: Firecube would stamp a _FillValue attribute, which
         # xarray cannot decode for string variables.
         fill_value=None,
-        attrs={"long_name": "FCI logical channel name"},
+        attrs={"long_name": "FCI logical channel name", "_Encoding": "utf-8"},
         source=_channel_source,
+    ),
+    Variable(
+        name="central_wavelength",
+        dims=("channel",),
+        dtype=np.float32,
+        fill_value=np.float32(np.nan),
+        attrs={
+            "standard_name": "radiation_wavelength",
+            "long_name": "Specified central wavelength of channel",
+            "units": "um",
+        },
+        source=_central_wavelength_source,
     ),
     # Radiance conversion constants, read per product like slope/offset. Names,
     # long_names and comments follow data/<channel>/measured in the L1C files.

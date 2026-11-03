@@ -1,6 +1,6 @@
 {
   "fdhsi_defaults": {
-    "hash": "3895762c1fabbc6e972b005f58b4748cd890acd5ca99506cc56b4ef6aacfdb43",
+    "hash": "ddeacc12c03b58d5b593ce33e5ae0e7b544445a47104e3a985fda4a4bdd662a3",
     "structure": {
       "attrs": {
         "firecube_resolved_index": "{\"groups\":{\"data_1km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null},\"data_2km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null}},\"name\":\"eumetsat_repeat_cycle_v1\",\"schema_version\":\"v1\"}",
@@ -9,8 +9,28 @@
       "groups": {
         "data_1km": {
           "arrays": {
+            "central_wavelength": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "Specified central wavelength of channel",
+                "standard_name": "radiation_wavelength",
+                "units": "um"
+              },
+              "chunks": [
+                2
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "shape": [
+                2
+              ]
+            },
             "channel": {
               "attrs": {
+                "_Encoding": "utf-8",
                 "firecube_static_written": true,
                 "long_name": "FCI logical channel name"
               },
@@ -20,7 +40,7 @@
               "dimension_names": [
                 "channel"
               ],
-              "dtype": "StringDType()",
+              "dtype": "|S6",
               "fill_value": "",
               "shape": [
                 2
@@ -29,6 +49,7 @@
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+                "coordinates": "central_wavelength",
                 "long_name": "Channel effective solar irradiance at 1 AU",
                 "units": "mW m-2 (cm-1)-1"
               },
@@ -50,8 +71,8 @@
             "counts": {
               "attrs": {
                 "_FillValue": 65535,
-                "ancillary_variables": "pixel_quality pixel_time",
-                "coordinates": "latitude longitude",
+                "ancillary_variables": "pixel_quality pixel_time slope offset",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI raw detector counts",
                 "units": "1"
@@ -123,6 +144,7 @@
             },
             "offset": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration offset",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -144,7 +166,7 @@
             "pixel_quality": {
               "attrs": {
                 "_FillValue": 0,
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "flag_masks": [
                   1,
                   2,
@@ -184,7 +206,7 @@
             "pixel_time": {
               "attrs": {
                 "calendar": "standard",
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI per-pixel observation time",
                 "standard_name": "time",
@@ -231,6 +253,7 @@
             "radiance_to_bt_conversion_coefficient_a": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient A",
                 "units": "1"
               },
@@ -252,6 +275,7 @@
             "radiance_to_bt_conversion_coefficient_b": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient B",
                 "units": "K"
               },
@@ -273,6 +297,7 @@
             "radiance_to_bt_conversion_coefficient_wavenumber": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
                 "units": "cm-1"
               },
@@ -294,6 +319,7 @@
             "radiance_to_bt_conversion_constant_c1": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C1",
                 "units": "mW m-2 sr-1 (cm-1)-4"
               },
@@ -315,6 +341,7 @@
             "radiance_to_bt_conversion_constant_c2": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C2",
                 "units": "cm K"
               },
@@ -335,6 +362,7 @@
             },
             "radiance_unit_conversion_coefficient": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
                 "units": "W mW-1 cm-1 um-1"
               },
@@ -355,6 +383,7 @@
             },
             "slope": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration slope",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -376,7 +405,7 @@
             "spatial_ref": {
               "attrs": {
                 "_FillValue": 0,
-                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "grid_mapping_name": "geostationary",
                 "inverse_flattening": 298.25722356301,
                 "latitude_of_projection_origin": 0.0,
@@ -385,7 +414,7 @@
                 "perspective_point_height": 35786400.0,
                 "semi_major_axis": 6378137.0,
                 "semi_minor_axis": 6356752.31424518,
-                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "sweep_angle_axis": "y"
               },
               "chunks": [],
@@ -509,14 +538,35 @@
             "Conventions": "CF-1.8",
             "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
             "institution": "EUMETSAT",
+            "license": "EUMETSAT Data Licence (EUMETSAT Data Policy, Recommended Meteosat data): https://www.eumetsat.int/data-policy",
             "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
             "title": "MTG FCI Level 1C effective radiances (1km)"
           }
         },
         "data_2km": {
           "arrays": {
+            "central_wavelength": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "Specified central wavelength of channel",
+                "standard_name": "radiation_wavelength",
+                "units": "um"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "shape": [
+                1
+              ]
+            },
             "channel": {
               "attrs": {
+                "_Encoding": "utf-8",
                 "firecube_static_written": true,
                 "long_name": "FCI logical channel name"
               },
@@ -526,7 +576,7 @@
               "dimension_names": [
                 "channel"
               ],
-              "dtype": "StringDType()",
+              "dtype": "|S6",
               "fill_value": "",
               "shape": [
                 1
@@ -535,6 +585,7 @@
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+                "coordinates": "central_wavelength",
                 "long_name": "Channel effective solar irradiance at 1 AU",
                 "units": "mW m-2 (cm-1)-1"
               },
@@ -556,8 +607,8 @@
             "counts": {
               "attrs": {
                 "_FillValue": 65535,
-                "ancillary_variables": "pixel_quality pixel_time",
-                "coordinates": "latitude longitude",
+                "ancillary_variables": "pixel_quality pixel_time slope offset",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI raw detector counts",
                 "units": "1"
@@ -629,6 +680,7 @@
             },
             "offset": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration offset",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -650,7 +702,7 @@
             "pixel_quality": {
               "attrs": {
                 "_FillValue": 0,
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "flag_masks": [
                   1,
                   2,
@@ -690,7 +742,7 @@
             "pixel_time": {
               "attrs": {
                 "calendar": "standard",
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI per-pixel observation time",
                 "standard_name": "time",
@@ -737,6 +789,7 @@
             "radiance_to_bt_conversion_coefficient_a": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient A",
                 "units": "1"
               },
@@ -758,6 +811,7 @@
             "radiance_to_bt_conversion_coefficient_b": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient B",
                 "units": "K"
               },
@@ -779,6 +833,7 @@
             "radiance_to_bt_conversion_coefficient_wavenumber": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
                 "units": "cm-1"
               },
@@ -800,6 +855,7 @@
             "radiance_to_bt_conversion_constant_c1": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C1",
                 "units": "mW m-2 sr-1 (cm-1)-4"
               },
@@ -821,6 +877,7 @@
             "radiance_to_bt_conversion_constant_c2": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C2",
                 "units": "cm K"
               },
@@ -841,6 +898,7 @@
             },
             "radiance_unit_conversion_coefficient": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
                 "units": "W mW-1 cm-1 um-1"
               },
@@ -861,6 +919,7 @@
             },
             "slope": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration slope",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -882,7 +941,7 @@
             "spatial_ref": {
               "attrs": {
                 "_FillValue": 0,
-                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "grid_mapping_name": "geostationary",
                 "inverse_flattening": 298.25722356301,
                 "latitude_of_projection_origin": 0.0,
@@ -891,7 +950,7 @@
                 "perspective_point_height": 35786400.0,
                 "semi_major_axis": 6378137.0,
                 "semi_minor_axis": 6356752.31424518,
-                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "sweep_angle_axis": "y"
               },
               "chunks": [],
@@ -973,6 +1032,7 @@
             "warm_offset": {
               "attrs": {
                 "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "coordinates": "central_wavelength",
                 "long_name": "FCI warm calibration offset",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -994,6 +1054,7 @@
             "warm_slope": {
               "attrs": {
                 "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "coordinates": "central_wavelength",
                 "long_name": "FCI warm calibration slope",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1057,6 +1118,7 @@
             "Conventions": "CF-1.8",
             "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
             "institution": "EUMETSAT",
+            "license": "EUMETSAT Data Licence (EUMETSAT Data Policy, Recommended Meteosat data): https://www.eumetsat.int/data-policy",
             "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
             "title": "MTG FCI Level 1C effective radiances (2km)"
           }
@@ -1065,7 +1127,7 @@
     }
   },
   "hrfi_defaults": {
-    "hash": "27cb6c43f84cd3abf5f81fa78f805ed58141c38ff85177ba73f548c895c2d617",
+    "hash": "c65b07322b40da70b5221ec3607468dd327c6381c5da9041fc028b2f065182bc",
     "structure": {
       "attrs": {
         "firecube_resolved_index": "{\"groups\":{\"data_1km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null},\"data_500m\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null}},\"name\":\"eumetsat_repeat_cycle_v1\",\"schema_version\":\"v1\"}",
@@ -1074,8 +1136,28 @@
       "groups": {
         "data_1km": {
           "arrays": {
+            "central_wavelength": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "Specified central wavelength of channel",
+                "standard_name": "radiation_wavelength",
+                "units": "um"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "shape": [
+                1
+              ]
+            },
             "channel": {
               "attrs": {
+                "_Encoding": "utf-8",
                 "firecube_static_written": true,
                 "long_name": "FCI logical channel name"
               },
@@ -1085,7 +1167,7 @@
               "dimension_names": [
                 "channel"
               ],
-              "dtype": "StringDType()",
+              "dtype": "|S6",
               "fill_value": "",
               "shape": [
                 1
@@ -1094,6 +1176,7 @@
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+                "coordinates": "central_wavelength",
                 "long_name": "Channel effective solar irradiance at 1 AU",
                 "units": "mW m-2 (cm-1)-1"
               },
@@ -1115,8 +1198,8 @@
             "counts": {
               "attrs": {
                 "_FillValue": 65535,
-                "ancillary_variables": "pixel_quality pixel_time",
-                "coordinates": "latitude longitude",
+                "ancillary_variables": "pixel_quality pixel_time slope offset",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI raw detector counts",
                 "units": "1"
@@ -1188,6 +1271,7 @@
             },
             "offset": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration offset",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1209,7 +1293,7 @@
             "pixel_quality": {
               "attrs": {
                 "_FillValue": 0,
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "flag_masks": [
                   1,
                   2,
@@ -1249,7 +1333,7 @@
             "pixel_time": {
               "attrs": {
                 "calendar": "standard",
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI per-pixel observation time",
                 "standard_name": "time",
@@ -1296,6 +1380,7 @@
             "radiance_to_bt_conversion_coefficient_a": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient A",
                 "units": "1"
               },
@@ -1317,6 +1402,7 @@
             "radiance_to_bt_conversion_coefficient_b": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient B",
                 "units": "K"
               },
@@ -1338,6 +1424,7 @@
             "radiance_to_bt_conversion_coefficient_wavenumber": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
                 "units": "cm-1"
               },
@@ -1359,6 +1446,7 @@
             "radiance_to_bt_conversion_constant_c1": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C1",
                 "units": "mW m-2 sr-1 (cm-1)-4"
               },
@@ -1380,6 +1468,7 @@
             "radiance_to_bt_conversion_constant_c2": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C2",
                 "units": "cm K"
               },
@@ -1400,6 +1489,7 @@
             },
             "radiance_unit_conversion_coefficient": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
                 "units": "W mW-1 cm-1 um-1"
               },
@@ -1420,6 +1510,7 @@
             },
             "slope": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration slope",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1441,7 +1532,7 @@
             "spatial_ref": {
               "attrs": {
                 "_FillValue": 0,
-                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "grid_mapping_name": "geostationary",
                 "inverse_flattening": 298.25722356301,
                 "latitude_of_projection_origin": 0.0,
@@ -1450,7 +1541,7 @@
                 "perspective_point_height": 35786400.0,
                 "semi_major_axis": 6378137.0,
                 "semi_minor_axis": 6356752.31424518,
-                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "sweep_angle_axis": "y"
               },
               "chunks": [],
@@ -1532,6 +1623,7 @@
             "warm_offset": {
               "attrs": {
                 "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "coordinates": "central_wavelength",
                 "long_name": "FCI warm calibration offset",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1553,6 +1645,7 @@
             "warm_slope": {
               "attrs": {
                 "comment": "Dual-gain calibration of IR 3.8: applies to counts above 4095. NaN for all other channels.",
+                "coordinates": "central_wavelength",
                 "long_name": "FCI warm calibration slope",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1616,14 +1709,35 @@
             "Conventions": "CF-1.8",
             "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
             "institution": "EUMETSAT",
+            "license": "EUMETSAT Data Licence (EUMETSAT Data Policy, Recommended Meteosat data): https://www.eumetsat.int/data-policy",
             "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
             "title": "MTG FCI Level 1C effective radiances (1km)"
           }
         },
         "data_500m": {
           "arrays": {
+            "central_wavelength": {
+              "attrs": {
+                "firecube_static_written": true,
+                "long_name": "Specified central wavelength of channel",
+                "standard_name": "radiation_wavelength",
+                "units": "um"
+              },
+              "chunks": [
+                1
+              ],
+              "dimension_names": [
+                "channel"
+              ],
+              "dtype": "float32",
+              "fill_value": "nan",
+              "shape": [
+                1
+              ]
+            },
             "channel": {
               "attrs": {
+                "_Encoding": "utf-8",
                 "firecube_static_written": true,
                 "long_name": "FCI logical channel name"
               },
@@ -1633,7 +1747,7 @@
               "dimension_names": [
                 "channel"
               ],
-              "dtype": "StringDType()",
+              "dtype": "|S6",
               "fill_value": "",
               "shape": [
                 1
@@ -1642,6 +1756,7 @@
             "channel_effective_solar_irradiance": {
               "attrs": {
                 "comment": "For the derivation of reflectance for VNIR spectral channels. NaN where the product marks it not applicable (most IR channels; ir_38 carries a value)",
+                "coordinates": "central_wavelength",
                 "long_name": "Channel effective solar irradiance at 1 AU",
                 "units": "mW m-2 (cm-1)-1"
               },
@@ -1663,8 +1778,8 @@
             "counts": {
               "attrs": {
                 "_FillValue": 65535,
-                "ancillary_variables": "pixel_quality pixel_time",
-                "coordinates": "latitude longitude",
+                "ancillary_variables": "pixel_quality pixel_time slope offset",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI raw detector counts",
                 "units": "1"
@@ -1736,6 +1851,7 @@
             },
             "offset": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration offset",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1757,7 +1873,7 @@
             "pixel_quality": {
               "attrs": {
                 "_FillValue": 0,
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "flag_masks": [
                   1,
                   2,
@@ -1797,7 +1913,7 @@
             "pixel_time": {
               "attrs": {
                 "calendar": "standard",
-                "coordinates": "latitude longitude",
+                "coordinates": "latitude longitude central_wavelength",
                 "grid_mapping": "spatial_ref",
                 "long_name": "FCI per-pixel observation time",
                 "standard_name": "time",
@@ -1844,6 +1960,7 @@
             "radiance_to_bt_conversion_coefficient_a": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient A",
                 "units": "1"
               },
@@ -1865,6 +1982,7 @@
             "radiance_to_bt_conversion_coefficient_b": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient B",
                 "units": "K"
               },
@@ -1886,6 +2004,7 @@
             "radiance_to_bt_conversion_coefficient_wavenumber": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion coefficient wavenumber",
                 "units": "cm-1"
               },
@@ -1907,6 +2026,7 @@
             "radiance_to_bt_conversion_constant_c1": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C1",
                 "units": "mW m-2 sr-1 (cm-1)-4"
               },
@@ -1928,6 +2048,7 @@
             "radiance_to_bt_conversion_constant_c2": {
               "attrs": {
                 "comment": "Only for IR channels. NaN for VNIR channels",
+                "coordinates": "central_wavelength",
                 "long_name": "Radiance to brightness temperature conversion constant C2",
                 "units": "cm K"
               },
@@ -1948,6 +2069,7 @@
             },
             "radiance_unit_conversion_coefficient": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "Conversion coefficients to convert radiance units from mW.m^-2.sr^-1.(cm^-1)^-1 to W.m^-2.sr^-1.um^-1.",
                 "units": "W mW-1 cm-1 um-1"
               },
@@ -1968,6 +2090,7 @@
             },
             "slope": {
               "attrs": {
+                "coordinates": "central_wavelength",
                 "long_name": "FCI calibration slope",
                 "units": "mW m-2 sr-1 (cm-1)-1"
               },
@@ -1989,7 +2112,7 @@
             "spatial_ref": {
               "attrs": {
                 "_FillValue": 0,
-                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "grid_mapping_name": "geostationary",
                 "inverse_flattening": 298.25722356301,
                 "latitude_of_projection_origin": 0.0,
@@ -1998,7 +2121,7 @@
                 "perspective_point_height": 35786400.0,
                 "semi_major_axis": 6378137.0,
                 "semi_minor_axis": 6356752.31424518,
-                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "sweep_angle_axis": "y"
               },
               "chunks": [],
@@ -2122,6 +2245,7 @@
             "Conventions": "CF-1.8",
             "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
             "institution": "EUMETSAT",
+            "license": "EUMETSAT Data Licence (EUMETSAT Data Policy, Recommended Meteosat data): https://www.eumetsat.int/data-policy",
             "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
             "title": "MTG FCI Level 1C effective radiances (500m)"
           }
