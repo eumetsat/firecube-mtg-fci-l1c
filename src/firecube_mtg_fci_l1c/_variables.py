@@ -74,7 +74,10 @@ _MTG_GEOS_WKT: str = (
     'PARAMETER["Satellite Height",35786400,LENGTHUNIT["metre",1]]],'
     "CS[Cartesian,2],"
     'AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],'
-    'AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]]]'
+    'AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],'
+    'USAGE[SCOPE["Meteosat Third Generation FCI full-disk imagery"],'
+    'AREA["MTG FCI full disk, sub-satellite longitude 0"],'
+    "BBOX[-81.3,-81.3,81.3,81.3]]]"
 )
 
 assert f'Satellite Height",{int(MTG_PERSPECTIVE_POINT_HEIGHT_M)},' in _MTG_GEOS_WKT, (

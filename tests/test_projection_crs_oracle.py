@@ -217,3 +217,45 @@ def test_x_y_land_on_latlon_pixel_centres(
     assert abs(float(dy.mean())) < 0.05, f"y offset {dy.mean():+.3f} px"
     assert float(np.abs(dx).max()) < 0.1
     assert float(np.abs(dy).max()) < 0.1
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("resolution", "resolution_m", "dimsize"),
+    [
+        ("1km", 1000, 11136),
+        ("2km", 2000, 5568),
+    ],
+)
+def test_latlon_match_projection_within_1e4_deg(
+    resolution: str, resolution_m: int, dimsize: int
+) -> None:
+    """Issue #27: ``latitude``/``longitude`` must equal the ``spatial_ref``
+    projection of ``x``/``y`` to better than 1e-4 degrees, limb included."""
+    from firecube_mtg_fci_l1c.geolocation.projection import compute_latlon
+
+    ctx = _build_ctx(resolution, dimsize, MtgFciL1cConfig())
+    x = _projection_x_source(ctx)
+    y = _projection_y_source(ctx)
+    assert x is not None and y is not None
+    lat, lon = compute_latlon(resolution_m)
+
+    idx = np.arange(0, dimsize, dimsize // 200)
+    rows, cols = np.meshgrid(idx, idx, indexing="ij")
+    to_lonlat = Transformer.from_crs(
+        CRS.from_wkt(_MTG_GEOS_WKT), CRS.from_epsg(4326), always_xy=True
+    )
+    lon_proj, lat_proj = to_lonlat.transform(x[cols], y[rows])
+    ok = np.isfinite(lat[rows, cols]) & np.isfinite(lat_proj)
+    assert ok.sum() > 10000
+    assert np.max(np.abs(lat[rows, cols] - lat_proj)[ok]) < 1e-4
+    assert np.max(np.abs(lon[rows, cols] - lon_proj)[ok]) < 1e-4
+
+
+@pytest.mark.unit
+def test_wkt_declares_bounding_box() -> None:
+    """Issue #27: the CRS carries an area of use without changing the CRS."""
+    crs = CRS.from_wkt(_MTG_GEOS_WKT)
+    assert crs.area_of_use is not None
+    assert crs.area_of_use.bounds == (-81.3, -81.3, 81.3, 81.3)
+    assert crs == CRS.from_wkt(_MTG_GEOS_WKT.split(",USAGE[")[0] + "]")

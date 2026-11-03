@@ -1138,3 +1138,23 @@ def test_slice_meta_tells_stripes_apart_but_not_partial_modes() -> None:
     # partial_chunk picks which rows of a partial scene are written; the slice
     # is the same, so a mode change must still meet the resume guard.
     assert error_mode == full
+
+
+@pytest.mark.unit
+def test_time_only_variables_have_one_chunk_per_time_step() -> None:
+    """Issue #27: ``(time,)`` variables are chunked per slot; the coord stays dense."""
+    specs = build_specs(MtgFciL1cConfig(), "FDHSI")
+    for group in specs:
+        time_only = [a for a in group.arrays if a.dimension_names == (TIME_COORD_NAME,)]
+        assert {a.name for a in time_only} > {TIME_COORD_NAME}
+        for array in time_only:
+            expected = None if array.name == TIME_COORD_NAME else (1,)
+            assert array.chunks == expected, array.name
+
+
+@pytest.mark.unit
+def test_license_global_attribute_is_the_eumetsat_licence() -> None:
+    """Issue #27: every group carries the EUMETSAT licence, not CC-BY-4.0."""
+    for group in build_specs(MtgFciL1cConfig(), "FDHSI"):
+        assert group.attrs["license"].startswith("EUMETSAT Data Licence")
+        assert "CC-BY" not in group.attrs["license"]

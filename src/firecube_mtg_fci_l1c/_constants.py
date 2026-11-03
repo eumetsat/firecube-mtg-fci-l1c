@@ -370,6 +370,15 @@ FCI_PROJ_SCALE_RAD_PER_INDEX: dict[str, float] = {
     "1km": 2.79435763233999e-05,
     "2km": 5.58871526468e-05,
 }
+# Licence of the 10-minute FCI Level 1 data, written as the ``license`` global
+# attribute. Under the EUMETSAT Data Policy only the hourly repeat cycles are
+# CC-BY-4.0; the 10-minute data is "Recommended" data under the EUMETSAT
+# licence, which has no SPDX identifier. Do not replace it with CC-BY-4.0.
+FCI_DATA_LICENSE: str = (
+    "EUMETSAT Data Licence (EUMETSAT Data Policy, Recommended Meteosat data): "
+    "https://www.eumetsat.int/data-policy"
+)
+
 # MTG geostationary perspective point height in metres.
 # Matches the source NetCDF perspective_point_height attribute on MTG L1C.
 # Static (not read per-scene) to avoid I/O; the value is fixed for MTG-I1.

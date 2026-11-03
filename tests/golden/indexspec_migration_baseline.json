@@ -1,6 +1,6 @@
 {
   "fdhsi_defaults": {
-    "hash": "3895762c1fabbc6e972b005f58b4748cd890acd5ca99506cc56b4ef6aacfdb43",
+    "hash": "b3cceec992747b489f4d6178f5e7fbb14115f39a2fa5af8772c83bf6a613bedf",
     "structure": {
       "attrs": {
         "firecube_resolved_index": "{\"groups\":{\"data_1km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null},\"data_2km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null}},\"name\":\"eumetsat_repeat_cycle_v1\",\"schema_version\":\"v1\"}",
@@ -376,7 +376,7 @@
             "spatial_ref": {
               "attrs": {
                 "_FillValue": 0,
-                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "grid_mapping_name": "geostationary",
                 "inverse_flattening": 298.25722356301,
                 "latitude_of_projection_origin": 0.0,
@@ -385,7 +385,7 @@
                 "perspective_point_height": 35786400.0,
                 "semi_major_axis": 6378137.0,
                 "semi_minor_axis": 6356752.31424518,
-                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "sweep_angle_axis": "y"
               },
               "chunks": [],
@@ -509,6 +509,7 @@
             "Conventions": "CF-1.8",
             "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
             "institution": "EUMETSAT",
+            "license": "EUMETSAT Data Licence (EUMETSAT Data Policy, Recommended Meteosat data): https://www.eumetsat.int/data-policy",
             "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
             "title": "MTG FCI Level 1C effective radiances (1km)"
           }
@@ -882,7 +883,7 @@
             "spatial_ref": {
               "attrs": {
                 "_FillValue": 0,
-                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "grid_mapping_name": "geostationary",
                 "inverse_flattening": 298.25722356301,
                 "latitude_of_projection_origin": 0.0,
@@ -891,7 +892,7 @@
                 "perspective_point_height": 35786400.0,
                 "semi_major_axis": 6378137.0,
                 "semi_minor_axis": 6356752.31424518,
-                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "sweep_angle_axis": "y"
               },
               "chunks": [],
@@ -1057,6 +1058,7 @@
             "Conventions": "CF-1.8",
             "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
             "institution": "EUMETSAT",
+            "license": "EUMETSAT Data Licence (EUMETSAT Data Policy, Recommended Meteosat data): https://www.eumetsat.int/data-policy",
             "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
             "title": "MTG FCI Level 1C effective radiances (2km)"
           }
@@ -1065,7 +1067,7 @@
     }
   },
   "hrfi_defaults": {
-    "hash": "27cb6c43f84cd3abf5f81fa78f805ed58141c38ff85177ba73f548c895c2d617",
+    "hash": "f672cbf3cb7befe8a885c8487c7496093c573b6a2d241526d6cc8f49046e3557",
     "structure": {
       "attrs": {
         "firecube_resolved_index": "{\"groups\":{\"data_1km\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null},\"data_500m\":{\"kind\":\"regular_time\",\"params\":{\"cadence_s\":600,\"epoch\":\"2024-01-01T00:00:00Z\",\"mode\":\"floor\"},\"size\":null}},\"name\":\"eumetsat_repeat_cycle_v1\",\"schema_version\":\"v1\"}",
@@ -1441,7 +1443,7 @@
             "spatial_ref": {
               "attrs": {
                 "_FillValue": 0,
-                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "grid_mapping_name": "geostationary",
                 "inverse_flattening": 298.25722356301,
                 "latitude_of_projection_origin": 0.0,
@@ -1450,7 +1452,7 @@
                 "perspective_point_height": 35786400.0,
                 "semi_major_axis": 6378137.0,
                 "semi_minor_axis": 6356752.31424518,
-                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "sweep_angle_axis": "y"
               },
               "chunks": [],
@@ -1616,6 +1618,7 @@
             "Conventions": "CF-1.8",
             "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
             "institution": "EUMETSAT",
+            "license": "EUMETSAT Data Licence (EUMETSAT Data Policy, Recommended Meteosat data): https://www.eumetsat.int/data-policy",
             "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
             "title": "MTG FCI Level 1C effective radiances (1km)"
           }
@@ -1989,7 +1992,7 @@
             "spatial_ref": {
               "attrs": {
                 "_FillValue": 0,
-                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "crs_wkt": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "grid_mapping_name": "geostationary",
                 "inverse_flattening": 298.25722356301,
                 "latitude_of_projection_origin": 0.0,
@@ -1998,7 +2001,7 @@
                 "perspective_point_height": 35786400.0,
                 "semi_major_axis": 6378137.0,
                 "semi_minor_axis": 6356752.31424518,
-                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]",
+                "spatial_ref": "PROJCRS[\"MTG Geostationary\",BASEGEOGCRS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],CONVERSION[\"MTG Geostationary\",METHOD[\"Geostationary Satellite (Sweep Y)\"],PARAMETER[\"Longitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],PARAMETER[\"Satellite Height\",35786400,LENGTHUNIT[\"metre\",1]]],CS[Cartesian,2],AXIS[\"easting (X)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing (Y)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],USAGE[SCOPE[\"Meteosat Third Generation FCI full-disk imagery\"],AREA[\"MTG FCI full disk, sub-satellite longitude 0\"],BBOX[-81.3,-81.3,81.3,81.3]]]",
                 "sweep_angle_axis": "y"
               },
               "chunks": [],
@@ -2122,6 +2125,7 @@
             "Conventions": "CF-1.8",
             "history": "Ingested to Zarr by firecube-mtg-fci-l1c",
             "institution": "EUMETSAT",
+            "license": "EUMETSAT Data Licence (EUMETSAT Data Policy, Recommended Meteosat data): https://www.eumetsat.int/data-policy",
             "source": "Meteosat Third Generation Flexible Combined Imager (FCI) Level 1C",
             "title": "MTG FCI Level 1C effective radiances (500m)"
           }
